@@ -1,0 +1,76 @@
+name: testEnvironment
+
+imports:
+  - imports/someImport1.yaml
+
+providers:
+  aws:
+    parameters:
+      region: Europe/Ireland
+
+nodes:
+  managers:
+    platform: true
+    provider: aws
+    instances:
+      min: 3
+      max: 5
+    config:
+      cpu: 2
+      mem: 8
+      disk: 20
+    postInstall:
+      - managerPostInstall
+  workers:
+    provider: aws
+    instances:
+      min: 10
+      max: 50
+    config:
+      cpu: 8
+      mem: 64
+      disk: 500
+    postInstall:
+      - workerPostInstall
+
+stacks:
+  monitoring:
+    url: http://gitlab.intranet.lagoon.inetpsa.com/lagoon-platform/monitoring-stack
+    deployOn:
+      - managers
+  application:
+    url: https://github.com/seedstack/store-webapp-sample
+    deployOn:
+      - workers
+
+tasks:
+  managerPostInstall:
+    playbook: lagoon/post-install-manager.yaml
+  workerPostInstall:
+    playbook: lagoon/post-install-worker.yaml
+  dataBackup:
+    cron: 0 * * * *
+    runOn:
+      - managers
+    playbook: lagoon/backup.yaml
+  dataRestore:
+    runOn:
+      - managers
+    playbook: lagoon/restore.yaml
+
+hooks:
+  provisioning:
+    before:
+      - task1
+    after:
+      - task1
+  installation:
+    before:
+      - task1
+    after:
+      - task1
+  deployment:
+    before:
+      - task1
+    after:
+      - task1

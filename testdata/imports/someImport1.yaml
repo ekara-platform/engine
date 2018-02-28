@@ -1,0 +1,7 @@
+imports:
+  - someImport2.yaml
+
+hooks:
+  provisioning:
+    after:
+      - task2
