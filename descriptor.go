@@ -1,70 +1,46 @@
 package descriptor
 
 import (
+	"log"
 	"gopkg.in/yaml.v2"
-	"github.com/imdario/mergo"
-	"os"
-	"io/ioutil"
-	"net/http"
-	"path"
-	"path/filepath"
-	"fmt"
 	"strings"
+	"fmt"
+	"io/ioutil"
+	"path"
+	"os"
+	"path/filepath"
+	"github.com/imdario/mergo"
+	"net/http"
 )
 
-type Task struct {
-	Playbook string
-	Cron     string
-	RunOn    []string `yaml:"runOn"`
+type Lagoon interface {
+	GetDescriptor() Descriptor
 }
 
-type Hook struct {
-	Before []string
-	After  []string
+type holder struct {
+	// Global state
+	logger *log.Logger
+
+	// Descriptor info
+	location string
+	desc     *Descriptor
 }
 
-type Provider struct {
-	parameters map[string]string
+func (h *holder) GetDescriptor() (Descriptor) {
+	return *h.desc
 }
 
-type NodeSet struct {
-	Platform bool
-	Provider string
-	Instances struct {
-		Min int
-		Max int
+func Parse(logger *log.Logger, location string) (lagoon Lagoon, err error) {
+	h := holder{logger: logger, location: location}
+	desc, err := parseDescriptor(h.location)
+	if err != nil {
+		return nil, err
 	}
-	Config struct {
-		Cpu    int
-		Memory int
-		Disk   int
-	}
-	Hooks struct {
-		Installation Hook
-	}
+	h.desc = &desc
+	return &h, nil
 }
 
-type Stack struct {
-	Url      string
-	DeployOn []string `yaml:"deployOn"`
-}
-
-type Descriptor struct {
-	Name         string
-	Description  string
-	Imports      []string
-	BaseLocation string
-	Nodes        map[string]NodeSet
-	Stacks       map[string]Stack
-	Tasks        map[string]Task
-	Hooks struct {
-		Provisioning Hook
-		Installation Hook
-		Deployment   Hook
-	}
-}
-
-func ParseDescriptor(location string) (desc Descriptor, err error) {
+func parseDescriptor(location string) (desc Descriptor, err error) {
 	var content []byte
 
 	desc.BaseLocation, content, err = readDescriptor(location)
@@ -122,7 +98,7 @@ func processImports(desc *Descriptor) error {
 	if len(desc.Imports) > 0 {
 		fmt.Println("Processing imports", desc.Imports)
 		for _, val := range desc.Imports {
-			importedDesc, err := ParseDescriptor(desc.BaseLocation + val)
+			importedDesc, err := parseDescriptor(desc.BaseLocation + val)
 			if err != nil {
 				return err
 			}

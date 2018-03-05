@@ -2,6 +2,6 @@ name: overriddenName
 description: This is my awesome Lagoon environment.
 
 hooks:
-  provisioning:
+  provision:
     after:
       - task3

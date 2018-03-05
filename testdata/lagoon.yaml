@@ -5,71 +5,86 @@ imports:
 
 providers:
   aws:
-    parameters:
-      region: Europe/Ireland
+    params:
+      region: eu-west-1
 
 nodes:
   managers:
-    platform: true
-    provider: aws
-    instances:
-      min: 3
-      max: 5
-    config:
-      cpu: 2
-      mem: 8
-      disk: 20
-    postInstall:
-      - managerPostInstall
+    provider:
+      name: aws
+      params:
+        model: t2.medium
+        region: $distribute('eu-west-1', 'eu-west-2', 'eu-west-3')
+    instances: 3
+    hooks:
+      provision:
+        after:
+          - managerPostInstall
+    tags:
+      - lagoon
+      - monitoring
   workers:
-    provider: aws
-    instances:
-      min: 10
-      max: 50
-    config:
-      cpu: 8
-      mem: 64
-      disk: 500
-    postInstall:
-      - workerPostInstall
+    provider:
+      name: aws
+    params:
+      model: c5.4xlarge
+      region: $random('us-west1', 'eu-central-1', 'ap-southeast-2')
+    instances: 10
+    hooks:
+      provision:
+        after:
+          - workerPostInstall
+    tags:
+      - application
 
 stacks:
   monitoring:
-    url: http://gitlab.intranet.lagoon.inetpsa.com/lagoon-platform/monitoring-stack
+    repository: github.com/lagoon-platform/monitoring-stack
+    version: 1.0.5
     deployOn:
-      - managers
+      - monitoring
   application:
-    url: https://github.com/seedstack/store-webapp-sample
+    repository: github.com/seedstack/store-webapp-sample
     deployOn:
-      - workers
+      - application
 
 tasks:
   managerPostInstall:
-    playbook: lagoon/post-install-manager.yaml
+    task: lagoon/post-install-manager.yaml
   workerPostInstall:
-    playbook: lagoon/post-install-worker.yaml
+    task: lagoon/post-install-worker.yaml
   dataBackup:
     cron: 0 * * * *
     runOn:
-      - managers
-    playbook: lagoon/backup.yaml
+      - application
+    task: lagoon/backup.yaml
   dataRestore:
     runOn:
-      - managers
-    playbook: lagoon/restore.yaml
+      - application
+    task: lagoon/restore.yaml
 
 hooks:
-  provisioning:
+  init:
     before:
       - task1
     after:
       - task1
-  installation:
+  provision:
     before:
       - task1
     after:
       - task1
   deployment:
+    before:
+      - task1
+    after:
+      - task1
+  undeploy:
+    before:
+      - task1
+    after:
+      - task1
+  destroy:
     before:
       - task1
     after:
