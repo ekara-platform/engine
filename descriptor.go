@@ -1,16 +1,17 @@
 package descriptor
 
 import (
-	"log"
-	"gopkg.in/yaml.v2"
-	"strings"
 	"fmt"
 	"io/ioutil"
-	"path"
+	"log"
+	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
+
 	"github.com/imdario/mergo"
-	"net/http"
+	"gopkg.in/yaml.v2"
 )
 
 type Lagoon interface {
@@ -26,7 +27,7 @@ type holder struct {
 	desc     *Descriptor
 }
 
-func (h *holder) GetDescriptor() (Descriptor) {
+func (h *holder) GetDescriptor() Descriptor {
 	return *h.desc
 }
 
@@ -52,7 +53,6 @@ func parseDescriptor(location string) (desc Descriptor, err error) {
 	if err != nil {
 		return
 	}
-
 	err = processImports(&desc)
 	if err != nil {
 		return
@@ -64,6 +64,12 @@ func parseDescriptor(location string) (desc Descriptor, err error) {
 func readDescriptor(location string) (base string, content []byte, err error) {
 	if strings.Index(location, "http") == 0 {
 		fmt.Println("Loading URL", location)
+
+		_, err = url.Parse(location)
+		if err != nil {
+			return
+		}
+
 		var response *http.Response
 		response, err = http.Get(location)
 		if err != nil {
@@ -71,7 +77,9 @@ func readDescriptor(location string) (base string, content []byte, err error) {
 		}
 		defer response.Body.Close()
 		content, err = ioutil.ReadAll(response.Body)
-		base = path.Dir(location) + "/"
+
+		i := strings.LastIndex(location, "/")
+		base = location[0 : i+1]
 	} else {
 		fmt.Println("Loading file", location)
 		var file *os.File
