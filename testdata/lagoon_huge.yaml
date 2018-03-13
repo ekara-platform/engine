@@ -7,6 +7,9 @@ providers:
   aws:
     params:
       region: eu-west-1
+  azure:
+    params:
+      region: azure-eu-west-1
 
 nodes:
   managers:
@@ -37,7 +40,7 @@ nodes:
     tags:
       - application
       
- workers2:
+  workers2:
     provider:
       name: aws
     params:
@@ -51,7 +54,7 @@ nodes:
     tags:
       - application     
 
-workers3:
+  workers3:
     provider:
       name: aws
     params:
@@ -65,7 +68,7 @@ workers3:
     tags:
       - application
 
-workers4
+  workers4
     provider:
       name: aws
     params:
@@ -78,7 +81,79 @@ workers4
           - workerPostInstall
     tags:
       - application
-      
+
+  workers-azure-1
+    provider:
+      name: azure
+    params:
+      model: c5.4xlarge
+      region: $random('us-west1', 'eu-central-1', 'ap-southeast-2')
+    instances: 10
+    hooks:
+      provision:
+        after:
+          - workerPostInstall
+    tags:
+      - application
+     
+  workers-azure-2
+    provider:
+      name: azure
+    params:
+      model: c5.4xlarge
+      region: $random('us-west1', 'eu-central-1', 'ap-southeast-2')
+    instances: 10
+    hooks:
+      provision:
+        after:
+          - workerPostInstall
+    tags:
+      - application
+     
+  workers-azure-2
+    provider:
+      name: azure
+    params:
+      model: c5.4xlarge
+      region: $random('us-west1', 'eu-central-1', 'ap-southeast-2')
+    instances: 10
+    hooks:
+      provision:
+        after:
+          - workerPostInstall
+    tags:
+      - application
+     
+  workers-azure-3
+    provider:
+      name: azure
+    params:
+      model: c5.4xlarge
+      region: $random('us-west1', 'eu-central-1', 'ap-southeast-2')
+    instances: 10
+    hooks:
+      provision:
+        after:
+          - workerPostInstall
+    tags:
+      - application
+     
+  workers-azure-4
+    provider:
+      name: azure
+    params:
+      model: c5.4xlarge
+      region: $random('us-west1', 'eu-central-1', 'ap-southeast-2')
+    instances: 10
+    hooks:
+      provision:
+        after:
+          - workerPostInstall
+    tags:
+      - application
+     
+     
+ azure    
 stacks:
   monitoring:
     repository: github.com/lagoon-platform/monitoring-stack
