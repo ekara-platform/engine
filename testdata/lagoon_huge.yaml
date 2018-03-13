@@ -68,7 +68,7 @@ nodes:
     tags:
       - application
 
-  workers4
+  workers4:
     provider:
       name: aws
     params:
@@ -82,7 +82,7 @@ nodes:
     tags:
       - application
 
-  workers-azure-1
+  workers-azure-1:
     provider:
       name: azure
     params:
@@ -96,7 +96,7 @@ nodes:
     tags:
       - application
      
-  workers-azure-2
+  workers-azure-2:
     provider:
       name: azure
     params:
@@ -110,7 +110,7 @@ nodes:
     tags:
       - application
      
-  workers-azure-2
+  workers-azure-3:
     provider:
       name: azure
     params:
@@ -124,7 +124,7 @@ nodes:
     tags:
       - application
      
-  workers-azure-3
+  workers-azure-4:
     provider:
       name: azure
     params:
@@ -138,7 +138,7 @@ nodes:
     tags:
       - application
      
-  workers-azure-4
+  workers-azure-5:
     provider:
       name: azure
     params:
