@@ -2,6 +2,7 @@ name: testEnvironment
 
 imports:
   - imports/someImport1.yaml
+  - imports/nodeImport.yaml
 
 providers:
   aws:
