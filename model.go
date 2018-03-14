@@ -20,7 +20,7 @@ type Parameterized struct {
 type Platform struct {
 	Version  string
 	Registry string
-	Proxy struct {
+	Proxy    struct {
 		Http    string
 		Https   string
 		NoProxy string `yaml:"noProxy"`
@@ -92,7 +92,7 @@ type Descriptor struct {
 	Lagoon Platform
 
 	// Providers
-	Providers Provider
+	Providers map[string]Provider
 
 	// Node sets
 	Nodes map[string]NodeSet
