@@ -1,47 +1,125 @@
-package descriptor
+package engine
 
 import (
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/url"
 	"os"
+	"io/ioutil"
 	"path/filepath"
-	"strings"
-
 	"github.com/imdario/mergo"
 	"gopkg.in/yaml.v2"
+	"strings"
+	"net/http"
+	"net/url"
 )
 
-type Lagoon interface {
-	GetDescriptor() Descriptor
+type hookDef struct {
+	Before []string
+	After  []string
 }
 
-type holder struct {
-	// Global state
-	logger *log.Logger
-
-	// Descriptor info
-	location string
-	desc     *Descriptor
+type labelsDef struct {
+	Labels []string
 }
 
-func (h *holder) GetDescriptor() Descriptor {
-	return *h.desc
+func (t *labelsDef) GetLabels() Labels {
+	return CreateLabels(t.Labels...)
 }
 
-func Parse(logger *log.Logger, location string) (lagoon Lagoon, err error) {
-	h := holder{logger: logger, location: location}
-	desc, err := parseDescriptor(h.location)
-	if err != nil {
-		return nil, err
+type paramsDef struct {
+	Params map[string]string
+}
+
+type platformDef struct {
+	Version  string
+	Registry string
+	Proxy struct {
+		Http    string
+		Https   string
+		NoProxy string `yaml:"noProxy"`
 	}
-	h.desc = &desc
-	return &h, nil
 }
 
-func parseDescriptor(location string) (desc Descriptor, err error) {
+type providerDef struct {
+	labelsDef `yaml:",inline"`
+	paramsDef `yaml:",inline"`
+}
+
+type nodeSetDef struct {
+	labelsDef `yaml:",inline"`
+
+	Provider struct {
+		paramsDef `yaml:",inline"`
+
+		Name string
+	}
+	Instances int
+	Hooks struct {
+		Provision hookDef
+		Destroy   hookDef
+	}
+}
+
+type stackDef struct {
+	labelsDef `yaml:",inline"`
+
+	Repository string
+	Version    string
+	DeployOn   []string `yaml:"deployOn"`
+	Hooks struct {
+		Deploy   hookDef
+		Undeploy hookDef
+	}
+}
+
+type taskDef struct {
+	labelsDef `yaml:",inline"`
+
+	Playbook string
+	Cron     string
+	RunOn    []string `yaml:"runOn"`
+	Hooks struct {
+		Execute hookDef
+	}
+}
+
+type environmentDef struct {
+	labelsDef `yaml:",inline"`
+
+	// Global attributes
+	Name         string
+	Description  string
+	Version      string
+	BaseLocation string
+
+	// Imports
+	Imports []string
+
+	// PlatformDef attributes
+	Lagoon platformDef
+
+	// Providers
+	Providers map[string]providerDef
+
+	// Node sets
+	Nodes map[string]nodeSetDef
+
+	// Software stacks
+	Stacks map[string]stackDef
+
+	// Custom tasks
+	Tasks map[string]taskDef
+
+	// Global hooks
+	Hooks struct {
+		Init      hookDef
+		Provision hookDef
+		Deploy    hookDef
+		Undeploy  hookDef
+		Destroy   hookDef
+	}
+}
+
+func parseDescriptor(location string) (desc environmentDef, err error) {
 	var content []byte
 
 	desc.BaseLocation, content, err = readDescriptor(location)
@@ -79,7 +157,7 @@ func readDescriptor(location string) (base string, content []byte, err error) {
 		content, err = ioutil.ReadAll(response.Body)
 
 		i := strings.LastIndex(location, "/")
-		base = location[0 : i+1]
+		base = location[0: i+1]
 	} else {
 		fmt.Println("Loading file", location)
 		var file *os.File
@@ -102,7 +180,7 @@ func readDescriptor(location string) (base string, content []byte, err error) {
 	return
 }
 
-func processImports(desc *Descriptor) error {
+func processImports(desc *environmentDef) error {
 	if len(desc.Imports) > 0 {
 		fmt.Println("Processing imports", desc.Imports)
 		for _, val := range desc.Imports {

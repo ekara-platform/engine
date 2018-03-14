@@ -1,4 +1,7 @@
 name: testEnvironment
+labels:
+  - tag1
+  - tag2
 
 imports:
   - imports/someImport1.yaml
@@ -20,7 +23,7 @@ nodes:
       provision:
         after:
           - managerPostInstall
-    tags:
+    labels:
       - lagoon
       - monitoring
   workers:
@@ -34,7 +37,7 @@ nodes:
       provision:
         after:
           - workerPostInstall
-    tags:
+    labels:
       - application
 
 stacks:
