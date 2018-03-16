@@ -63,11 +63,11 @@ type Implementation struct {
 
 	SubType string `json:"invoker_attribute"`
 
-	// 1 if the implemetation must be done on a pointer (defaulted to "0")
+	// 1 if the implementation must be done on a pointer (defaulted to "0")
 
 	Pointer int `json:"on_pointer"`
 
-	// The value returned by the implmentation
+	// The value returned by the implementation
 	Att string `json:"attribute"`
 
 	// The explicit implementation of the method body
