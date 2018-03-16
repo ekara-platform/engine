@@ -1,20 +1,9 @@
 package engine
 
 import (
-	"strings"
 	"strconv"
+	"strings"
 )
-
-// Interfaces
-
-type Version interface {
-	Major() int
-	Minor() int
-	Micro() int
-	AsString() string
-}
-
-// Implementation
 
 type version struct {
 	major int
@@ -48,20 +37,4 @@ func CreateVersion(full string) (Version, error) {
 		result.micro = int(minor)
 	}
 	return result, nil
-}
-
-func (v version) Major() int {
-	return v.major
-}
-
-func (v version) Minor() int {
-	return v.minor
-}
-
-func (v version) Micro() int {
-	return v.micro
-}
-
-func (v version) AsString() string {
-	return v.full
 }

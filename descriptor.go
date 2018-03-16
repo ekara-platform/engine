@@ -1,15 +1,15 @@
 package engine
 
 import (
-	"fmt"
-	"os"
 	"io/ioutil"
-	"path/filepath"
-	"github.com/imdario/mergo"
-	"gopkg.in/yaml.v2"
-	"strings"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/imdario/mergo"
+	"gopkg.in/yaml.v2"
 )
 
 type hookDef struct {
@@ -21,10 +21,6 @@ type labelsDef struct {
 	Labels []string
 }
 
-func (t *labelsDef) GetLabels() Labels {
-	return CreateLabels(t.Labels...)
-}
-
 type paramsDef struct {
 	Params map[string]string
 }
@@ -32,7 +28,7 @@ type paramsDef struct {
 type platformDef struct {
 	Version  string
 	Registry string
-	Proxy struct {
+	Proxy    struct {
 		Http    string
 		Https   string
 		NoProxy string `yaml:"noProxy"`
@@ -49,11 +45,10 @@ type nodeSetDef struct {
 
 	Provider struct {
 		paramsDef `yaml:",inline"`
-
-		Name string
+		Name      string
 	}
 	Instances int
-	Hooks struct {
+	Hooks     struct {
 		Provision hookDef
 		Destroy   hookDef
 	}
@@ -65,7 +60,7 @@ type stackDef struct {
 	Repository string
 	Version    string
 	DeployOn   []string `yaml:"deployOn"`
-	Hooks struct {
+	Hooks      struct {
 		Deploy   hookDef
 		Undeploy hookDef
 	}
@@ -77,7 +72,7 @@ type taskDef struct {
 	Playbook string
 	Cron     string
 	RunOn    []string `yaml:"runOn"`
-	Hooks struct {
+	Hooks    struct {
 		Execute hookDef
 	}
 }
@@ -141,7 +136,7 @@ func parseDescriptor(location string) (desc environmentDef, err error) {
 
 func readDescriptor(location string) (base string, content []byte, err error) {
 	if strings.Index(location, "http") == 0 {
-		fmt.Println("Loading URL", location)
+		h.logger.Println("Loading URL", location)
 
 		_, err = url.Parse(location)
 		if err != nil {
@@ -157,9 +152,9 @@ func readDescriptor(location string) (base string, content []byte, err error) {
 		content, err = ioutil.ReadAll(response.Body)
 
 		i := strings.LastIndex(location, "/")
-		base = location[0: i+1]
+		base = location[0 : i+1]
 	} else {
-		fmt.Println("Loading file", location)
+		h.logger.Println("Loading file", location)
 		var file *os.File
 		file, err = os.Open(location)
 		if err != nil {
@@ -182,7 +177,7 @@ func readDescriptor(location string) (base string, content []byte, err error) {
 
 func processImports(desc *environmentDef) error {
 	if len(desc.Imports) > 0 {
-		fmt.Println("Processing imports", desc.Imports)
+		h.logger.Println("Processing imports", desc.Imports)
 		for _, val := range desc.Imports {
 			importedDesc, err := parseDescriptor(desc.BaseLocation + val)
 			if err != nil {
@@ -192,7 +187,7 @@ func processImports(desc *environmentDef) error {
 		}
 		desc.Imports = nil
 	} else {
-		fmt.Println("No import to process")
+		h.logger.Println("No import to process")
 	}
 	return nil
 }

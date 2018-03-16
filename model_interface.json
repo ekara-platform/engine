@@ -1,0 +1,151 @@
+[
+	{
+		"interface_name": "Lagoon", 
+		"exposed_methods":[
+			{"return_type":"Environment",  "implemented_by":[{"invoker_type" : "holder", "on_pointer":1, "attribute":"env"}]}
+		]
+	},
+	{
+		"interface_name": "Version", 
+		"exposed_methods":[
+			{"name":"Major", "return_type":"int", "implemented_by":[{"invoker_type" : "version", "attribute":"major"}]},
+			{"name":"Minor", "return_type":"int","implemented_by":[{"invoker_type" : "version", "attribute":"minor"}]},
+			{"name":"Micro", "return_type":"int","implemented_by":[{"invoker_type" : "version", "attribute":"micro"}]},
+			{"name":"AsString", "implemented_by":[{"invoker_type" : "version", "attribute":"full"}]}
+		]
+	},
+	{
+		"interface_name": "Environment", 
+		"inherited_interfaces": ["Labeled"], 
+		"exposed_methods":[
+			{"name":"GetVersion", "return_type":"(Version, error)",  "implemented_by":[{"invoker_type" : "environmentDef", "impl":"return CreateVersion(e.Version)"}]},
+			{"name":"GetName", "implemented_by":[{"invoker_type" : "environmentDef", "attribute":"Name"}]},
+			{"name":"GetDescription", "implemented_by":[{"invoker_type" : "environmentDef", "attribute":"Description"}]},
+			{"name":"GetBaseLocation", "implemented_by":[{"invoker_type" : "environmentDef", "attribute":"BaseLocation"}]},
+			{"return_type":"LagoonPlatform", "implemented_by":[{"invoker_type" : "environmentDef", "attribute":"Lagoon"}]},
+			{"return_type":"ProviderDescriptions", "implemented_by":[{"invoker_type" : "environmentDef", "impl":"return CreateProviders(e.Providers)"}]},
+			{"return_type":"NodeDescriptions", "implemented_by":[{"invoker_type" : "environmentDef", "impl":"return CreateNodes(e.Nodes)"}]},
+			{"return_type":"StackDescriptions", "implemented_by":[{"invoker_type" : "environmentDef", "impl":"return CreateStacks(e.Stacks)"}]},
+			{"return_type":"TaskDescriptions", "implemented_by":[{"invoker_type" : "environmentDef", "impl":"return CreateTasks(e.Tasks)"}]}
+		]
+	},
+	{
+		"interface_name": "LagoonPlatform", 
+		"exposed_methods":[
+			{"name":"GetVersion", "implemented_by":[{"invoker_type" : "platformDef", "attribute":"Version"}]},
+			{"name":"GetRegistry", "implemented_by":[{"invoker_type" : "platformDef", "attribute":"Registry"}]},
+			{"return_type":"Proxy", "implemented_by":[{"invoker_type" : "platformDef"}]}
+		]
+	},
+	{
+		"interface_name": "Proxy", 
+		"exposed_methods":[
+			{"name":"GetHttp", "implemented_by":[{"invoker_type" : "platformDef", "invoker_attribute":".Proxy", "attribute":"Http"}]},
+			{"name":"GetHttps", "implemented_by":[{"invoker_type" : "platformDef", "invoker_attribute":".Proxy", "attribute":"Https"}]},
+			{"name":"GetNoProxy", "implemented_by":[{"invoker_type" : "platformDef", "invoker_attribute":".Proxy", "attribute":"NoProxy"}]}
+		]
+	},
+	{
+		"interface_name": "Labeled", 
+		"exposed_methods":[
+			{
+				"return_type":"Labels",
+				"implemented_by":[		
+					{"invoker_type" : "providerDef", "impl":"return CreateLabels(e.labelsDef.Labels...)"},
+					{"invoker_type" : "nodeSetDef", "impl":"return CreateLabels(e.labelsDef.Labels...)"},
+					{"invoker_type" : "stackDef", "impl":"return CreateLabels(e.labelsDef.Labels...)"},
+					{"invoker_type" : "taskDef", "impl":"return CreateLabels(e.labelsDef.Labels...)"},
+					{"invoker_type" : "environmentDef", "impl":"return CreateLabels(e.labelsDef.Labels...)"}
+				]
+			}
+		]
+	},	
+	{
+		"interface_name": "Labels", 
+		"exposed_methods":[
+			{"name":"Contains", "parameters":"...string", "return_type":"bool"},
+			{"name":"AsStrings", "return_type":"[]string"}
+		]
+	},
+	{
+		"interface_name": "Parameterized", 
+		"exposed_methods":[
+			{
+				"return_type":"Parameters",
+				"implemented_by":[		
+					{"invoker_type" : "providerDef", "impl":"return CreateParameters(e.paramsDef.Params)"},
+					{"invoker_type" : "nodeSetDef", "impl":"return CreateParameters(e.Provider.paramsDef.Params)"}
+				]
+			}
+		]
+	},	
+	{
+		"interface_name": "Parameters", 
+		"exposed_methods":[
+			{"name":"AsMap", "return_type":"map[string]string"}
+		]
+	},	
+	{
+		"interface_name": "NodeDescriptions", 
+		"exposed_methods":[
+			{"name":"Contains", "parameters":"...string", "return_type":"bool"},		
+			{"name":"GetNode", "return_type":"(NodeDescription, bool)" , "parameters":"string"}
+		]
+	},	
+	{
+		"interface_name": "NodeDescription", 
+		"inherited_interfaces": ["Labeled"], 
+		"exposed_methods":[
+				{"name":"GetInstances","return_type":"int", "implemented_by":[{"invoker_type" : "nodeSetDef", "attribute":"Instances"}]},
+				{"return_type":"ProviderName", "implemented_by":[{"invoker_type" : "nodeSetDef"}]}	
+		]
+	},
+	{
+		"interface_name": "ProviderDescriptions", 
+		"exposed_methods":[
+			{"name":"Contains", "parameters":"...string", "return_type":"bool"},		
+			{"name":"GetProvider", "return_type":"(ProviderDescription, bool)" , "parameters":"string"}
+		]
+	},	
+	{
+		"interface_name": "ProviderDescription", 
+		"inherited_interfaces": ["Labeled","Parameterized"]
+	},
+	{
+		"interface_name": "StackDescriptions", 
+		"exposed_methods":[
+			{"name":"Contains", "parameters":"...string", "return_type":"bool"},		
+			{"name":"GetStack", "return_type":"(StackDescription, bool)" , "parameters":"string"}
+		]
+	},	
+	{
+		"interface_name": "StackDescription", 
+		"inherited_interfaces": ["Labeled"],
+		"exposed_methods":[
+				{"name":"GetRepository", "implemented_by":[{"invoker_type" : "stackDef", "attribute":"Repository"}]},
+				{"name":"GetVersion", "implemented_by":[{"invoker_type" : "stackDef", "attribute":"Version"}]}	
+		]
+	},
+	{
+		"interface_name": "TaskDescriptions", 
+		"exposed_methods":[
+			{"name":"Contains", "parameters":"...string", "return_type":"bool"},		
+			{"name":"GetTask", "return_type":"(TaskDescription, bool)" , "parameters":"string"}
+		]
+	},	
+	{
+		"interface_name": "TaskDescription", 
+		"inherited_interfaces": ["Labeled"],
+		"exposed_methods":[
+				{"name":"GetPlaybook", "implemented_by":[{"invoker_type" : "taskDef", "attribute":"Playbook"}]},
+				{"name":"GetCron", "implemented_by":[{"invoker_type" : "taskDef", "attribute":"Cron"}]}	
+		]
+	},
+	{
+		"interface_name": "ProviderName", 
+		"inherited_interfaces": ["Parameterized"], 
+		"exposed_methods":[
+				{"name":"GetName", "implemented_by":[{"invoker_type" : "nodeSetDef", "invoker_attribute": ".Provider", "attribute":"Name"}]}	
+		]
+	}
+]

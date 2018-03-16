@@ -4,9 +4,9 @@ import (
 	"log"
 )
 
-type Lagoon interface {
-	GetEnvironment() Environment
-}
+//go:generate go run ./generator/generate.go
+
+var h holder
 
 type holder struct {
 	// Global state
@@ -17,12 +17,8 @@ type holder struct {
 	env      *environmentDef
 }
 
-func (h *holder) GetEnvironment() (Environment) {
-	return h.env
-}
-
 func Create(logger *log.Logger, location string) (lagoon Lagoon, err error) {
-	h := holder{logger: logger, location: location}
+	h = holder{logger: logger, location: location}
 	desc, err := parseDescriptor(h.location)
 	if err != nil {
 		return nil, err
