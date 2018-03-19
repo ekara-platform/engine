@@ -6,49 +6,58 @@ package engine
 //
 //*****************************************************************************
 
+
 // ----------------------------------------------------
 // Interface Lagoon
 // ----------------------------------------------------
 type Lagoon interface {
+	
+	
 	GetEnvironment() Environment
-	GetContent() ([]byte, error)
+	GetContent() ([]byte, error)	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "Lagoon"
 // ----------------------------------------------------
-func (e *holder) GetEnvironment() Environment {
+func (e *holder) GetEnvironment() Environment{
 	return e.env
-}
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface Version
 // ----------------------------------------------------
 type Version interface {
+	
+	
 	Major() int
 	Minor() int
 	Micro() int
-	AsString() string
+	AsString() string	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "Version"
 // ----------------------------------------------------
-func (e version) Major() int {
+func (e version) Major() int{
 	return e.major
-}
+}	
 
-func (e version) Minor() int {
+func (e version) Minor() int{
 	return e.minor
-}
+}	
 
-func (e version) Micro() int {
+func (e version) Micro() int{
 	return e.micro
-}
+}	
 
-func (e version) AsString() string {
+func (e version) AsString() string{
 	return e.full
-}
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface Environment
@@ -56,7 +65,7 @@ func (e version) AsString() string {
 type Environment interface {
 	// Inherited interface(s)
 	Labeled
-
+	
 	GetVersion() (Version, error)
 	GetName() string
 	GetDescription() string
@@ -73,190 +82,218 @@ type Environment interface {
 	HasStacks() bool
 	GetTaskDescriptions() TaskDescriptions
 	CountTasks() int
-	HasTasks() bool
+	HasTasks() bool	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "Environment"
 // ----------------------------------------------------
-func (e environmentDef) GetVersion() (Version, error) {
+func (e environmentDef) GetVersion() (Version, error){
 	return CreateVersion(e.Version)
-}
+}	
 
-func (e environmentDef) GetName() string {
+func (e environmentDef) GetName() string{
 	return e.Name
-}
+}	
 
-func (e environmentDef) GetDescription() string {
+func (e environmentDef) GetDescription() string{
 	return e.Description
-}
+}	
 
-func (e environmentDef) GetBaseLocation() string {
+func (e environmentDef) GetBaseLocation() string{
 	return e.BaseLocation
-}
+}	
 
-func (e environmentDef) GetLagoonPlatform() LagoonPlatform {
+func (e environmentDef) GetLagoonPlatform() LagoonPlatform{
 	return e.Lagoon
-}
+}	
 
-func (e environmentDef) GetProviderDescriptions() ProviderDescriptions {
+func (e environmentDef) GetProviderDescriptions() ProviderDescriptions{
 	return e.providers
-}
+}	
 
-func (e environmentDef) CountProviders() int {
+func (e environmentDef) CountProviders() int{
 	return len(e.Providers)
-}
+}	
 
-func (e environmentDef) HasProviders() bool {
+func (e environmentDef) HasProviders() bool{
 	return len(e.Providers) > 0
-}
+}	
 
-func (e environmentDef) GetNodeDescriptions() NodeDescriptions {
+func (e environmentDef) GetNodeDescriptions() NodeDescriptions{
 	return e.nodes
-}
+}	
 
-func (e environmentDef) CountNodes() int {
+func (e environmentDef) CountNodes() int{
 	return len(e.Nodes)
-}
+}	
 
-func (e environmentDef) HasNodes() bool {
+func (e environmentDef) HasNodes() bool{
 	return len(e.Nodes) > 0
-}
+}	
 
-func (e environmentDef) GetStackDescriptions() StackDescriptions {
+func (e environmentDef) GetStackDescriptions() StackDescriptions{
 	return e.stacks
-}
+}	
 
-func (e environmentDef) CountStacks() int {
+func (e environmentDef) CountStacks() int{
 	return len(e.Stacks)
-}
+}	
 
-func (e environmentDef) HasStacks() bool {
+func (e environmentDef) HasStacks() bool{
 	return len(e.Stacks) > 0
-}
+}	
 
-func (e environmentDef) GetTaskDescriptions() TaskDescriptions {
+func (e environmentDef) GetTaskDescriptions() TaskDescriptions{
 	return e.tasks
-}
+}	
 
-func (e environmentDef) CountTasks() int {
+func (e environmentDef) CountTasks() int{
 	return len(e.Tasks)
-}
+}	
 
-func (e environmentDef) HasTasks() bool {
+func (e environmentDef) HasTasks() bool{
 	return len(e.Tasks) > 0
-}
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface LagoonPlatform
 // ----------------------------------------------------
 type LagoonPlatform interface {
+	
+	
 	GetVersion() string
 	GetRegistry() string
-	GetProxy() Proxy
+	GetProxy() Proxy	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "LagoonPlatform"
 // ----------------------------------------------------
-func (e platformDef) GetVersion() string {
+func (e platformDef) GetVersion() string{
 	return e.Version
-}
+}	
 
-func (e platformDef) GetRegistry() string {
+func (e platformDef) GetRegistry() string{
 	return e.Registry
-}
+}	
 
-func (e platformDef) GetProxy() Proxy {
+func (e platformDef) GetProxy() Proxy{
 	return e
-}
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface Proxy
 // ----------------------------------------------------
 type Proxy interface {
+	
+	
 	GetHttp() string
 	GetHttps() string
-	GetNoProxy() string
+	GetNoProxy() string	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "Proxy"
 // ----------------------------------------------------
-func (e platformDef) GetHttp() string {
+func (e platformDef) GetHttp() string{
 	return e.Proxy.Http
-}
+}	
 
-func (e platformDef) GetHttps() string {
+func (e platformDef) GetHttps() string{
 	return e.Proxy.Https
-}
+}	
 
-func (e platformDef) GetNoProxy() string {
+func (e platformDef) GetNoProxy() string{
 	return e.Proxy.NoProxy
-}
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface Labeled
 // ----------------------------------------------------
 type Labeled interface {
-	GetLabels() Labels
+	
+	
+	GetLabels() Labels	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "Labeled"
 // ----------------------------------------------------
-func (e providerDef) GetLabels() Labels {
+func (e providerDef) GetLabels() Labels{
 	return CreateLabels(e.labelsDef.Labels...)
-}
+}	
 
-func (e nodeSetDef) GetLabels() Labels {
+func (e nodeSetDef) GetLabels() Labels{
 	return CreateLabels(e.labelsDef.Labels...)
-}
+}	
 
-func (e stackDef) GetLabels() Labels {
+func (e stackDef) GetLabels() Labels{
 	return CreateLabels(e.labelsDef.Labels...)
-}
+}	
 
-func (e taskDef) GetLabels() Labels {
+func (e taskDef) GetLabels() Labels{
 	return CreateLabels(e.labelsDef.Labels...)
-}
+}	
 
-func (e environmentDef) GetLabels() Labels {
+func (e environmentDef) GetLabels() Labels{
 	return CreateLabels(e.labelsDef.Labels...)
-}
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface Labels
 // ----------------------------------------------------
 type Labels interface {
+	
+	
 	Contains(...string) bool
-	AsStrings() []string
+	AsStrings() []string	
 }
+
+
+
 
 // ----------------------------------------------------
 // Interface Parameterized
 // ----------------------------------------------------
 type Parameterized interface {
-	GetParameters() Parameters
+	
+	
+	GetParameters() Parameters	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "Parameterized"
 // ----------------------------------------------------
-func (e providerDef) GetParameters() Parameters {
+func (e providerDef) GetParameters() Parameters{
 	return CreateParameters(e.paramsDef.Params)
-}
+}	
 
-func (e nodeSetDef) GetParameters() Parameters {
+func (e nodeSetDef) GetParameters() Parameters{
 	return CreateParameters(e.Provider.paramsDef.Params)
-}
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface Parameters
 // ----------------------------------------------------
 type Parameters interface {
-	AsMap() map[string]string
+	
+	
+	AsMap() map[string]string	
 }
+
+
+
 
 // ----------------------------------------------------
 // Interface NodeDescriptions
@@ -264,9 +301,12 @@ type Parameters interface {
 type NodeDescriptions interface {
 	// Inherited interface(s)
 	MappedContent
-
-	GetNode(string) (NodeDescription, bool)
+	
+	GetNode(string) (NodeDescription, bool)	
 }
+
+
+
 
 // ----------------------------------------------------
 // Interface NodeDescription
@@ -275,26 +315,28 @@ type NodeDescription interface {
 	// Inherited interface(s)
 	Labeled
 	Named
-
+	
 	GetInstances() int
 	GetNodeProvider() ProviderName
-	GetProviderDescription() (ProviderDescription, bool)
+	GetProviderDescription() (ProviderDescription, bool)	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "NodeDescription"
 // ----------------------------------------------------
-func (e nodeSetDef) GetInstances() int {
+func (e nodeSetDef) GetInstances() int{
 	return e.Instances
-}
+}	
 
-func (e nodeSetDef) GetNodeProvider() ProviderName {
+func (e nodeSetDef) GetNodeProvider() ProviderName{
 	return e
-}
+}	
 
-func (e nodeSetDef) GetProviderDescription() (ProviderDescription, bool) {
-	return h.env.providers.GetProvider(e.Provider.Name)
-}
+func (e nodeSetDef) GetProviderDescription() (ProviderDescription, bool){
+	return e.desc.providers.GetProvider(e.Provider.Name)
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface ProviderDescriptions
@@ -302,9 +344,12 @@ func (e nodeSetDef) GetProviderDescription() (ProviderDescription, bool) {
 type ProviderDescriptions interface {
 	// Inherited interface(s)
 	MappedContent
-
-	GetProvider(string) (ProviderDescription, bool)
+	
+	GetProvider(string) (ProviderDescription, bool)	
 }
+
+
+
 
 // ----------------------------------------------------
 // Interface ProviderDescription
@@ -314,7 +359,11 @@ type ProviderDescription interface {
 	Labeled
 	Parameterized
 	Named
+		
 }
+
+
+
 
 // ----------------------------------------------------
 // Interface StackDescriptions
@@ -322,9 +371,12 @@ type ProviderDescription interface {
 type StackDescriptions interface {
 	// Inherited interface(s)
 	MappedContent
-
-	GetStack(string) (StackDescription, bool)
+	
+	GetStack(string) (StackDescription, bool)	
 }
+
+
+
 
 // ----------------------------------------------------
 // Interface StackDescription
@@ -333,21 +385,23 @@ type StackDescription interface {
 	// Inherited interface(s)
 	Labeled
 	Named
-
+	
 	GetRepository() string
-	GetVersion() string
+	GetVersion() string	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "StackDescription"
 // ----------------------------------------------------
-func (e stackDef) GetRepository() string {
+func (e stackDef) GetRepository() string{
 	return e.Repository
-}
+}	
 
-func (e stackDef) GetVersion() string {
+func (e stackDef) GetVersion() string{
 	return e.Version
-}
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface TaskDescriptions
@@ -355,9 +409,12 @@ func (e stackDef) GetVersion() string {
 type TaskDescriptions interface {
 	// Inherited interface(s)
 	MappedContent
-
-	GetTask(string) (TaskDescription, bool)
+	
+	GetTask(string) (TaskDescription, bool)	
 }
+
+
+
 
 // ----------------------------------------------------
 // Interface TaskDescription
@@ -366,21 +423,23 @@ type TaskDescription interface {
 	// Inherited interface(s)
 	Labeled
 	Named
-
+	
 	GetPlaybook() string
-	GetCron() string
+	GetCron() string	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "TaskDescription"
 // ----------------------------------------------------
-func (e taskDef) GetPlaybook() string {
+func (e taskDef) GetPlaybook() string{
 	return e.Playbook
-}
+}	
 
-func (e taskDef) GetCron() string {
+func (e taskDef) GetCron() string{
 	return e.Cron
-}
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface ProviderName
@@ -388,82 +447,93 @@ func (e taskDef) GetCron() string {
 type ProviderName interface {
 	// Inherited interface(s)
 	Parameterized
-
-	GetProviderName() string
+	
+	GetProviderName() string	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "ProviderName"
 // ----------------------------------------------------
-func (e nodeSetDef) GetProviderName() string {
+func (e nodeSetDef) GetProviderName() string{
 	return e.Provider.Name
-}
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface MappedContent
 // ----------------------------------------------------
 type MappedContent interface {
+	
+	
 	Count() int
-	Contains(...string) bool
+	Contains(...string) bool	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "MappedContent"
 // ----------------------------------------------------
-func (e stacks) Count() int {
+func (e stacks) Count() int{
 	return len(e.values)
-}
+}	
 
-func (e tasks) Count() int {
+func (e tasks) Count() int{
 	return len(e.values)
-}
+}	
 
-func (e providers) Count() int {
+func (e providers) Count() int{
 	return len(e.values)
-}
+}	
 
-func (e nodes) Count() int {
+func (e nodes) Count() int{
 	return len(e.values)
-}
+}	
 
-func (e stacks) Contains(p ...string) bool {
+func (e stacks) Contains(p ...string) bool{
 	return mapMultipleContains(e.values, p)
-}
+}	
 
-func (e tasks) Contains(p ...string) bool {
+func (e tasks) Contains(p ...string) bool{
 	return mapMultipleContains(e.values, p)
-}
+}	
 
-func (e providers) Contains(p ...string) bool {
+func (e providers) Contains(p ...string) bool{
 	return mapMultipleContains(e.values, p)
-}
+}	
 
-func (e nodes) Contains(p ...string) bool {
+func (e nodes) Contains(p ...string) bool{
 	return mapMultipleContains(e.values, p)
-}
+}	
+
+
+
 
 // ----------------------------------------------------
 // Interface Named
 // ----------------------------------------------------
 type Named interface {
-	GetName() string
+	
+	
+	GetName() string	
 }
-
 // ----------------------------------------------------
 // Implementation of Interface "Named"
 // ----------------------------------------------------
-func (e providerDef) GetName() string {
+func (e providerDef) GetName() string{
 	return e.name
-}
+}	
 
-func (e nodeSetDef) GetName() string {
+func (e nodeSetDef) GetName() string{
 	return e.name
-}
+}	
 
-func (e stackDef) GetName() string {
+func (e stackDef) GetName() string{
 	return e.name
-}
+}	
 
-func (e taskDef) GetName() string {
+func (e taskDef) GetName() string{
 	return e.name
-}
+}	
+
+
+
+
