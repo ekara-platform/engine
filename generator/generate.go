@@ -2,31 +2,36 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"os"
-	_ "os/exec"
 	"text/template"
 )
+
+type GenString string
 
 type Interface struct {
 
 	// The name of the generated interface
-	Name string `json:"interface_name"`
+	Name string `json:"name"`
 
 	// The list of inherited interfaces
-	Inherited []string `json:"inherited_interfaces"`
+	Inherited []string `json:"inherited"`
 
 	// The list of methods exposed by the interface
-	Methods []Method `json:"exposed_methods"`
+	Methods []Method `json:"methods"`
 }
 
 type Method struct {
 
 	// The type returned by the method ( if missing the returned type will be "string" )
-	Ret string `json:"return_type"`
+	// The returned type will be processed "as is".
+	// It should include parentheses in case of multiple returns.
+	// Ex:
+	//    "int"
+	//    "(bool, error)"
+	Ret string `json:"returns"`
 
 	// The name of the method. ( if missing the generated name will be :
-	// "Get" + returned type
+	// "Get" + "type returned". )
 	Name string
 
 	// Parameters to pass to the generated method
@@ -40,20 +45,20 @@ type Method struct {
 
 type Implementation struct {
 
-	// The type implementing the interface
+	// The types implementing the interface
 	//
 	// The type will be named "e" so if you provide a custom implementation
 	// it must like :
 	// "impl":"return CreateNodes(e.Nodes)"
 	// or
 	// "impl":"return e.DoSomething()"
-
-	Type string `json:"invoker_type"`
+	// One implementation will be generated for each type.
+	Types []GenString `json:"types"`
 
 	// The attribute(s), of the type implementing the interface, allowing to
 	// get the value returned by the implementation:
 	//
-	// If specified the implentation body will be : "return e"SubType".Att"
+	// If specified the implentation body will be : "return e + ".SubType"+ ".Att"
 	// If not the implentation body will be : "return e.Att"
 	//
 	// The SubType must start with a "."
@@ -64,7 +69,6 @@ type Implementation struct {
 	SubType string `json:"invoker_attribute"`
 
 	// 1 if the implementation must be done on a pointer (defaulted to "0")
-
 	Pointer int `json:"on_pointer"`
 
 	// The value returned by the implementation
@@ -76,7 +80,7 @@ type Implementation struct {
 	Impl string `json:"impl"`
 }
 
-func (m Method) Signature() string {
+func (m Method) Signature(toImpl bool) string {
 	if m.Ret == "" {
 		m.Ret = "string"
 	}
@@ -89,23 +93,27 @@ func (m Method) Signature() string {
 	if m.Params == "" {
 		r += "() "
 	} else {
-		r += "(" + m.Params + ") "
+		if toImpl {
+			r += "(p " + m.Params + ") "
+		} else {
+			r += "(" + m.Params + ") "
+		}
 	}
 	r += m.Ret
 	return r
 }
 
-func (i Implementation) ImplSignature(m Method) string {
+func (t GenString) ImplSignature(m Method, i Implementation) string {
 	r := "func (e "
 	if i.Pointer == 1 {
 		r += "*"
 	}
-	r += i.Type + ") "
-	r += m.Signature()
+	r += string(t) + ") "
+	r += m.Signature(true)
 	return r
 }
 
-func (i Implementation) Body() string {
+func (t GenString) Body(i Implementation) string {
 	if i.Impl != "" {
 		return i.Impl
 	}
@@ -117,6 +125,15 @@ func (i Implementation) Body() string {
 		r += "e" + i.SubType + "." + i.Att
 	}
 	return r
+}
+
+func (i Interface) HasImplentations() bool {
+	for _, vm := range i.Methods {
+		if len(vm.Implentations) > 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func main() {
@@ -133,8 +150,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
-	log.Printf("loaded %v", v)
 
 	w, err := os.Create("interfaces_generated.go")
 	if err != nil {

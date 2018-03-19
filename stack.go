@@ -1,38 +1,21 @@
 package engine
 
 type stacks struct {
-	values map[string]stackDef
+	values namedMap
 }
 
 func CreateStacks(p map[string]stackDef) stacks {
-	ret := stacks{map[string]stackDef{}}
+	ret := stacks{namedMap{}}
 	for k, v := range p {
+		v.name = k
 		ret.values[k] = v
 	}
 	return ret
 }
 
-func (l stacks) Contains(candidates ...string) bool {
-	for _, l1 := range candidates {
-		contains := false
-		for k, _ := range l.values {
-			if l1 == k {
-				contains = true
-				break
-			}
-		}
-		if !contains {
-			return false
-		}
-	}
-	return true
-}
-
 func (l stacks) GetStack(candidate string) (StackDescription, bool) {
-	for k, _ := range l.values {
-		if candidate == k {
-			return l.values[candidate], true
-		}
+	if v, ok := l.values[candidate]; ok {
+		return v.(StackDescription), ok
 	}
 	return nil, false
 }

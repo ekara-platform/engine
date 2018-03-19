@@ -62,16 +62,20 @@ func TestCreateEngineComplete(t *testing.T) {
 	// Environment Providers
 	//------------------------------------------------------------
 	providerDescs := env.GetProviderDescriptions()
+	assert.Equal(t, true, env.HasProviders())
+	assert.Equal(t, 2, env.CountProviders())
 	assert.NotNil(t, providerDescs)
 
-	b := providerDescs.Contains("aws")
-	assert.Equal(t, true, b)
-	b = providerDescs.Contains("aws", "azure")
-	assert.Equal(t, true, b)
+	assert.Equal(t, 2, providerDescs.Count())
+	assert.Equal(t, env.CountProviders(), providerDescs.Count())
+	assert.Equal(t, true, providerDescs.Contains("aws"))
+	assert.Equal(t, true, providerDescs.Contains("aws", "azure"))
+	assert.Equal(t, false, providerDescs.Contains("aws", "azure", "dummy"))
 
 	// Environment Provider
 	p, _ := providerDescs.GetProvider("aws")
 	assert.NotNil(t, p)
+	assert.Equal(t, "aws", p.GetName())
 
 	// Environment Provider Labels
 	labels = p.GetLabels()
@@ -93,6 +97,7 @@ func TestCreateEngineComplete(t *testing.T) {
 	// Environment Provider
 	p, _ = providerDescs.GetProvider("azure")
 	assert.NotNil(t, p)
+	assert.Equal(t, "azure", p.GetName())
 
 	// Environment Provider Labels
 	labels = p.GetLabels()
@@ -116,16 +121,22 @@ func TestCreateEngineComplete(t *testing.T) {
 	//------------------------------------------------------------
 	nodeDescs := env.GetNodeDescriptions()
 	assert.NotNil(t, nodeDescs)
+	assert.Equal(t, true, env.HasNodes())
+	assert.Equal(t, 2, env.CountNodes())
 
-	b = nodeDescs.Contains("node1")
-	assert.Equal(t, true, b)
-	b = nodeDescs.Contains("node1", "node2")
-	assert.Equal(t, true, b)
+	assert.Equal(t, 2, nodeDescs.Count())
+	assert.Equal(t, env.CountNodes(), nodeDescs.Count())
+	assert.Equal(t, true, nodeDescs.Contains("node1"))
+	assert.Equal(t, true, nodeDescs.Contains("node1", "node2"))
+	assert.Equal(t, false, nodeDescs.Contains("node1", "node2", "dummy"))
 
 	// Environment Node
 	n, _ := nodeDescs.GetNode("node1")
 	assert.NotNil(t, n)
+	assert.Equal(t, "node1", n.GetName())
 	assert.Equal(t, 10, n.GetInstances())
+	_, ok := n.GetProviderDescription()
+	assert.Equal(t, true, ok)
 
 	// Environment Node Labels
 	labels = n.GetLabels()
@@ -134,9 +145,9 @@ func TestCreateEngineComplete(t *testing.T) {
 	assert.Equal(t, true, labels.Contains("node1_label1", "node1_label2", "node1_label3"))
 
 	// Environment Node Provider
-	name := n.GetProviderName()
+	name := n.GetNodeProvider()
 	assert.NotNil(t, n)
-	assert.Equal(t, "provider_node1", name.GetName())
+	assert.Equal(t, "aws", name.GetProviderName())
 
 	// Environment Node Provider Parameters
 	params = name.GetParameters().AsMap()
@@ -151,7 +162,10 @@ func TestCreateEngineComplete(t *testing.T) {
 	// Environment Node
 	n, _ = nodeDescs.GetNode("node2")
 	assert.NotNil(t, n)
+	assert.Equal(t, "node2", n.GetName())
 	assert.Equal(t, 20, n.GetInstances())
+	_, ok = n.GetProviderDescription()
+	assert.Equal(t, true, ok)
 
 	// Environment Node Labels
 	labels = n.GetLabels()
@@ -160,9 +174,9 @@ func TestCreateEngineComplete(t *testing.T) {
 	assert.Equal(t, true, labels.Contains("node2_label1", "node2_label2", "node2_label3"))
 
 	// Environment Node Provider
-	name = n.GetProviderName()
+	name = n.GetNodeProvider()
 	assert.NotNil(t, n)
-	assert.Equal(t, "provider_node2", name.GetName())
+	assert.Equal(t, "azure", name.GetProviderName())
 
 	// Environment Node Provider Parameters
 	params = name.GetParameters().AsMap()
@@ -179,15 +193,19 @@ func TestCreateEngineComplete(t *testing.T) {
 	//------------------------------------------------------------
 	stackDescs := env.GetStackDescriptions()
 	assert.NotNil(t, stackDescs)
+	assert.Equal(t, true, env.HasStacks())
+	assert.Equal(t, 2, env.CountStacks())
 
-	b = stackDescs.Contains("stack1")
-	assert.Equal(t, true, b)
-	b = stackDescs.Contains("stack1", "stack2")
-	assert.Equal(t, true, b)
+	assert.Equal(t, 2, stackDescs.Count())
+	assert.Equal(t, env.CountStacks(), stackDescs.Count())
+	assert.Equal(t, true, stackDescs.Contains("stack1"))
+	assert.Equal(t, true, stackDescs.Contains("stack1", "stack2"))
+	assert.Equal(t, false, stackDescs.Contains("stack1", "stack2", "dummy"))
 
 	// Environment Stack
 	s, _ := stackDescs.GetStack("stack1")
 	assert.NotNil(t, s)
+	assert.Equal(t, "stack1", s.GetName())
 	assert.Equal(t, "stack1_repository", s.GetRepository())
 	assert.Equal(t, "stack1_version", s.GetVersion())
 
@@ -200,6 +218,7 @@ func TestCreateEngineComplete(t *testing.T) {
 	// Environment Stack
 	s, _ = stackDescs.GetStack("stack2")
 	assert.NotNil(t, s)
+	assert.Equal(t, "stack2", s.GetName())
 	assert.Equal(t, "stack2_repository", s.GetRepository())
 	assert.Equal(t, "stack2_version", s.GetVersion())
 
@@ -214,15 +233,19 @@ func TestCreateEngineComplete(t *testing.T) {
 	//------------------------------------------------------------
 	taskDescs := env.GetTaskDescriptions()
 	assert.NotNil(t, taskDescs)
+	assert.Equal(t, true, env.HasStacks())
+	assert.Equal(t, 2, env.CountStacks())
 
-	b = taskDescs.Contains("task1")
-	assert.Equal(t, true, b)
-	b = taskDescs.Contains("task1", "task2")
-	assert.Equal(t, true, b)
+	assert.Equal(t, 2, taskDescs.Count())
+	assert.Equal(t, env.CountTasks(), taskDescs.Count())
+	assert.Equal(t, true, taskDescs.Contains("task1"))
+	assert.Equal(t, true, taskDescs.Contains("task1", "task2"))
+	assert.Equal(t, false, taskDescs.Contains("task1", "task2", "dummy"))
 
 	// Environment Task
 	ts, _ := taskDescs.GetTask("task1")
 	assert.NotNil(t, ts)
+	assert.Equal(t, "task1", ts.GetName())
 	assert.Equal(t, "task1_cron", ts.GetCron())
 	assert.Equal(t, "task1_playbook", ts.GetPlaybook())
 
@@ -235,6 +258,7 @@ func TestCreateEngineComplete(t *testing.T) {
 	// Environment Task
 	ts, _ = taskDescs.GetTask("task2")
 	assert.NotNil(t, ts)
+	assert.Equal(t, "task2", ts.GetName())
 	assert.Equal(t, "task2_cron", ts.GetCron())
 	assert.Equal(t, "task2_playbook", ts.GetPlaybook())
 

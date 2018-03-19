@@ -39,7 +39,7 @@ nodes:
       - node1_label2
       - node1_label3
     provider:
-      name: provider_node1
+      name: aws
       params:
         provider_node1_param_key1: provider_node1_param_key1_value
         provider_node1_param_key2: provider_node1_param_key2_value
@@ -51,7 +51,7 @@ nodes:
       - node2_label2
       - node2_label3
     provider:
-      name: provider_node2
+      name: azure
       params:
         provider_node2_param_key1: provider_node2_param_key1_value
         provider_node2_param_key2: provider_node2_param_key2_value

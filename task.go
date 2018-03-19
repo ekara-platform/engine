@@ -1,38 +1,21 @@
 package engine
 
 type tasks struct {
-	values map[string]taskDef
+	values namedMap
 }
 
 func CreateTasks(p map[string]taskDef) tasks {
-	ret := tasks{map[string]taskDef{}}
+	ret := tasks{namedMap{}}
 	for k, v := range p {
+		v.name = k
 		ret.values[k] = v
 	}
 	return ret
 }
 
-func (l tasks) Contains(candidates ...string) bool {
-	for _, l1 := range candidates {
-		contains := false
-		for k, _ := range l.values {
-			if l1 == k {
-				contains = true
-				break
-			}
-		}
-		if !contains {
-			return false
-		}
-	}
-	return true
-}
-
 func (l tasks) GetTask(candidate string) (TaskDescription, bool) {
-	for k, _ := range l.values {
-		if candidate == k {
-			return l.values[candidate], true
-		}
+	if v, ok := l.values[candidate]; ok {
+		return v.(TaskDescription), ok
 	}
 	return nil, false
 }

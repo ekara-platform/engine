@@ -36,11 +36,13 @@ type platformDef struct {
 }
 
 type providerDef struct {
+	name      string `yaml:"-"`
 	labelsDef `yaml:",inline"`
 	paramsDef `yaml:",inline"`
 }
 
 type nodeSetDef struct {
+	name      string `yaml:"-"`
 	labelsDef `yaml:",inline"`
 
 	Provider struct {
@@ -55,6 +57,7 @@ type nodeSetDef struct {
 }
 
 type stackDef struct {
+	name      string `yaml:"-"`
 	labelsDef `yaml:",inline"`
 
 	Repository string
@@ -67,6 +70,7 @@ type stackDef struct {
 }
 
 type taskDef struct {
+	name      string `yaml:"-"`
 	labelsDef `yaml:",inline"`
 
 	Playbook string
@@ -94,15 +98,19 @@ type environmentDef struct {
 
 	// Providers
 	Providers map[string]providerDef
+	providers providers `yaml:"-"`
 
 	// Node sets
 	Nodes map[string]nodeSetDef
+	nodes nodes `yaml:"-"`
 
 	// Software stacks
 	Stacks map[string]stackDef
+	stacks stacks `yaml:"-"`
 
 	// Custom tasks
 	Tasks map[string]taskDef
+	tasks tasks `yaml:"-"`
 
 	// Global hooks
 	Hooks struct {
@@ -130,6 +138,11 @@ func parseDescriptor(location string) (desc environmentDef, err error) {
 	if err != nil {
 		return
 	}
+
+	desc.providers = CreateProviders(desc.Providers)
+	desc.nodes = CreateNodes(desc.Nodes)
+	desc.stacks = CreateStacks(desc.Stacks)
+	desc.tasks = CreateTasks(desc.Tasks)
 
 	return
 }
@@ -190,4 +203,20 @@ func processImports(desc *environmentDef) error {
 		h.logger.Println("No import to process")
 	}
 	return nil
+}
+
+type namedMap map[string]interface{}
+
+func mapContains(m namedMap, candidate string) bool {
+	_, ok := m[candidate]
+	return ok
+}
+
+func mapMultipleContains(m namedMap, candidates []string) bool {
+	for _, c := range candidates {
+		if b := mapContains(m, c); b == false {
+			return false
+		}
+	}
+	return true
 }
