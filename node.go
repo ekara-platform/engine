@@ -4,10 +4,11 @@ type nodes struct {
 	values namedMap
 }
 
-func CreateNodes(p map[string]nodeSetDef) nodes {
+func CreateNodes(desc *environmentDef) nodes {
 	ret := nodes{namedMap{}}
-	for k, v := range p {
+	for k, v := range desc.Nodes {
 		v.name = k
+		v.desc = desc
 		ret.values[k] = v
 	}
 	return ret

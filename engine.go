@@ -8,8 +8,6 @@ import (
 
 //go:generate go run ./generator/generate.go
 
-var h holder
-
 type holder struct {
 	// Global state
 	logger *log.Logger
@@ -20,8 +18,8 @@ type holder struct {
 }
 
 func Create(logger *log.Logger, location string) (lagoon Lagoon, err error) {
-	h = holder{logger: logger, location: location}
-	desc, err := parseDescriptor(h.location)
+	h := holder{logger: logger, location: location}
+	desc, err := parseDescriptor(h, location)
 	if err != nil {
 		return nil, err
 	}

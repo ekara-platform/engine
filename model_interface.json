@@ -103,7 +103,7 @@
          {"name":"GetNodeProvider","returns":"ProviderName", "implemented_by":[{"types":["nodeSetDef"]}]},
          {  
             "name":"GetProviderDescription","returns":"(ProviderDescription, bool)",
-            "implemented_by":[{"types":["nodeSetDef"],"impl":"return h.env.providers.GetProvider(e.Provider.Name)"}]
+            "implemented_by":[{"types":["nodeSetDef"],"impl":"return e.desc.providers.GetProvider(e.Provider.Name)"}]
          }
       ]
    },

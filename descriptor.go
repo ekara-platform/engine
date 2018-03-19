@@ -36,13 +36,17 @@ type platformDef struct {
 }
 
 type providerDef struct {
-	name      string `yaml:"-"`
+	name string          `yaml:"-"`
+	desc *environmentDef `yaml:"-"`
+
 	labelsDef `yaml:",inline"`
 	paramsDef `yaml:",inline"`
 }
 
 type nodeSetDef struct {
-	name      string `yaml:"-"`
+	name string          `yaml:"-"`
+	desc *environmentDef `yaml:"-"`
+
 	labelsDef `yaml:",inline"`
 
 	Provider struct {
@@ -57,7 +61,9 @@ type nodeSetDef struct {
 }
 
 type stackDef struct {
-	name      string `yaml:"-"`
+	name string          `yaml:"-"`
+	desc *environmentDef `yaml:"-"`
+
 	labelsDef `yaml:",inline"`
 
 	Repository string
@@ -70,7 +76,8 @@ type stackDef struct {
 }
 
 type taskDef struct {
-	name      string `yaml:"-"`
+	name      string          `yaml:"-"`
+	desc      *environmentDef `yaml:"-"`
 	labelsDef `yaml:",inline"`
 
 	Playbook string
@@ -122,10 +129,9 @@ type environmentDef struct {
 	}
 }
 
-func parseDescriptor(location string) (desc environmentDef, err error) {
+func parseDescriptor(h holder, location string) (desc environmentDef, err error) {
 	var content []byte
-
-	desc.BaseLocation, content, err = readDescriptor(location)
+	desc.BaseLocation, content, err = readDescriptor(h, location)
 	if err != nil {
 		return
 	}
@@ -134,20 +140,20 @@ func parseDescriptor(location string) (desc environmentDef, err error) {
 	if err != nil {
 		return
 	}
-	err = processImports(&desc)
+	err = processImports(h, &desc)
 	if err != nil {
 		return
 	}
 
-	desc.providers = CreateProviders(desc.Providers)
-	desc.nodes = CreateNodes(desc.Nodes)
-	desc.stacks = CreateStacks(desc.Stacks)
-	desc.tasks = CreateTasks(desc.Tasks)
+	desc.providers = CreateProviders(&desc)
+	desc.nodes = CreateNodes(&desc)
+	desc.stacks = CreateStacks(&desc)
+	desc.tasks = CreateTasks(&desc)
 
 	return
 }
 
-func readDescriptor(location string) (base string, content []byte, err error) {
+func readDescriptor(h holder, location string) (base string, content []byte, err error) {
 	if strings.Index(location, "http") == 0 {
 		h.logger.Println("Loading URL", location)
 
@@ -188,11 +194,11 @@ func readDescriptor(location string) (base string, content []byte, err error) {
 	return
 }
 
-func processImports(desc *environmentDef) error {
+func processImports(h holder, desc *environmentDef) error {
 	if len(desc.Imports) > 0 {
 		h.logger.Println("Processing imports", desc.Imports)
 		for _, val := range desc.Imports {
-			importedDesc, err := parseDescriptor(desc.BaseLocation + val)
+			importedDesc, err := parseDescriptor(h, desc.BaseLocation+val)
 			if err != nil {
 				return err
 			}

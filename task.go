@@ -4,10 +4,11 @@ type tasks struct {
 	values namedMap
 }
 
-func CreateTasks(p map[string]taskDef) tasks {
+func CreateTasks(desc *environmentDef) tasks {
 	ret := tasks{namedMap{}}
-	for k, v := range p {
+	for k, v := range desc.Tasks {
 		v.name = k
+		v.desc = desc
 		ret.values[k] = v
 	}
 	return ret

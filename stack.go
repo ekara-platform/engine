@@ -4,10 +4,11 @@ type stacks struct {
 	values namedMap
 }
 
-func CreateStacks(p map[string]stackDef) stacks {
+func CreateStacks(desc *environmentDef) stacks {
 	ret := stacks{namedMap{}}
-	for k, v := range p {
+	for k, v := range desc.Stacks {
 		v.name = k
+		v.desc = desc
 		ret.values[k] = v
 	}
 	return ret

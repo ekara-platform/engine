@@ -4,10 +4,11 @@ type providers struct {
 	values namedMap
 }
 
-func CreateProviders(p map[string]providerDef) providers {
+func CreateProviders(desc *environmentDef) providers {
 	ret := providers{namedMap{}}
-	for k, v := range p {
+	for k, v := range desc.Providers {
 		v.name = k
+		v.desc = desc
 		ret.values[k] = v
 	}
 	return ret
