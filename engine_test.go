@@ -1,6 +1,7 @@
 package engine_test
 
 import (
+	"bytes"
 	"log"
 	"os"
 	"testing"
@@ -268,4 +269,26 @@ func TestCreateEngineComplete(t *testing.T) {
 	assert.Equal(t, 3, len(labels.AsStrings()))
 	assert.Equal(t, true, labels.Contains("task2_label1", "task2_label2", "task2_label3"))
 
+}
+
+func TestSerialization(t *testing.T) {
+	lagoon, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/complete_descriptor.yaml")
+	assert.Nil(t, e)
+
+	// Content deserialization
+	content1, e := lagoon.GetContent()
+	assert.Nil(t, e)
+	assert.Equal(t, true, len(content1) > 0)
+
+	// Content serialization
+	lagoon, e = engine.CreateFromContent(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), content1)
+	assert.Nil(t, e)
+	// Content deserialization
+	content2, e := lagoon.GetContent()
+	assert.Nil(t, e)
+	assert.Equal(t, true, len(content2) > 0)
+
+	// Check that the creation from a location and from a serialized content
+	// produces the same result.
+	assert.Equal(t, 0, bytes.Compare(content1, content2))
 }

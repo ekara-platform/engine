@@ -153,6 +153,20 @@ func parseDescriptor(h holder, location string) (desc environmentDef, err error)
 	return
 }
 
+func parseContent(h holder, content []byte) (desc environmentDef, err error) {
+	err = yaml.Unmarshal(content, &desc)
+	if err != nil {
+		return
+	}
+
+	desc.providers = CreateProviders(&desc)
+	desc.nodes = CreateNodes(&desc)
+	desc.stacks = CreateStacks(&desc)
+	desc.tasks = CreateTasks(&desc)
+
+	return
+}
+
 func readDescriptor(h holder, location string) (base string, content []byte, err error) {
 	if strings.Index(location, "http") == 0 {
 		h.logger.Println("Loading URL", location)
