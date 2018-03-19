@@ -2,7 +2,8 @@
    {  
       "name":"Lagoon",
       "methods":[  
-         {"returns":"Environment", "implemented_by":[{"types":["holder"], "on_pointer":1, "attribute":"env"}]}
+         {"returns":"Environment", "implemented_by":[{"types":["holder"], "on_pointer":1, "attribute":"env"}]},
+		 {"name":"GetContent", "returns":"([]byte, error)"}
       ]
    },{  
       "name":"Version",
