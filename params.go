@@ -1,17 +1,5 @@
 package engine
 
-// Interfaces
-
-type Parameterized interface {
-	Parameters() Parameters
-}
-
-type Parameters interface {
-	AsMap() map[string]string
-}
-
-// Implementation
-
 type params struct {
 	values map[string]string
 }

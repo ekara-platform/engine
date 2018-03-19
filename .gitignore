@@ -12,6 +12,10 @@
 
 # IntelliJ
 .idea
+.iml
 
 # Go dep
 vendor/
+
+# Go generate
+generator/*.exe

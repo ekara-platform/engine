@@ -1,18 +1,5 @@
 package engine
 
-// Interfaces
-
-type Labeled interface {
-	GetLabels() Labels
-}
-
-type Labels interface {
-	Contains(...string) bool
-	AsStrings() []string
-}
-
-// Implementation
-
 type labels struct {
 	values []string
 }
