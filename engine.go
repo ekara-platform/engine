@@ -17,9 +17,9 @@ type holder struct {
 	env      *environmentDef
 }
 
-// Create creates an environment descriptor based on the provider location
+// Create creates an environment descriptor based on the provider location.
 //
-// The location can be an URL over http or https or even a file system location
+// The location can be an URL over http or https or even a file system location.
 func Create(logger *log.Logger, location string) (lagoon Lagoon, err error) {
 	h := holder{logger: logger, location: location}
 	desc, err := parseDescriptor(h, location)
@@ -33,7 +33,7 @@ func Create(logger *log.Logger, location string) (lagoon Lagoon, err error) {
 // Create creates an environment descriptor based on the provider serialized
 // content.
 //
-// The serialized content is tipically
+// The serialized content is typically a fully resolved descriptor without any import left.
 func CreateFromContent(logger *log.Logger, content []byte) (lagoon Lagoon, err error) {
 	h := holder{logger: logger, location: ""}
 	desc, err := parseContent(h, content)
@@ -44,7 +44,7 @@ func CreateFromContent(logger *log.Logger, content []byte) (lagoon Lagoon, err e
 	return &h, nil
 }
 
-//GetContent serializes the content on the environment descriptor
+// GetContent serializes the content on the environment descriptor
 func (h holder) GetContent() ([]byte, error) {
 	b, e := yaml.Marshal(h.env)
 	return b, e
