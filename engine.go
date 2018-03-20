@@ -6,7 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-//go:generate go run ./generator/generate.go
+//go:generate go run ./generate/generate.go
 
 type holder struct {
 	// Global state

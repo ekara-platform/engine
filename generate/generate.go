@@ -137,7 +137,7 @@ func (i Interface) HasImplentations() bool {
 }
 
 func main() {
-	r, err := os.Open("model_interface.json")
+	r, err := os.Open("generate/engine_api.json")
 	if err != nil {
 		panic(err)
 	}
@@ -151,13 +151,13 @@ func main() {
 		panic(err)
 	}
 
-	w, err := os.Create("interfaces_generated.go")
+	w, err := os.Create("engine_api.generated.go")
 	if err != nil {
 		panic(err)
 	}
 	defer w.Close()
 
-	t, err := template.ParseFiles("model_interface_template.txt")
+	t, err := template.ParseFiles("generate/engine_api.tmpl")
 	if err != nil {
 		panic(err)
 	}
