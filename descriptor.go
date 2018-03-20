@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -182,6 +183,12 @@ func readDescriptor(h holder, location string) (base string, content []byte, err
 			return
 		}
 		defer response.Body.Close()
+
+		if response.StatusCode != 200 {
+			err = fmt.Errorf("HTTP Error getting the environment descriptor , error code %d", response.StatusCode)
+			return
+		}
+
 		content, err = ioutil.ReadAll(response.Body)
 
 		i := strings.LastIndex(location, "/")
