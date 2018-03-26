@@ -11,6 +11,7 @@ import (
 
 func TestHttpGetDescriptor(t *testing.T) {
 	_, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "https://raw.githubusercontent.com/lagoon-platform/engine/master/testdata/complete_descriptor.yaml")
+	//_, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "./testdata/complete_descriptor.yaml")
 
 	// no error occurred
 	assert.Nil(t, e)

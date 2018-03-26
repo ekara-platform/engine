@@ -26,6 +26,10 @@ func Create(logger *log.Logger, location string) (lagoon Lagoon, err error) {
 	if err != nil {
 		return nil, err
 	}
+	err = desc.adjustAndValidate()
+	if err != nil {
+		return nil, err
+	}
 	h.env = &desc
 	return &h, nil
 }
@@ -41,6 +45,10 @@ func CreateFromContent(logger *log.Logger, content []byte) (lagoon Lagoon, err e
 		return nil, err
 	}
 	h.env = &desc
+	err = desc.adjustAndValidate()
+	if err != nil {
+		return nil, err
+	}
 	return &h, nil
 }
 

@@ -64,6 +64,9 @@ stacks:
       - stack1_label3
     repository: stack1_repository
     version: stack1_version
+    deployOn:
+      - node1_label1
+
 
   stack2:
     labels:
@@ -72,6 +75,9 @@ stacks:
       - stack2_label3
     repository: stack2_repository
     version: stack2_version
+    deployOn:
+      - node1_label1
+
 
 tasks:
   task1:
@@ -80,7 +86,7 @@ tasks:
       - task1_label2
       - task1_label3
     cron: task1_cron
-    playbook: task1_playbook
+    task: task1_playbook
 
   task2:
     labels:
@@ -88,4 +94,4 @@ tasks:
       - task2_label2
       - task2_label3
     cron: task2_cron
-    playbook: task2_playbook
+    task: task2_playbook
