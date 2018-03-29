@@ -10,7 +10,7 @@ import (
 )
 
 func TestHttpGetDescriptor(t *testing.T) {
-	_, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "https://raw.githubusercontent.com/lagoon-platform/engine/master/testdata/complete_descriptor.yaml")
+	_, _, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "https://raw.githubusercontent.com/lagoon-platform/engine/master/testdata/complete_descriptor.yaml")
 	//_, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "./testdata/complete_descriptor.yaml")
 
 	// no error occurred
@@ -18,7 +18,7 @@ func TestHttpGetDescriptor(t *testing.T) {
 }
 
 func TestHttpGetNoDescriptor(t *testing.T) {
-	_, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "https://raw.githubusercontent.com/lagoon-platform/engine/master/testdata/DUMMY.yaml")
+	_, _, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "https://raw.githubusercontent.com/lagoon-platform/engine/master/testdata/DUMMY.yaml")
 
 	// an error occurred
 	assert.NotNil(t, e)

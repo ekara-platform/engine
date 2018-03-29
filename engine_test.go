@@ -11,7 +11,7 @@ import (
 )
 
 func TestCreateEngine(t *testing.T) {
-	lagoon, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/lagoon.yaml")
+	lagoon, _, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/lagoon.yaml")
 	assert.Nil(t, e) // no error occurred
 
 	env := lagoon.GetEnvironment()
@@ -22,7 +22,7 @@ func TestCreateEngine(t *testing.T) {
 }
 
 func TestCreateEngineComplete(t *testing.T) {
-	lagoon, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/complete_descriptor.yaml")
+	lagoon, _, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/complete_descriptor.yaml")
 	assert.Nil(t, e)
 
 	env := lagoon.GetEnvironment()
@@ -272,7 +272,7 @@ func TestCreateEngineComplete(t *testing.T) {
 }
 
 func TestSerialization(t *testing.T) {
-	lagoon, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/complete_descriptor.yaml")
+	lagoon, _, e := engine.Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/complete_descriptor.yaml")
 	assert.Nil(t, e)
 
 	// Content deserialization
@@ -281,7 +281,7 @@ func TestSerialization(t *testing.T) {
 	assert.Equal(t, true, len(content1) > 0)
 
 	// Content serialization
-	lagoon, e = engine.CreateFromContent(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), content1)
+	lagoon, _, e = engine.CreateFromContent(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), content1)
 	assert.Nil(t, e)
 	// Content deserialization
 	content2, e := lagoon.GetContent()

@@ -78,7 +78,7 @@ hooks:
       - task1
     after:
       - task1
-  deployment:
+  deploy:
     before:
       - task1
     after:

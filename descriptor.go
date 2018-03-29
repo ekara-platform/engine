@@ -101,10 +101,11 @@ type environmentDef struct {
 	labelsDef `yaml:",inline"`
 
 	// Global attributes
-	Name         string
-	Description  string
-	Version      string
-	BaseLocation string
+	Name                  string
+	Description           string
+	Version               string
+	BaseLocation          string
+	TreatWarningsAsErrors bool `yaml:"treatWarningsAsErrors"`
 
 	// Imports
 	Imports []string
@@ -173,16 +174,29 @@ func parseContent(h holder, content []byte) (desc environmentDef, err error) {
 
 // adjustAndValidate adjusts the descriptor content and validate its grammar and
 // its required content
-func (desc *environmentDef) adjustAndValidate() (err error) {
+func (desc *environmentDef) adjustAndValidate() (ge GrammarErrors) {
 	desc.providers = CreateProviders(desc)
 	desc.nodes = CreateNodes(desc)
 	desc.stacks = CreateStacks(desc)
 	desc.tasks = CreateTasks(desc)
-	ge := desc.validate()
-	if e, b := ge.hasError(); b {
-		err = e
-	}
+	ge = *desc.validate()
 	return
+}
+
+/*
+getWarningType returns the error type correponding to natural warning.
+
+The returned ErrorType will depend on "TreatWarningsAsErrors"
+
+	TreatWarningsAsErrors = true then a "Error" will be returned
+	TreatWarningsAsErrors = false then a "Warning" will be returned
+
+*/
+func (desc *environmentDef) getWarningType() ErrorType {
+	if desc.TreatWarningsAsErrors {
+		return Error
+	}
+	return Warning
 }
 
 // readDescriptor reads the descriptor based on a location.

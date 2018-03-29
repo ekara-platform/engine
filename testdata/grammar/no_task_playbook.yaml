@@ -27,3 +27,8 @@ stacks:
   monitoring:
     repository: github.com/lagoon-platform/monitoring-stack
     version: 1.0.5
+    deployOn:
+      - application
+
+tasks:
+  task1:
