@@ -95,3 +95,4 @@ tasks:
       - task2_label3
     cron: task2_cron
     task: task2_playbook
+
