@@ -302,7 +302,8 @@ type NodeDescriptions interface {
 	// Inherited interface(s)
 	MappedContent
 	
-	GetNode(string) (NodeDescription, bool)	
+	GetNode(string) (NodeDescription, bool)
+	GetNodesByLabel(string) ([]NodeDescription)	
 }
 
 
@@ -431,7 +432,7 @@ type TaskDescription interface {
 // Implementation of Interface "TaskDescription"
 // ----------------------------------------------------
 func (e taskDef) GetPlaybook() string{
-	return e.Playbook
+	return e.Task
 }	
 
 func (e taskDef) GetCron() string{

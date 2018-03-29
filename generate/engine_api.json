@@ -92,7 +92,8 @@
       "name":"NodeDescriptions",
       "inherited":["MappedContent"],
       "methods":[  
-         {"name":"GetNode","returns":"(NodeDescription, bool)","parameters":"string"}
+         {"name":"GetNode","returns":"(NodeDescription, bool)","parameters":"string"},
+		 {"name":"GetNodesByLabel","returns":"([]NodeDescription)","parameters":"string"}
       ]
    },
    {  
@@ -144,7 +145,7 @@
       "name":"TaskDescription",
       "inherited":["Labeled","Named"],
       "methods":[  
-         {"name":"GetPlaybook","implemented_by":[{"types":["taskDef"],"attribute":"Playbook"}]},
+         {"name":"GetPlaybook","implemented_by":[{"types":["taskDef"],"attribute":"Task"}]},
          {"name":"GetCron","implemented_by":[{"types":["taskDef"],"attribute":"Cron"}]}
       ]
    },

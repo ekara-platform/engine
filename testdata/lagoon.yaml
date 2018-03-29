@@ -48,6 +48,7 @@ stacks:
       - monitoring
   application:
     repository: github.com/seedstack/store-webapp-sample
+    version: 1.0.5
     deployOn:
       - application
 
@@ -77,7 +78,7 @@ hooks:
       - task1
     after:
       - task1
-  deployment:
+  deploy:
     before:
       - task1
     after:

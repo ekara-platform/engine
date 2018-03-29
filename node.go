@@ -20,3 +20,14 @@ func (l nodes) GetNode(candidate string) (NodeDescription, bool) {
 	}
 	return nil, false
 }
+
+func (l nodes) GetNodesByLabel(labelCandidate string) []NodeDescription {
+	result := make([]NodeDescription, 0)
+	for _, v := range l.values {
+		nd := v.(NodeDescription)
+		if nd.GetLabels().Contains(labelCandidate) {
+			result = append(result, nd)
+		}
+	}
+	return result
+}

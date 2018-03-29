@@ -69,11 +69,15 @@ type stackDef struct {
 
 	Repository string
 	Version    string
-	DeployOn   []string `yaml:"deployOn"`
+	DeployOn   deployDef `yaml:",inline"`
 	Hooks      struct {
 		Deploy   hookDef
 		Undeploy hookDef
 	}
+}
+
+type deployDef struct {
+	Names []string `yaml:"deployOn"`
 }
 
 type taskDef struct {
@@ -81,22 +85,27 @@ type taskDef struct {
 	desc      *environmentDef `yaml:"-"`
 	labelsDef `yaml:",inline"`
 
-	Playbook string
-	Cron     string
-	RunOn    []string `yaml:"runOn"`
-	Hooks    struct {
+	Task  string
+	Cron  string
+	RunOn runDef `yaml:",inline"`
+	Hooks struct {
 		Execute hookDef
 	}
+}
+
+type runDef struct {
+	Names []string `yaml:"runOn"`
 }
 
 type environmentDef struct {
 	labelsDef `yaml:",inline"`
 
 	// Global attributes
-	Name         string
-	Description  string
-	Version      string
-	BaseLocation string
+	Name                  string
+	Description           string
+	Version               string
+	BaseLocation          string
+	TreatWarningsAsErrors bool `yaml:"treatWarningsAsErrors"`
 
 	// Imports
 	Imports []string
@@ -130,6 +139,9 @@ type environmentDef struct {
 	}
 }
 
+// parseDescriptor parses the descriptor based on a location.
+// The location can be an URL ( HTTP and HTTPS are supported )
+// or a location on the local file system
 func parseDescriptor(h holder, location string) (desc environmentDef, err error) {
 	var content []byte
 	desc.BaseLocation, content, err = readDescriptor(h, location)
@@ -141,33 +153,55 @@ func parseDescriptor(h holder, location string) (desc environmentDef, err error)
 	if err != nil {
 		return
 	}
+
 	err = processImports(h, &desc)
 	if err != nil {
 		return
 	}
-
-	desc.providers = CreateProviders(&desc)
-	desc.nodes = CreateNodes(&desc)
-	desc.stacks = CreateStacks(&desc)
-	desc.tasks = CreateTasks(&desc)
-
 	return
 }
 
+// parseDescriptor parses the descriptor based previously serialized content.
 func parseContent(h holder, content []byte) (desc environmentDef, err error) {
 	err = yaml.Unmarshal(content, &desc)
 	if err != nil {
 		return
 	}
-
-	desc.providers = CreateProviders(&desc)
-	desc.nodes = CreateNodes(&desc)
-	desc.stacks = CreateStacks(&desc)
-	desc.tasks = CreateTasks(&desc)
-
+	// Note the parseContent won't process any import because they have been
+	// resolved before the serialization
 	return
 }
 
+// adjustAndValidate adjusts the descriptor content and validate its grammar and
+// its required content
+func (desc *environmentDef) adjustAndValidate() (ge GrammarErrors) {
+	desc.providers = CreateProviders(desc)
+	desc.nodes = CreateNodes(desc)
+	desc.stacks = CreateStacks(desc)
+	desc.tasks = CreateTasks(desc)
+	ge = *desc.validate()
+	return
+}
+
+/*
+getWarningType returns the error type correponding to natural warning.
+
+The returned ErrorType will depend on "TreatWarningsAsErrors"
+
+	TreatWarningsAsErrors = true then a "Error" will be returned
+	TreatWarningsAsErrors = false then a "Warning" will be returned
+
+*/
+func (desc *environmentDef) getWarningType() ErrorType {
+	if desc.TreatWarningsAsErrors {
+		return Error
+	}
+	return Warning
+}
+
+// readDescriptor reads the descriptor based on a location.
+// The location can be an URL ( HTTP and HTTPS are supported )
+// or a location on the local file system
 func readDescriptor(h holder, location string) (base string, content []byte, err error) {
 	if strings.Index(location, "http") == 0 {
 		h.logger.Println("Loading URL", location)
