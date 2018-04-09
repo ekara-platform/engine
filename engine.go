@@ -2,52 +2,36 @@ package engine
 
 import (
 	"log"
-
-	"gopkg.in/yaml.v2"
+	"github.com/lagoon-platform/model"
 )
 
-//go:generate go run ./generate/generate.go
+type Lagoon interface {
+	Environment() model.Environment
+}
 
-type holder struct {
+type context struct {
 	// Global state
 	logger *log.Logger
 
-	// EnvironmentDef info
-	location string
-	env      *environmentDef
+	// Environment info
+	location    string
+	environment *model.Environment
+}
+
+func (c context) Environment() model.Environment {
+	return *c.environment
 }
 
 // Create creates an environment descriptor based on the provider location.
 //
 // The location can be an URL over http or https or even a file system location.
-func Create(logger *log.Logger, location string) (lagoon Lagoon, gErr GrammarErrors, rerr error) {
-	h := holder{logger: logger, location: location}
-	desc, err := parseDescriptor(h, location)
-	if err != nil {
-		return nil, GrammarErrors{}, err
-	}
-	gErr = desc.adjustAndValidate()
-	h.env = &desc
-	return &h, gErr, nil
-}
+func Create(logger *log.Logger, location string) (Lagoon, error, model.ValidationErrors) {
+	ctx := context{logger: logger, location: location}
 
-// Create creates an environment descriptor based on the provider serialized
-// content.
-//
-// The serialized content is typically a fully resolved descriptor without any import left.
-func CreateFromContent(logger *log.Logger, content []byte) (lagoon Lagoon, gErr GrammarErrors, err error) {
-	h := holder{logger: logger, location: ""}
-	desc, err := parseContent(h, content)
-	if err != nil {
-		return nil, GrammarErrors{}, err
+	env, err, vErrs := model.Parse(logger, location)
+	if err != nil || vErrs.HasErrors() {
+		return nil, err, vErrs
 	}
-	h.env = &desc
-	gErr = desc.adjustAndValidate()
-	return &h, gErr, nil
-}
-
-// GetContent serializes the content on the environment descriptor
-func (h holder) GetContent() ([]byte, error) {
-	b, e := yaml.Marshal(h.env)
-	return b, e
+	ctx.environment = &env
+	return ctx, nil, vErrs
 }
