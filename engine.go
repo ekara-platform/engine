@@ -16,6 +16,9 @@ type context struct {
 	// Environment info
 	location    string
 	environment *model.Environment
+
+	// Subsystems
+	componentManager ComponentManager
 }
 
 func (c context) Environment() model.Environment {
@@ -33,5 +36,7 @@ func Create(logger *log.Logger, location string) (Lagoon, error, model.Validatio
 		return nil, err, vErrs
 	}
 	ctx.environment = &env
+	ctx.componentManager = createComponentManager(logger, &env)
+
 	return ctx, nil, vErrs
 }
