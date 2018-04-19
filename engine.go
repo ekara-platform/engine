@@ -3,40 +3,62 @@ package engine
 import (
 	"log"
 	"github.com/lagoon-platform/model"
+	"path"
 )
 
 type Lagoon interface {
 	Environment() model.Environment
+	ComponentManager() ComponentManager
 }
 
 type context struct {
-	// Global state
 	logger *log.Logger
-
-	// Environment info
-	location    string
-	environment *model.Environment
 
 	// Subsystems
 	componentManager ComponentManager
-}
 
-func (c context) Environment() model.Environment {
-	return *c.environment
+	// Environment
+	baseDir     string
+	environment model.Environment
 }
 
 // Create creates an environment descriptor based on the provider location.
 //
 // The location can be an URL over http or https or even a file system location.
-func Create(logger *log.Logger, location string) (Lagoon, error, model.ValidationErrors) {
-	ctx := context{logger: logger, location: location}
+func Create(logger *log.Logger, baseDir string, repository string, version string) (lagoon Lagoon, err error) {
+	ctx := context{logger: logger, baseDir: baseDir}
 
-	env, err, vErrs := model.Parse(logger, location)
-	if err != nil || vErrs.HasErrors() {
-		return nil, err, vErrs
+	// Create component manager
+	ctx.componentManager = createComponentManager(logger, baseDir)
+
+	// Create, register and fetch the main component
+	mainComp, err := model.CreateDetachedComponent(repository, version)
+	if err != nil {
+		return
 	}
-	ctx.environment = &env
-	ctx.componentManager = createComponentManager(logger, &env)
+	ctx.componentManager.RegisterComponent(mainComp)
+	ctx.componentManager.Ensure()
 
-	return ctx, nil, vErrs
+	// Parse the environment descriptor from the main component
+	envPath, err := ctx.componentManager.ComponentPath(mainComp.Id)
+	if err != nil {
+		return
+	}
+	ctx.environment, err, _ = model.Parse(logger, path.Join(envPath, DescriptorFileName))
+	if err != nil {
+		return
+	}
+
+	// Use context as Lagoon facade
+	lagoon = &ctx
+
+	return
+}
+
+func (c *context) Environment() model.Environment {
+	return c.environment
+}
+
+func (c *context) ComponentManager() ComponentManager {
+	return c.componentManager
 }
