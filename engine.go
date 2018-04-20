@@ -2,6 +2,7 @@ package engine
 
 import (
 	"log"
+
 	"github.com/lagoon-platform/model"
 )
 
@@ -27,16 +28,24 @@ func (c context) Environment() model.Environment {
 
 // Create creates an environment descriptor based on the provider location.
 //
-// The location can be an URL over http or https or even a file system location.
-func Create(logger *log.Logger, location string) (Lagoon, error, model.ValidationErrors) {
+// The location can be an URL over http or https
+func Create(logger *log.Logger, location string) (Lagoon, error) {
 	ctx := context{logger: logger, location: location}
 
-	env, err, vErrs := model.Parse(logger, location)
-	if err != nil || vErrs.HasErrors() {
-		return nil, err, vErrs
+	env, err := model.Parse(logger, location)
+	if err != nil {
+		return nil, err
 	}
 	ctx.environment = &env
 	ctx.componentManager = createComponentManager(logger, &env)
 
-	return ctx, nil, vErrs
+	return ctx, nil
+}
+
+func CreateLagoon(logger *log.Logger, l Lagoon) {
+
+}
+
+func UpdateLagoon(logger *log.Logger, l Lagoon) {
+
 }
