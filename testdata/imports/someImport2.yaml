@@ -1,7 +1,0 @@
-name: overriddenName
-description: This is my awesome Lagoon environment.
-
-hooks:
-  provision:
-    after:
-      - task3

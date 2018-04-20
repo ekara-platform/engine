@@ -2,8 +2,9 @@ package engine
 
 import (
 	"log"
-	"github.com/lagoon-platform/model"
 	"path"
+
+	"github.com/lagoon-platform/model"
 )
 
 type Lagoon interface {
@@ -44,7 +45,7 @@ func Create(logger *log.Logger, baseDir string, repository string, version strin
 	if err != nil {
 		return
 	}
-	ctx.environment, err, _ = model.Parse(logger, path.Join(envPath, DescriptorFileName))
+	ctx.environment, err = model.Parse(logger, path.Join(envPath, DescriptorFileName))
 	if err != nil {
 		return
 	}
@@ -61,4 +62,12 @@ func (c *context) Environment() model.Environment {
 
 func (c *context) ComponentManager() ComponentManager {
 	return c.componentManager
+}
+
+func CreateLagoon(logger *log.Logger, l Lagoon) {
+
+}
+
+func UpdateLagoon(logger *log.Logger, l Lagoon) {
+
 }
