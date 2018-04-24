@@ -2,7 +2,9 @@ package engine
 
 import (
 	"log"
+	"net/url"
 	"path"
+	"strings"
 
 	"github.com/lagoon-platform/model"
 )
@@ -54,6 +56,18 @@ func Create(logger *log.Logger, baseDir string, repository string, version strin
 	lagoon = &ctx
 
 	return
+}
+
+// BuildDescriptorUrl builds the url of environment descriptor based on the
+// url received has parameter
+//
+func BuildDescriptorUrl(url url.URL) url.URL {
+	if strings.HasSuffix(url.Path, "/") {
+		url.Path = url.Path + DescriptorFileName
+	} else {
+		url.Path = url.Path + "/" + DescriptorFileName
+	}
+	return url
 }
 
 func (c *context) Environment() model.Environment {
