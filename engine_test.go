@@ -9,7 +9,6 @@ import (
 )
 
 func TestBuildDescriptorUrl(t *testing.T) {
-
 	u := url.URL{Scheme: "https", Host: model.GitHubHost, Path: "blablabla"}
 	cUrl := BuildDescriptorUrl(u)
 	assert.Equal(t, u.Path+"/"+DescriptorFileName, cUrl.Path)
@@ -17,5 +16,4 @@ func TestBuildDescriptorUrl(t *testing.T) {
 	u = url.URL{Scheme: "https", Host: model.GitHubHost, Path: "blablabla/"}
 	cUrl = BuildDescriptorUrl(u)
 	assert.Equal(t, u.Path+DescriptorFileName, cUrl.Path)
-
 }

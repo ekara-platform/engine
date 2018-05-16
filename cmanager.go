@@ -1,12 +1,15 @@
 package engine
 
 import (
-	"log"
-	"github.com/lagoon-platform/model"
 	"errors"
+	"github.com/lagoon-platform/model"
+	"log"
+	"net/url"
+	"path/filepath"
 )
 
 type ComponentManager interface {
+	Fetch(repository string, version string) (string, error)
 	RegisterComponent(component model.Component) error
 	ComponentPath(id string) (string, error)
 	ComponentsPaths() map[string]string
@@ -21,8 +24,24 @@ type componentManager struct {
 	paths      map[string]string
 }
 
-func createComponentManager(logger *log.Logger, baseDir string) ComponentManager {
-	return &componentManager{logger: logger, components: make(map[string]model.Component)}
+func createComponentManager(ctx *context) (cm ComponentManager, err error) {
+	absBaseDir, err := filepath.Abs(ctx.baseDir)
+	if err != nil {
+		return
+	}
+	cm = &componentManager{
+		logger:     ctx.logger,
+		directory:  absBaseDir,
+		components: make(map[string]model.Component)}
+	return
+}
+
+func (cm *componentManager) Fetch(repository string, version string) (string, error) {
+	repoUrl, e := model.ResolveRepositoryUrl(&url.URL{}, repository)
+	if e != nil {
+		return "", e
+	}
+	return repoUrl.String(), nil
 }
 
 func (cm *componentManager) RegisterComponent(c model.Component) error {

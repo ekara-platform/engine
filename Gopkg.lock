@@ -17,7 +17,7 @@
   branch = "master"
   name = "github.com/lagoon-platform/model"
   packages = ["."]
-  revision = "4ffd69225bdf3e7f4a55e8d7aa1e93e930b77800"
+  revision = "016c298c4f15da3a54cbf50bba9c83b5343a7cb4"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"

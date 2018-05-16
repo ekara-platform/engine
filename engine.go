@@ -29,24 +29,24 @@ type context struct {
 //
 // The location can be an URL over http or https or even a file system location.
 func Create(logger *log.Logger, baseDir string, repository string, version string) (lagoon Lagoon, err error) {
-	ctx := context{logger: logger, baseDir: baseDir}
+	ctx := context{
+		logger:  logger,
+		baseDir: baseDir}
 
 	// Create component manager
-	ctx.componentManager = createComponentManager(logger, baseDir)
-
-	// Create, register and fetch the main component
-	mainComp, err := model.CreateDetachedComponent(repository, version)
+	ctx.componentManager, err = createComponentManager(&ctx)
 	if err != nil {
 		return
 	}
-	ctx.componentManager.RegisterComponent(mainComp)
+
+	// Fetch the main component
+	envPath, err := ctx.componentManager.Fetch(repository, version)
+	if err != nil {
+		return
+	}
 	ctx.componentManager.Ensure()
 
 	// Parse the environment descriptor from the main component
-	envPath, err := ctx.componentManager.ComponentPath(mainComp.Id)
-	if err != nil {
-		return
-	}
 	ctx.environment, err = model.Parse(logger, path.Join(envPath, DescriptorFileName))
 	if err != nil {
 		return
