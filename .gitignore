@@ -17,3 +17,6 @@
 # Go dep
 vendor/
 
+# Test generated input and output
+testdata/components
+testdata/work

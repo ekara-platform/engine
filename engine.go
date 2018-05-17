@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/url"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/lagoon-platform/model"
@@ -29,9 +30,14 @@ type context struct {
 //
 // The location can be an URL over http or https or even a file system location.
 func Create(logger *log.Logger, baseDir string, repository string, version string) (lagoon Lagoon, err error) {
+	absBaseDir, err := filepath.Abs(baseDir)
+	if err != nil {
+		return
+	}
+
 	ctx := context{
 		logger:  logger,
-		baseDir: baseDir}
+		baseDir: absBaseDir}
 
 	// Create component manager
 	ctx.componentManager, err = createComponentManager(&ctx)
