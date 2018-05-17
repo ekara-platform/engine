@@ -14,4 +14,4 @@ before_install:
 
 install:
   - dep ensure
-  - ./generate_test_data
+  - ./generate_test_data.sh
