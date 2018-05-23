@@ -1,0 +1,19 @@
+name: testEnvironment
+version: 1.0.0
+
+settings:
+  componentBase: testdata/components
+
+components:
+  lagoon-platform/aws-provider: 1.2.0
+
+providers:
+  aws:
+    repository: lagoon-platform/aws-provider
+
+nodes:
+  group1:
+    provider:
+      name: aws
+    instances: 3
+

@@ -42,7 +42,7 @@
   branch = "master"
   name = "github.com/lagoon-platform/model"
   packages = ["."]
-  revision = "5bcebaca80b10b4aba2e9128cd98a9990b89d1ef"
+  revision = "822978006e01164c7fca1ed30150a56e74366388"
 
 [[projects]]
   branch = "master"

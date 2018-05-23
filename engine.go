@@ -3,7 +3,6 @@ package engine
 import (
 	"log"
 	"net/url"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -16,20 +15,18 @@ type Lagoon interface {
 }
 
 type context struct {
-	logger *log.Logger
+	logger      *log.Logger
+	workDir     string
+	environment model.Environment
 
 	// Subsystems
 	componentManager ComponentManager
-
-	// Environment
-	baseDir     string
-	environment model.Environment
 }
 
 // Create creates an environment descriptor based on the provider location.
 //
 // The location can be an URL over http or https or even a file system location.
-func Create(logger *log.Logger, baseDir string, repository string, version string) (lagoon Lagoon, err error) {
+func Create(logger *log.Logger, baseDir string, location string, tag string) (engine Lagoon, err error) {
 	absBaseDir, err := filepath.Abs(baseDir)
 	if err != nil {
 		return
@@ -37,7 +34,7 @@ func Create(logger *log.Logger, baseDir string, repository string, version strin
 
 	ctx := context{
 		logger:  logger,
-		baseDir: absBaseDir}
+		workDir: absBaseDir}
 
 	// Create component manager
 	ctx.componentManager, err = createComponentManager(&ctx)
@@ -46,20 +43,33 @@ func Create(logger *log.Logger, baseDir string, repository string, version strin
 	}
 
 	// Fetch the main component
-	envPath, err := ctx.componentManager.Fetch(repository, version)
+	envPath, err := ctx.componentManager.Fetch(location, tag)
 	if err != nil {
 		return
 	}
-	ctx.componentManager.Ensure()
 
 	// Parse the environment descriptor from the main component
-	ctx.environment, err = model.Parse(logger, path.Join(envPath, DescriptorFileName))
+	ctx.environment, err = model.Parse(logger, filepath.Join(envPath, DescriptorFileName))
 	if err != nil {
-		return
+		switch err.(type) {
+		case model.ValidationErrors:
+			err.(model.ValidationErrors).Log(ctx.logger)
+			if err.(model.ValidationErrors).HasErrors() {
+				return
+			}
+		default:
+			return
+		}
+	}
+
+	// Register all environment components
+	for pName, pComp := range ctx.environment.Providers {
+		ctx.logger.Println("Registering provider " + pName)
+		ctx.componentManager.RegisterComponent(pComp.Component)
 	}
 
 	// Use context as Lagoon facade
-	lagoon = &ctx
+	engine = &ctx
 
 	return
 }
