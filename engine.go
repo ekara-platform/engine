@@ -33,10 +33,10 @@ type context struct {
 // Create creates an environment descriptor based on the provider location.
 //
 // The location can be an URL over http or https or even a file system location.
-func Create(logger *log.Logger, baseDir string, location string, tag string) (engine Lagoon, err error) {
+func Create(logger *log.Logger, baseDir string, location string, tag string) (Lagoon, error) {
 	absBaseDir, err := filepath.Abs(baseDir)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	ctx := context{
@@ -46,26 +46,32 @@ func Create(logger *log.Logger, baseDir string, location string, tag string) (en
 	// Create component manager
 	ctx.componentManager, err = createComponentManager(&ctx)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	// Fetch the main component
-	envPath, err := ctx.componentManager.Fetch(location, tag)
+	// Try to directly parse the descriptor
+	ctx.logger.Println("fetching descriptor at " + location)
+	ctx.environment, err = model.Parse(logger, filepath.Join(location, DescriptorFileName))
 	if err != nil {
-		return
+		// If direct parsing is not possible, try fetching the repository
+		ctx.logger.Println("descriptor is not directly accessible, fetching fetching descriptor at " + location)
+		envPath, err := ctx.componentManager.Fetch(location, tag)
+		if err != nil {
+			return nil, err
+		}
+		ctx.environment, err = model.Parse(logger, filepath.Join(envPath, DescriptorFileName))
 	}
 
-	// Parse the environment descriptor from the main component
-	ctx.environment, err = model.Parse(logger, filepath.Join(envPath, DescriptorFileName))
+	// If only warnings are issued, allow to continue
 	if err != nil {
 		switch err.(type) {
 		case model.ValidationErrors:
 			err.(model.ValidationErrors).Log(ctx.logger)
 			if err.(model.ValidationErrors).HasErrors() {
-				return
+				return nil, err
 			}
 		default:
-			return
+			return nil, err
 		}
 	}
 
@@ -76,9 +82,7 @@ func Create(logger *log.Logger, baseDir string, location string, tag string) (en
 	}
 
 	// Use context as Lagoon facade
-	engine = &ctx
-
-	return
+	return &ctx, nil
 }
 
 // BuildDescriptorUrl builds the url of environment descriptor based on the

@@ -54,15 +54,7 @@ func (cm *componentManager) ComponentsPaths() map[string]string {
 }
 
 func (cm *componentManager) Fetch(location string, tag string) (path string, err error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return
-	}
-	absCwd, err := filepath.Abs(cwd)
-	if err != nil {
-		return
-	}
-	baseUrl, err := url.Parse("file://" + absCwd + "/")
+	baseUrl, err := GetCwdUrl()
 	if err != nil {
 		return
 	}
@@ -111,10 +103,11 @@ func (cm *componentManager) fetchComponent(cId string, cUrl *url.URL, tag string
 			return "", err
 		}
 	}
-	err = scm.Switch(cPath, tag)
-	if err != nil {
-		return "", err
+	if tag != "" {
+		err = scm.Switch(cPath, tag)
+		if err != nil {
+			return "", err
+		}
 	}
-
 	return cPath, nil
 }
