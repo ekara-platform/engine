@@ -42,7 +42,11 @@ func Create(logger *log.Logger, baseDir string, location string, tag string) (La
 		return nil, err
 	}
 
-	locationUrl, err := model.PathToUrl(location)
+	locationUrl, err := url.Parse(location)
+	if err != nil {
+		return nil, err
+	}
+	locationUrl, err = model.NormalizeUrl(locationUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -56,11 +60,16 @@ func Create(logger *log.Logger, baseDir string, location string, tag string) (La
 
 	if tag == "" {
 		// Try to directly parse the descriptor if no tag is provided
+		ctx.logger.Println("trying to directly fetch descriptor at " + location)
 		ctx.environment, err = model.Parse(logger, model.EnsurePathSuffix(locationUrl, DescriptorFileName))
 	}
 	if tag != "" || err != nil {
 		// If no tag is provided or direct parsing is not possible, try fetching the repository
-		ctx.logger.Println("descriptor is not directly accessible, fetching repository at " + location)
+		if err != nil {
+			ctx.logger.Println("descriptor is not directly accessible, fetching repository at " + location)
+		} else {
+			ctx.logger.Println("fetching repository at " + location)
+		}
 		var envUrl *url.URL
 		envUrl, err = ctx.componentManager.Fetch(location, tag)
 		if err != nil {

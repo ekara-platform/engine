@@ -11,7 +11,7 @@ import (
 func TestComponentManager_Fetch(t *testing.T) {
 	ctx := createTestContext()
 	manager := createComponentManager(&ctx)
-	mainPath, e := manager.Fetch("testdata/components/lagoon-platform/core/", "v1.0.1")
+	mainPath, e := manager.Fetch("testdata/components/lagoon-platform/core", "v1.0.1")
 	assert.Nil(t, e)
 	fmt.Println(mainPath)
 	assert.NotNil(t, mainPath)
