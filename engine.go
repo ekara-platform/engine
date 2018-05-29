@@ -42,7 +42,7 @@ func Create(logger *log.Logger, baseDir string, location string, tag string) (La
 		return nil, err
 	}
 
-	locationUrl, err := PathToUrl(location)
+	locationUrl, err := model.PathToUrl(location)
 	if err != nil {
 		return nil, err
 	}
@@ -54,17 +54,19 @@ func Create(logger *log.Logger, baseDir string, location string, tag string) (La
 	// Create component manager
 	ctx.componentManager = createComponentManager(&ctx)
 
-	// Try to directly parse the descriptor
-	ctx.environment, err = model.Parse(logger, EnsurePathSuffix(locationUrl, DescriptorFileName))
-	if err != nil {
-		// If direct parsing is not possible, try fetching the repository
+	if tag == "" {
+		// Try to directly parse the descriptor if no tag is provided
+		ctx.environment, err = model.Parse(logger, model.EnsurePathSuffix(locationUrl, DescriptorFileName))
+	}
+	if tag != "" || err != nil {
+		// If no tag is provided or direct parsing is not possible, try fetching the repository
 		ctx.logger.Println("descriptor is not directly accessible, fetching repository at " + location)
 		var envUrl *url.URL
 		envUrl, err = ctx.componentManager.Fetch(location, tag)
 		if err != nil {
 			return nil, err
 		}
-		ctx.environment, err = model.Parse(logger, EnsurePathSuffix(envUrl, DescriptorFileName))
+		ctx.environment, err = model.Parse(logger, model.EnsurePathSuffix(envUrl, DescriptorFileName))
 	}
 
 	// If only warnings are issued, allow to continue

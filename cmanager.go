@@ -57,7 +57,7 @@ func (cm *componentManager) Fetch(location string, tag string) (*url.URL, error)
 	if err != nil {
 		return nil, err
 	}
-	baseUrl, err := PathToUrl(cwd)
+	baseUrl, err := model.PathToUrl(cwd)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (cm *componentManager) Fetch(location string, tag string) (*url.URL, error)
 	if e != nil {
 		return nil, e
 	}
-	return PathToUrl(path)
+	return model.PathToUrl(path)
 }
 
 func (cm *componentManager) Ensure() error {
