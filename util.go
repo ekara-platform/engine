@@ -1,27 +1,34 @@
 package engine
 
 import (
+	"github.com/lagoon-platform/model"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-func GetCwdUrl() (*url.URL, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
+func PathToUrl(path string) (*url.URL, error) {
+	if _, err := os.Stat(path); err == nil {
+		path = "file://" + filepath.ToSlash(path)
 	}
-	cwd, err = filepath.Abs(cwd)
-	if err != nil {
-		return nil, err
+	u, e := url.Parse(path)
+	if e != nil {
+		return nil, e
 	}
-	cwd = filepath.ToSlash(cwd)
-	if strings.HasPrefix(cwd, "/") {
-		cwd = "file://" + cwd + "/"
+	return model.NormalizeUrl(u), nil
+}
+
+func EnsurePathSuffix(u *url.URL, suffix string) *url.URL {
+	res := model.NormalizeUrl(u)
+	if strings.HasSuffix(res.Path, suffix) {
+		return res
 	} else {
-		// On windows, absolute paths don't start with /
-		cwd = "file:///" + cwd + "/"
+		if strings.HasSuffix(res.Path, "/") {
+			res.Path = res.Path + suffix
+		} else {
+			res.Path = res.Path + "/" + suffix
+		}
 	}
-	return url.Parse(cwd)
+	return res
 }

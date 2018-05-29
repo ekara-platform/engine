@@ -20,7 +20,7 @@ type ComponentManager interface {
 	ComponentPath(id string) string
 	ComponentsPaths() map[string]string
 
-	Fetch(location string, version string) (string, error)
+	Fetch(location string, version string) (*url.URL, error)
 	Ensure() error
 }
 
@@ -31,13 +31,12 @@ type componentManager struct {
 	paths      map[string]string
 }
 
-func createComponentManager(ctx *context) (cm ComponentManager, err error) {
-	cm = &componentManager{
+func createComponentManager(ctx *context) ComponentManager {
+	return &componentManager{
 		logger:     ctx.logger,
-		directory:  filepath.Join(ctx.workDir, "components"),
+		directory:  filepath.Join(ctx.directory, "components"),
 		components: map[string]model.Component{},
 		paths:      map[string]string{}}
-	return
 }
 
 func (cm *componentManager) RegisterComponent(c model.Component) {
@@ -53,16 +52,26 @@ func (cm *componentManager) ComponentsPaths() map[string]string {
 	panic("implement me")
 }
 
-func (cm *componentManager) Fetch(location string, tag string) (path string, err error) {
-	baseUrl, err := GetCwdUrl()
+func (cm *componentManager) Fetch(location string, tag string) (*url.URL, error) {
+	cwd, err := os.Getwd()
 	if err != nil {
-		return
+		return nil, err
 	}
+	baseUrl, err := PathToUrl(cwd)
+	if err != nil {
+		return nil, err
+	}
+
 	cId, cUrl, err := model.ResolveRepositoryInfo(baseUrl, location)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return cm.fetchComponent(cId, cUrl, tag)
+
+	path, e := cm.fetchComponent(cId, cUrl, tag)
+	if e != nil {
+		return nil, e
+	}
+	return PathToUrl(path)
 }
 
 func (cm *componentManager) Ensure() error {

@@ -10,11 +10,7 @@ import (
 
 func TestComponentManager_Fetch(t *testing.T) {
 	ctx := createTestContext()
-	manager, e := createComponentManager(&ctx)
-	assert.Nil(t, e)
-
-	os.Getwd()
-
+	manager := createComponentManager(&ctx)
 	mainPath, e := manager.Fetch("testdata/components/lagoon-platform/core/", "v1.0.1")
 	assert.Nil(t, e)
 	fmt.Println(mainPath)
@@ -24,6 +20,6 @@ func TestComponentManager_Fetch(t *testing.T) {
 func createTestContext() context {
 	os.RemoveAll("testdata/work")
 	return context{
-		logger:  log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime),
-		workDir: "testdata/work"}
+		logger:    log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime),
+		directory: "testdata/work"}
 }

@@ -22,8 +22,11 @@ type Lagoon interface {
 }
 
 type context struct {
-	logger      *log.Logger
-	workDir     string
+	// Base attributes
+	logger    *log.Logger
+	directory string
+
+	// Lagoon environment
 	environment model.Environment
 
 	// Subsystems
@@ -39,27 +42,29 @@ func Create(logger *log.Logger, baseDir string, location string, tag string) (La
 		return nil, err
 	}
 
-	ctx := context{
-		logger:  logger,
-		workDir: absBaseDir}
-
-	// Create component manager
-	ctx.componentManager, err = createComponentManager(&ctx)
+	locationUrl, err := PathToUrl(location)
 	if err != nil {
 		return nil, err
 	}
 
+	ctx := context{
+		logger:    logger,
+		directory: absBaseDir}
+
+	// Create component manager
+	ctx.componentManager = createComponentManager(&ctx)
+
 	// Try to directly parse the descriptor
-	ctx.logger.Println("fetching descriptor at " + location)
-	ctx.environment, err = model.Parse(logger, filepath.Join(location, DescriptorFileName))
+	ctx.environment, err = model.Parse(logger, EnsurePathSuffix(locationUrl, DescriptorFileName))
 	if err != nil {
 		// If direct parsing is not possible, try fetching the repository
-		ctx.logger.Println("descriptor is not directly accessible, fetching fetching descriptor at " + location)
-		envPath, err := ctx.componentManager.Fetch(location, tag)
+		ctx.logger.Println("descriptor is not directly accessible, fetching repository at " + location)
+		var envUrl *url.URL
+		envUrl, err = ctx.componentManager.Fetch(location, tag)
 		if err != nil {
 			return nil, err
 		}
-		ctx.environment, err = model.Parse(logger, filepath.Join(envPath, DescriptorFileName))
+		ctx.environment, err = model.Parse(logger, EnsurePathSuffix(envUrl, DescriptorFileName))
 	}
 
 	// If only warnings are issued, allow to continue

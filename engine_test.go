@@ -8,7 +8,14 @@ import (
 	"testing"
 )
 
-func TestEngine(t *testing.T) {
+func TestEngineRemote(t *testing.T) {
+	os.RemoveAll("testdata/work")
+	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "https://github.com/nirekin/lagoontest", "")
+	assertOnlyWarnings(t, e)
+	assert.NotNil(t, engine)
+}
+
+func TestEngineLocal(t *testing.T) {
 	os.RemoveAll("testdata/work")
 	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "v1.0.0")
 	assertOnlyWarnings(t, e)
