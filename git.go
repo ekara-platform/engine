@@ -54,9 +54,14 @@ func (gitScm GitScmHandler) Update(path string) error {
 		return err
 	}
 	gitScm.logger.Println("fetching latest data from " + config.Remotes["origin"].URLs[0])
-	return repo.Fetch(&git.FetchOptions{
+	err = repo.Fetch(&git.FetchOptions{
 		Progress: os.Stdout,
 		Tags:     git.AllTags})
+	if err == git.NoErrAlreadyUpToDate {
+		gitScm.logger.Println("already up-to-date")
+		return nil
+	}
+	return err
 }
 
 func (gitScm GitScmHandler) Switch(path string, tag string) error {

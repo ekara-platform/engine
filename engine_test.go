@@ -10,9 +10,13 @@ import (
 
 func TestEngineRemoteNoTag(t *testing.T) {
 	os.RemoveAll("testdata/work")
-	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "https://github.com/nirekin/lagoontest", "")
+	engine1, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "https://github.com/nirekin/lagoontest", "")
 	assertOnlyWarnings(t, e)
-	assert.NotNil(t, engine)
+	assert.NotNil(t, engine1)
+
+	engine2, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "https://github.com/nirekin/lagoontest", "")
+	assertOnlyWarnings(t, e)
+	assert.NotNil(t, engine2)
 }
 
 func TestEngineLocalWithTag(t *testing.T) {
