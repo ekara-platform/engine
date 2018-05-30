@@ -5,7 +5,6 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"log"
 	"net/url"
-	"os"
 )
 
 type GitScmHandler struct {
@@ -35,9 +34,7 @@ func (gitScm GitScmHandler) Matches(source *url.URL, path string) bool {
 
 func (gitScm GitScmHandler) Fetch(source *url.URL, dest string) error {
 	gitScm.logger.Println("cloning GIT repository " + source.String())
-	_, err := git.PlainClone(dest, false, &git.CloneOptions{
-		Progress: os.Stdout,
-		URL:      source.String()})
+	_, err := git.PlainClone(dest, false, &git.CloneOptions{URL: source.String()})
 	if err != nil {
 		return err
 	}
@@ -54,9 +51,7 @@ func (gitScm GitScmHandler) Update(path string) error {
 		return err
 	}
 	gitScm.logger.Println("fetching latest data from " + config.Remotes["origin"].URLs[0])
-	err = repo.Fetch(&git.FetchOptions{
-		Progress: os.Stdout,
-		Tags:     git.AllTags})
+	err = repo.Fetch(&git.FetchOptions{Tags: git.AllTags})
 	if err == git.NoErrAlreadyUpToDate {
 		gitScm.logger.Println("already up-to-date")
 		return nil
