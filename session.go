@@ -31,9 +31,10 @@ func (s EngineSession) Delete() (b []byte, e error) {
 	return
 }
 
-func HasCreationSession(location string) (logged bool, session EngineSession) {
+func HasCreationSession(ef ExchangeFolder) (logged bool, session EngineSession) {
 	var s CreationSession
-	file := path.Join(location, CreationSessionFileName)
+
+	file := path.Join(ef.Location.Path(), CreationSessionFileName)
 	if _, err := os.Stat(file); err == nil {
 		if data, err := os.Open(file); err == nil {
 

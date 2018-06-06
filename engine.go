@@ -229,11 +229,3 @@ func CheckProxy() (httpProxy string, httpsProxy string, noProxy string) {
 	noProxy = os.Getenv(NoProxyEnvVariableKey)
 	return
 }
-
-func CheckCUMode() (bool, error) {
-	create := os.Getenv(StarterCreateEnvVariableKey)
-	if create == "" {
-		return false, fmt.Errorf(ERROR_REQUIRED_ENV, StarterCreateEnvVariableKey)
-	}
-	return create == "true", nil
-}

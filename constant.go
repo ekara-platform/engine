@@ -12,10 +12,6 @@ const (
 	// location between several Lagoon components.
 	StarterEnvVariableKey string = "LAGOON_ENV_DESCR"
 
-	// The environment variable used to tell the Lagoon Engine if we are runnig
-	// a "creation" or an "update"
-	StarterCreateEnvVariableKey string = "LAGOON_CREATE"
-
 	// The name of the client requesting the environment creation or update
 	ClientEnvVariableKey string = "LAGOON_CLIENT"
 
