@@ -12,8 +12,11 @@ const (
 	// location between several Lagoon components.
 	StarterEnvVariableKey string = "LAGOON_ENV_DESCR"
 
-	// The name of the client requesting the environment creation or update
+	// The name of the client requesting the action on the environment
 	ClientEnvVariableKey string = "LAGOON_CLIENT"
+
+	// The action to perform on the environment
+	ActionEnvVariableKey string = "LAGOON_ACTION"
 
 	// The environment variable used to get or store the http proxy definition
 	HttpProxyEnvVariableKey string = "http_proxy"
