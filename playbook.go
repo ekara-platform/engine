@@ -34,9 +34,9 @@ func LaunchPlayBook(folder string, playbook string, extraVars string, logger log
 
 	var cmd *exec.Cmd
 	if len(extraVars) > 0 {
-		cmd = exec.Command("ansible-playbook", playbook, "--extra-vars", extraVars, "--module-path", InstallerVolume+"/module")
+		cmd = exec.Command("ansible-playbook", playbook, "--extra-vars", extraVars, "--module-path", "/opt/lagoon/ansible/core/modules")
 	} else {
-		cmd = exec.Command("ansible-playbook", playbook, "--module-path", InstallerVolume+"/module")
+		cmd = exec.Command("ansible-playbook", playbook, "--module-path", "/opt/lagoon/ansible/core/modules")
 	}
 	cmd.Env = os.Environ()
 	for _, v := range envars {

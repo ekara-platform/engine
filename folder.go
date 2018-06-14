@@ -1,7 +1,6 @@
 package engine
 
 import (
-	_ "log"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,14 +11,21 @@ type FolderPath interface {
 	Path() string
 	AdaptedPath() string
 	Exixts() bool
+	Contains(s string) bool
 }
 
+// The ExchangeFolder is used to pass content to a container.
 type ExchangeFolder struct {
+	// Root location of the exchange folder
 	Location FolderPath
-	Input    FolderPath
-	Output   FolderPath
+	// Input data passed to the container
+	Input FolderPath
+	// Output data produced by the container
+	Output FolderPath
 }
 
+// Create creates phisically the folder.
+// If the folder already exist  it will remain untouched
 func (f ExchangeFolder) Create() error {
 	if _, err := os.Stat(f.Location.Path()); os.IsNotExist(err) {
 		e := os.Mkdir(f.Location.Path(), 0700)
@@ -42,7 +48,8 @@ func (f ExchangeFolder) Create() error {
 	return nil
 }
 
-func (f ExchangeFolder) CleanAllFiles() error {
+// CleanAll cleans all the folder content
+func (f ExchangeFolder) CleanAll() error {
 	e := os.RemoveAll(f.Location.Path())
 	if e != nil {
 		return e
@@ -64,22 +71,28 @@ func (f Folder) Path() string {
 func (f Folder) Exixts() bool {
 	_, err := os.Stat(f.path)
 	return os.IsNotExist(err)
+}
 
+func (f Folder) Contains(s string) bool {
+	if _, err := os.Stat(JoinPaths(f.Path(), s)); os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
 
 type Folder struct {
 	path string
 }
 
-func ClientExchangeFolder(location string, clientName string) (ExchangeFolder, error) {
+func CreateExchangeFolder(location string, folderName string) (ExchangeFolder, error) {
 	outputDir, err := filepath.Abs(location)
 	r := ExchangeFolder{}
 	if err != nil {
 		return r, err
 	}
-	r.Location = Folder{path: JoinPaths(outputDir, clientName)}
-	r.Output = Folder{path: JoinPaths(outputDir, clientName, "output")}
-	r.Input = Folder{path: JoinPaths(outputDir, clientName, "input")}
+	r.Location = Folder{path: JoinPaths(outputDir, folderName)}
+	r.Output = Folder{path: JoinPaths(outputDir, folderName, "output")}
+	r.Input = Folder{path: JoinPaths(outputDir, folderName, "input")}
 	return r, nil
 }
 
