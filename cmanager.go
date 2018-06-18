@@ -1,11 +1,12 @@
 package engine
 
 import (
-	"github.com/lagoon-platform/model"
 	"log"
 	"net/url"
 	"os"
 	"path/filepath"
+
+	"github.com/lagoon-platform/model"
 )
 
 type ScmHandler interface {
@@ -49,7 +50,7 @@ func (cm *componentManager) ComponentPath(id string) string {
 }
 
 func (cm *componentManager) ComponentsPaths() map[string]string {
-	panic("implement me")
+	return cm.paths
 }
 
 func (cm *componentManager) Fetch(location string, tag string) (*url.URL, error) {
@@ -81,6 +82,7 @@ func (cm *componentManager) Ensure() error {
 		if err != nil {
 			return err
 		}
+		cm.logger.Printf("Paths added: \"%s=%s\"", c.Id, path)
 		cm.paths[c.Id] = path
 	}
 	return nil
