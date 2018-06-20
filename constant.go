@@ -15,6 +15,12 @@ const (
 	// The name of the client requesting the action on the environment
 	ClientEnvVariableKey string = "LAGOON_CLIENT"
 
+	// The Name of the SSH Public key file
+	SSHPuplicKeyFileName string = "ssh.pub"
+
+	// The Name of the SSH Private key file
+	SSHPrivateKeyFileName string = "ssh.pem"
+
 	// The action to perform on the environment
 	ActionEnvVariableKey string = "LAGOON_ACTION"
 
@@ -33,8 +39,9 @@ const (
 	// The name of the generated configuration file for a node
 	NodeConfigFileName string = "conf.yml"
 
-	// The name of the generated docker config file for a node
-	NodeDockerFileName string = "docker.yml"
+	// The name of the generated orchestrator config file for a node
+	// TODO Rename this file in param.yaml calling the orchestrator components
+	OrchestratorFileName string = "orchestrator.yaml"
 
 	// The name of the generated creation session file returned to the client
 	CreationSessionFileName string = "create_session.json"

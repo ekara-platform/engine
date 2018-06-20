@@ -23,8 +23,8 @@
 [[projects]]
   name = "github.com/imdario/mergo"
   packages = ["."]
-  revision = "9d5f1277e9a8ed20c3684bda8fde67c05628518c"
-  version = "v0.3.4"
+  revision = "9316a62528ac99aaecb4e47eadd6dc8aa6533d58"
+  version = "v0.3.5"
 
 [[projects]]
   branch = "master"
@@ -42,13 +42,13 @@
   branch = "master"
   name = "github.com/lagoon-platform/model"
   packages = ["."]
-  revision = "a79b49dea39eb6cefbda8a173a802068c258955f"
+  revision = "043aa15ffdcd23de8b5b8d57501d1a1fa9143e2b"
 
 [[projects]]
   branch = "master"
   name = "github.com/mitchellh/go-homedir"
   packages = ["."]
-  revision = "b8bc1bf767474819792c23f32d8286a45736f1c6"
+  revision = "3864e76763d94a6df2f9960b16a20a33da9f9a66"
 
 [[projects]]
   name = "github.com/pelletier/go-buffruneio"
@@ -82,8 +82,8 @@
 [[projects]]
   name = "github.com/stretchr/testify"
   packages = ["assert"]
-  revision = "12b6f73e6084dad08a7c6e575284b177ecafbc71"
-  version = "v1.2.1"
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [[projects]]
   branch = "master"
@@ -100,6 +100,7 @@
     "ed25519",
     "ed25519/internal/edwards25519",
     "internal/chacha20",
+    "internal/subtle",
     "openpgp",
     "openpgp/armor",
     "openpgp/elgamal",
@@ -111,19 +112,19 @@
     "ssh/agent",
     "ssh/knownhosts"
   ]
-  revision = "1a580b3eff7814fc9b40602fd35256c63b50f491"
+  revision = "7f39a6fea4fe9364fb61e1def6a268a51b4f3a06"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
-  revision = "2491c5de3490fced2f6cff376127c667efeed857"
+  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["windows"]
-  revision = "7c87d13f8e835d2fb3a70a2912c811ed0c1d241b"
+  revision = "fc8bd948cf46f9c7af0f07d34151ce25fe90e477"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -183,7 +184,7 @@
     "plumbing/transport/ssh",
     "storage",
     "storage/filesystem",
-    "storage/filesystem/internal/dotgit",
+    "storage/filesystem/dotgit",
     "storage/memory",
     "utils/binary",
     "utils/diff",
@@ -194,8 +195,8 @@
     "utils/merkletrie/internal/frame",
     "utils/merkletrie/noder"
   ]
-  revision = "57570e84f8c5739f0f4a59387493e590e709dde9"
-  version = "v4.4.0"
+  revision = "b23570073eaee3489e5e3d666f22ba5cbeb53243"
+  version = "v4.4.1"
 
 [[projects]]
   name = "gopkg.in/warnings.v0"
@@ -212,6 +213,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "511c2baf2ffd79fe32282407601df5d3bb97e092218e6ba94f64f80fb98598a0"
+  inputs-digest = "a10c049f5c3414bb0aae97df1b1fc0507fba4dea51f3fe700719a173284ff2ae"
   solver-name = "gps-cdcl"
   solver-version = 1
