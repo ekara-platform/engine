@@ -4,6 +4,10 @@ version: 1.0.0
 settings:
   componentBase: testdata/components
 
+lagoonPlateform:
+  repository: lagoon-platform/swarm-provider
+  version: 1.2.3
+
 components:
   lagoon-platform/aws-provider: 1.2.0
 
