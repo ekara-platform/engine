@@ -11,6 +11,11 @@ providers:
   aws:
     repository: lagoon-platform/aws-provider
 
+orchestrator:
+  name: swarm
+  repository: lagoon-platform/swarm-provider
+  version: 1.2.3
+
 nodes:
   group1:
     provider:
