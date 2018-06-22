@@ -33,9 +33,16 @@ type context struct {
 	componentManager ComponentManager
 }
 
-// Create creates an environment descriptor based on the provider location.
+// Create creates an environment descriptor based on the provided location.
 //
 // The location can be an URL over http or https or even a file system location.
+//
+//	Parameters:
+//		logger: the logger
+//		baseDir: the directory where the environment will take place among its
+//				 inclusions and related components
+//		location: the location of the environment descriptor
+//		tag: the version of the environment
 func Create(logger *log.Logger, baseDir string, location string, tag string) (Lagoon, error) {
 	absBaseDir, err := filepath.Abs(baseDir)
 	if err != nil {

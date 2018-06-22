@@ -42,7 +42,7 @@
   branch = "master"
   name = "github.com/lagoon-platform/model"
   packages = ["."]
-  revision = "c2081c6fa673826cfd2bdb313226eff16cee5561"
+  revision = "6c970edc6e42ced77f16b4e2213ac3aa0f47d06e"
 
 [[projects]]
   branch = "master"
@@ -112,19 +112,19 @@
     "ssh/agent",
     "ssh/knownhosts"
   ]
-  revision = "7f39a6fea4fe9364fb61e1def6a268a51b4f3a06"
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
-  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
+  revision = "afe8f62b1d6bbd81f31868121a50b06d8188e1f9"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["windows"]
-  revision = "fc8bd948cf46f9c7af0f07d34151ce25fe90e477"
+  revision = "ad87a3a340fa7f3bed189293fbfa7a9b7e021ae1"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -148,8 +148,8 @@
     "osfs",
     "util"
   ]
-  revision = "df053870ae7070b0350624ba5a22161ba3796cc0"
-  version = "v4.1.1"
+  revision = "83cf655d40b15b427014d7875d10850f96edba14"
+  version = "v4.2.0"
 
 [[projects]]
   name = "gopkg.in/src-d/go-git.v4"
