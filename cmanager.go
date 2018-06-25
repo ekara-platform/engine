@@ -72,7 +72,7 @@ func (cm *componentManager) SaveComponentsPaths(log *log.Logger, e model.Environ
 		fMap.File[p.Name] = repName
 	}
 
-	repCoreName := cm.ComponentPath(e.LagoonPlateform.Component.Id)
+	repCoreName := cm.ComponentPath(e.LagoonPlatform.Component.Id)
 	fMap.File["core"] = repCoreName
 	b, err := yaml.Marshal(&fMap)
 	if err != nil {
