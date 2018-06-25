@@ -43,6 +43,9 @@ const (
 	// TODO Rename this file in param.yaml calling the orchestrator components
 	OrchestratorFileName string = "orchestrator.yaml"
 
+	// The name of the file containing the map of all components locations
+	ComponentPathsFileName string = "component_paths.yaml"
+
 	// The name of the generated creation session file returned to the client
 	CreationSessionFileName string = "create_session.json"
 

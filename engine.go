@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/lagoon-platform/model"
-	"gopkg.in/yaml.v2"
+	_ "gopkg.in/yaml.v2"
 )
 
 type Lagoon interface {
@@ -152,12 +152,12 @@ func getOutboundIP() net.IP {
 //and name.
 //
 //If the file already exists then it will be replaced.
-func SaveFile(logger *log.Logger, folder string, name string, b []byte) error {
-	l := filepath.Join(folder, name)
+func SaveFile(logger *log.Logger, folder FolderPath, name string, b []byte) error {
+	l := filepath.Join(folder.Path(), name)
 	logger.Printf(LOG_SAVING, l)
 	os.Remove(l)
 	if _, err := os.Stat(name); os.IsNotExist(err) {
-		e := os.MkdirAll(folder, 0700)
+		e := os.MkdirAll(folder.Path(), 0700)
 		if e != nil {
 			logger.Printf(ERROR, e.Error())
 			return e
@@ -180,6 +180,7 @@ func SaveFile(logger *log.Logger, folder string, name string, b []byte) error {
 }
 
 // Proxy describes the structure used to Marshal the content of the proxy file configuration
+/**
 type Proxy struct {
 	// The root of the proxy specification
 	ProxyEnv      ProxyEnv `yaml:"proxy_env"`
@@ -198,32 +199,7 @@ type ProxyEnv struct {
 	// The "NO PROXY" specification
 	No string `yaml:"no_proxy"`
 }
-
-//proxyConfig returns the content of the proxy configuration file
-func proxyConfig(http string, https string, no string) (b []byte, e error) {
-	proxy := Proxy{ProxyEnv: ProxyEnv{Http: http, Https: https, No: no}, ProxyHost: "http.internetpsa.inetpsa.com", ProxyPort: "80", ProxyUser: "mzplagww", ProxyPassword: "wwlag00n"}
-	b, e = yaml.Marshal(&proxy)
-	return
-}
-
-// SaveProxy creates and saves the proxy configuration file.
-//
-// The file will be saved into the given folder with the name:
-//  engine.ProxyConfigFileName
-func SaveProxy(logger *log.Logger, folder string, httpProxy string, httpsProxy string, noProxy string) error {
-	b, e := proxyConfig(httpProxy, httpsProxy, noProxy)
-	if e != nil {
-		logger.Printf(ERROR_GENERATING_PROXY_CONFIG, e.Error())
-		return e
-	}
-
-	e = SaveFile(logger, folder, ProxyConfigFileName, b)
-	if e != nil {
-		return e
-	}
-	return nil
-}
-
+*/
 //CheckProxy returns the proxy setting from environment variables
 //
 // See:

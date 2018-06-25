@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/lagoon-platform/model"
+	"gopkg.in/yaml.v2"
 )
 
 type ScmHandler interface {
@@ -20,7 +21,7 @@ type ComponentManager interface {
 	RegisterComponent(c model.Component)
 	ComponentPath(id string) string
 	ComponentsPaths() map[string]string
-
+	SaveComponentsPaths(log *log.Logger, e model.Environment, dest FolderPath) error
 	Fetch(location string, version string) (*url.URL, error)
 	Ensure() error
 }
@@ -30,6 +31,11 @@ type componentManager struct {
 	directory  string
 	components map[string]model.Component
 	paths      map[string]string
+}
+
+// FileMap is used to Marshal the map of downloaded componebts
+type FileMap struct {
+	File map[string]string `yaml:"component_path"`
 }
 
 func createComponentManager(ctx *context) ComponentManager {
@@ -51,6 +57,32 @@ func (cm *componentManager) ComponentPath(id string) string {
 
 func (cm *componentManager) ComponentsPaths() map[string]string {
 	return cm.paths
+}
+
+func (cm *componentManager) SaveComponentsPaths(log *log.Logger, e model.Environment, dest FolderPath) error {
+	err := cm.Ensure()
+	if err != nil {
+		return err
+	}
+	fMap := FileMap{}
+	fMap.File = make(map[string]string)
+	// Adding the provider components
+	for _, p := range e.Providers {
+		repName := cm.ComponentPath(p.Component.Id)
+		fMap.File[p.Name] = repName
+	}
+
+	repCoreName := cm.ComponentPath(e.LagoonPlateform.Component.Id)
+	fMap.File["core"] = repCoreName
+	b, err := yaml.Marshal(&fMap)
+	if err != nil {
+		return err
+	}
+	err = SaveFile(log, dest, ComponentPathsFileName, b)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (cm *componentManager) Fetch(location string, tag string) (*url.URL, error) {
@@ -83,6 +115,7 @@ func (cm *componentManager) Ensure() error {
 			return err
 		}
 		cm.logger.Printf("Paths added: \"%s=%s\"", c.Id, path)
+		c := cm.components[c.Id]
 		cm.paths[c.Id] = path
 	}
 	return nil

@@ -11,30 +11,31 @@ import (
 )
 
 // LaunchPlayBook launches the playbook located into the given folder with the extraVars
-func LaunchPlayBook(folder string, playbook string, extraVars string, logger log.Logger, envars ...string) {
+func LaunchPlayBook(path string, playbook string, extraVars ExtraVars, logger log.Logger, envars ...string) {
 	logger.Printf(LOG_LAUNCHING_PLAYBOOK, playbook)
-	_, err := ioutil.ReadDir(folder)
+	_, err := ioutil.ReadDir(path)
 	if err != nil {
 		logger.Fatal(err)
 	}
 
 	var playBookPath string
 
-	if strings.HasSuffix(folder, "/") {
-		playBookPath = folder + playbook
+	if strings.HasSuffix(path, "/") {
+		playBookPath = path + playbook
 	} else {
-		playBookPath = folder + "/" + playbook
+		playBookPath = path + "/" + playbook
 	}
 
 	if _, err := os.Stat(playBookPath); os.IsNotExist(err) {
 		logger.Fatalf(ERROR_MISSING, playBookPath)
+	} else {
+		logger.Printf(LOG_STARTING_PLAYBOOK, playBookPath)
 	}
 
-	logger.Printf(LOG_STARTING_PLAYBOOK, playBookPath)
-
 	var cmd *exec.Cmd
-	if len(extraVars) > 0 {
-		cmd = exec.Command("ansible-playbook", playbook, "--extra-vars", extraVars, "--module-path", "/opt/lagoon/ansible/core/modules")
+	if extraVars.Bool {
+		logger.Printf("Return extra vars :%s", extraVars.String())
+		cmd = exec.Command("ansible-playbook", playbook, "--extra-vars", extraVars.String(), "--module-path", "/opt/lagoon/ansible/core/modules")
 	} else {
 		cmd = exec.Command("ansible-playbook", playbook, "--module-path", "/opt/lagoon/ansible/core/modules")
 	}
@@ -43,7 +44,7 @@ func LaunchPlayBook(folder string, playbook string, extraVars string, logger log
 		cmd.Env = append(cmd.Env, v)
 	}
 
-	cmd.Dir = folder
+	cmd.Dir = path
 
 	errReader, err := cmd.StderrPipe()
 	if err != nil {
@@ -76,4 +77,45 @@ func logPipe(rc io.ReadCloser, l log.Logger) {
 			l.Printf("%s\n", s.Text())
 		}
 	}()
+}
+
+type ExtraVars struct {
+	Bool bool
+	Vals []string
+}
+
+func (ev ExtraVars) String() string {
+	r := ""
+	for _, v := range ev.Vals {
+		r = r + " " + v
+	}
+
+	return r
+}
+
+func BuildExtraVars(extraVars string, inputFolder FolderPath, outputFolder FolderPath) ExtraVars {
+	r := ExtraVars{}
+	r.Vals = make([]string, 0)
+
+	vars := strings.Trim(extraVars, " ")
+	in := strings.Trim(inputFolder.Path(), " ")
+	out := strings.Trim(outputFolder.Path(), " ")
+	if vars == "" && in == "" && out == "" {
+		r.Bool = false
+	} else {
+		r.Bool = true
+		r.Vals = append(r.Vals, "--extra-vars")
+		if vars != "" {
+			r.Vals = append(r.Vals, vars)
+		}
+
+		if in != "" {
+			r.Vals = append(r.Vals, "input_dir="+in)
+		}
+
+		if out != "" {
+			r.Vals = append(r.Vals, "output_dir="+out)
+		}
+	}
+	return r
 }
