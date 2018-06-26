@@ -42,7 +42,7 @@
   branch = "master"
   name = "github.com/lagoon-platform/model"
   packages = ["."]
-  revision = "6c970edc6e42ced77f16b4e2213ac3aa0f47d06e"
+  revision = "7e994e0b90c2c78f0bc22eb74b470fa42e0811f3"
 
 [[projects]]
   branch = "master"
@@ -124,7 +124,7 @@
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["windows"]
-  revision = "ad87a3a340fa7f3bed189293fbfa7a9b7e021ae1"
+  revision = "a200a19cb90b19de298170992778b1fda7217bd6"
 
 [[projects]]
   name = "golang.org/x/text"
