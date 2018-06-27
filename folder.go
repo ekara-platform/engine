@@ -139,11 +139,11 @@ func (f FolderPath) Copy(content string, destination FolderPath) error {
 
 // AddChildExchangeFolder creates a child of type ExchangeFolder having
 // this folder as root location
-func (f *FolderPath) AddChildExchangeFolder(childName string) (ExchangeFolder, error) {
+func (f *FolderPath) AddChildExchangeFolder(childName string) (*ExchangeFolder, error) {
 	child, err := CreateExchangeFolder(f.Path(), childName)
 
 	if err != nil {
-		return ExchangeFolder{}, err
+		return &ExchangeFolder{}, err
 	}
 	f.Children[childName] = child
 	return child, nil
@@ -189,21 +189,21 @@ func (f FolderPath) create() error {
 
 type FolderPath struct {
 	path     string
-	Children map[string]ExchangeFolder
+	Children map[string]*ExchangeFolder
 }
 
-func CreateExchangeFolder(location string, folderName string) (ExchangeFolder, error) {
+func CreateExchangeFolder(location string, folderName string) (*ExchangeFolder, error) {
 	outputDir, err := filepath.Abs(location)
 
 	r := ExchangeFolder{}
 	if err != nil {
-		return r, err
+		return &r, err
 	}
 
-	r.Location = &FolderPath{path: JoinPaths(outputDir, folderName), Children: make(map[string]ExchangeFolder)}
-	r.Output = &FolderPath{path: JoinPaths(outputDir, folderName, "output"), Children: make(map[string]ExchangeFolder)}
-	r.Input = &FolderPath{path: JoinPaths(outputDir, folderName, "input"), Children: make(map[string]ExchangeFolder)}
-	return r, nil
+	r.Location = &FolderPath{path: JoinPaths(outputDir, folderName), Children: make(map[string]*ExchangeFolder)}
+	r.Output = &FolderPath{path: JoinPaths(outputDir, folderName, "output"), Children: make(map[string]*ExchangeFolder)}
+	r.Input = &FolderPath{path: JoinPaths(outputDir, folderName, "input"), Children: make(map[string]*ExchangeFolder)}
+	return &r, nil
 }
 
 func JoinPaths(paths ...string) string {
