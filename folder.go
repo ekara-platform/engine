@@ -1,21 +1,43 @@
 package engine
 
 import (
+	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
 )
 
+// FolderPath represents a folder used into the ExchangeFolder structure
 type FolderPath interface {
+	//Path returns the path to this folder
 	Path() string
+
+	//AdaptedPath returns the path of this folder adapted depending
+	// on the OS we are running on
+	// For example on Windows it convert c:\Users\blablabla
+	// to /c/Users/blablabla
 	AdaptedPath() string
+
+	// Exixts returns true if this folder exixts physically
 	Exixts() bool
+
+	// Contains returns true if this folder contains the given content
 	Contains(s string) bool
+
+	// ContainsParamYaml returns true if this folder contains a file named ParamYamlFileName
+	ContainsParamYaml() (ok bool, b []byte, e error)
+
+	// ContainsExtraVarsYaml returns true if this folder contains a file named ExtraVarYamlFileName
+	ContainsExtraVarsYaml() (ok bool, b []byte, e error)
+
+	// ContainsEnvYaml returns true if this folder contains a file named EnvYamlFileName
+	ContainsEnvYaml() (ok bool, b []byte, e error)
 }
 
-// The ExchangeFolder is used to pass content to a container.
+// ExchangeFolder represents a folder structure used to pass and get content to container.
 type ExchangeFolder struct {
 	// Root location of the exchange folder
 	Location FolderPath
@@ -25,8 +47,8 @@ type ExchangeFolder struct {
 	Output FolderPath
 }
 
-// Create creates phisically the folder.
-// If the folder already exist  it will remain untouched
+// Create creates physically the ExchangeFolder.
+// If the ExchangeFolder already exist  it will remain untouched
 func (f ExchangeFolder) Create() error {
 	if _, err := os.Stat(f.Location.Path()); os.IsNotExist(err) {
 		e := os.Mkdir(f.Location.Path(), 0700)
@@ -49,7 +71,7 @@ func (f ExchangeFolder) Create() error {
 	return nil
 }
 
-// CleanAll cleans all the folder content
+// CleanAll cleans all the ExchangeFolder content
 func (f ExchangeFolder) CleanAll() error {
 	e := os.RemoveAll(f.Location.Path())
 	if e != nil {
@@ -59,8 +81,6 @@ func (f ExchangeFolder) CleanAll() error {
 	return nil
 }
 
-// Adapt from c:\Users\e518546\goPathRoot\src\github.com\lagoon-platform\cli
-// to /c/Users/e518546/goPathRoot/src/github.com/lagoon-platform/cli
 func (f Folder) AdaptedPath() string {
 	return AdaptPath(f.path)
 }
@@ -79,6 +99,21 @@ func (f Folder) Contains(s string) bool {
 		return false
 	}
 	return true
+}
+
+func (f Folder) ContainsParamYaml() (ok bool, b []byte, e error) {
+	ok, b, e = containsAndRead(f, ParamYamlFileName)
+	return
+}
+
+func (f Folder) ContainsExtraVarsYaml() (ok bool, b []byte, e error) {
+	ok, b, e = containsAndRead(f, ExtraVarYamlFileName)
+	return
+}
+
+func (f Folder) ContainsEnvYaml() (ok bool, b []byte, e error) {
+	ok, b, e = containsAndRead(f, EnvYamlFileName)
+	return
 }
 
 type Folder struct {
@@ -116,4 +151,16 @@ func AdaptPath(path string) string {
 	}
 	log.Printf("AdaptPath func %s", s)
 	return s
+}
+
+func containsAndRead(f Folder, s string) (bool, []byte, error) {
+	if ok := f.Contains(s); ok {
+		b, err := ioutil.ReadFile(path.Join(f.Path(), s))
+		if err != nil {
+			return false, nil, err
+		}
+		return ok, b, nil
+	}
+	return false, nil, nil
+
 }

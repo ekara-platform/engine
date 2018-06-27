@@ -36,9 +36,6 @@ const (
 	// The name of the generated proxy configuration file
 	ProxyConfigFileName string = "proxy_env.yml"
 
-	// The name of the generated configuration file for a node
-	NodeConfigFileName string = "params.yaml"
-
 	// The name of the generated orchestrator config file for a node
 	// TODO Rename this file in param.yaml calling the orchestrator components
 	OrchestratorFileName string = "orchestrator.yaml"
@@ -54,4 +51,13 @@ const (
 
 	// Volum location used by the installer
 	InstallerVolume string = "/opt/lagoon/output"
+
+	// The name of file containing params
+	ParamYamlFileName string = "params.yaml"
+
+	// The name of file containing extra vars
+	ExtraVarYamlFileName string = "extra_vars.yaml"
+
+	// // The name of file containing environment variables
+	EnvYamlFileName string = "env.yaml"
 )
