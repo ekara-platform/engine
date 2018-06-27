@@ -20,3 +20,6 @@ vendor/
 # Test generated input and output
 testdata/components
 testdata/work
+
+# Test generated folder
+testExFolder
