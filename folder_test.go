@@ -49,10 +49,22 @@ func TestExchangeFolder(t *testing.T) {
 func TestChildren(t *testing.T) {
 	ef, err := CreateExchangeFolder(".", "testExFolder")
 	assert.Nil(t, err)
+
+	assert.Equal(t, len(ef.Location.Children), 0)
+	assert.Equal(t, len(ef.Input.Children), 0)
+	assert.Equal(t, len(ef.Output.Children), 0)
+
 	child, err := ef.Input.AddChildExchangeFolder("child")
 	assert.Nil(t, err)
 
-	ok, err := child.Location.Exixts()
+	assert.Equal(t, len(ef.Location.Children), 0)
+	assert.Equal(t, len(ef.Input.Children), 1)
+	assert.Equal(t, len(ef.Output.Children), 0)
+
+	_, ok := (ef.Input.Children)["child"]
+	assert.True(t, ok)
+
+	ok, err = child.Location.Exixts()
 	assert.False(t, ok)
 
 	ok, err = child.Input.Exixts()
@@ -64,6 +76,7 @@ func TestChildren(t *testing.T) {
 	// Physical creation of the parent
 	// This is supposed to also create the children
 	err = ef.Create()
+	assert.Nil(t, err)
 
 	ok, err = child.Location.Exixts()
 	assert.True(t, ok)
@@ -135,7 +148,7 @@ func TestContent(t *testing.T) {
 	ok = ef.Output.Contains("test.txt")
 	assert.False(t, ok)
 
-	err = ef.Input.Copy("test.txt", ef.Output)
+	err = ef.Input.Copy("test.txt", *ef.Output)
 	assert.Nil(t, err)
 
 	ok = ef.Output.Contains("test.txt")
@@ -149,5 +162,4 @@ func TestContent(t *testing.T) {
 
 	ok = ef.Output.Contains("test.txt")
 	assert.False(t, ok)
-
 }

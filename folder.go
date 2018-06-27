@@ -17,11 +17,11 @@ import (
 // ExchangeFolder represents a folder structure used to pass and get content to container.
 type ExchangeFolder struct {
 	// Root location of the exchange folder
-	Location FolderPath
+	Location *FolderPath
 	// Input data passed to the container
-	Input FolderPath
+	Input *FolderPath
 	// Output data produced by the container
-	Output FolderPath
+	Output *FolderPath
 }
 
 // Create creates physically the ExchangeFolder.
@@ -141,6 +141,7 @@ func (f FolderPath) Copy(content string, destination FolderPath) error {
 // this folder as root location
 func (f *FolderPath) AddChildExchangeFolder(childName string) (ExchangeFolder, error) {
 	child, err := CreateExchangeFolder(f.Path(), childName)
+
 	if err != nil {
 		return ExchangeFolder{}, err
 	}
@@ -173,13 +174,16 @@ func (f FolderPath) create() error {
 			return e
 		}
 	}
+	if len(f.Children) > 0 {
+		for _, v := range f.Children {
 
-	for _, v := range f.Children {
-		e := v.Create()
-		if e != nil {
-			return e
+			e := v.Create()
+			if e != nil {
+				return e
+			}
 		}
 	}
+
 	return nil
 }
 
@@ -190,14 +194,15 @@ type FolderPath struct {
 
 func CreateExchangeFolder(location string, folderName string) (ExchangeFolder, error) {
 	outputDir, err := filepath.Abs(location)
+
 	r := ExchangeFolder{}
 	if err != nil {
 		return r, err
 	}
-	r.Location = FolderPath{path: JoinPaths(outputDir, folderName), Children: make(map[string]ExchangeFolder)}
-	r.Output = FolderPath{path: JoinPaths(outputDir, folderName, "output"), Children: make(map[string]ExchangeFolder)}
-	r.Input = FolderPath{path: JoinPaths(outputDir, folderName, "input"), Children: make(map[string]ExchangeFolder)}
 
+	r.Location = &FolderPath{path: JoinPaths(outputDir, folderName), Children: make(map[string]ExchangeFolder)}
+	r.Output = &FolderPath{path: JoinPaths(outputDir, folderName, "output"), Children: make(map[string]ExchangeFolder)}
+	r.Input = &FolderPath{path: JoinPaths(outputDir, folderName, "input"), Children: make(map[string]ExchangeFolder)}
 	return r, nil
 }
 
