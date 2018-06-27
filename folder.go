@@ -1,6 +1,8 @@
 package engine
 
 import (
+	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -35,6 +37,9 @@ type FolderPath interface {
 
 	// ContainsEnvYaml returns true if this folder contains a file named EnvYamlFileName
 	ContainsEnvYaml() (ok bool, b []byte, e error)
+
+	// Copy copies, if it exists, the content to the destination foler
+	Copy(content string, destination FolderPath) error
 }
 
 // ExchangeFolder represents a folder structure used to pass and get content to container.
@@ -114,6 +119,30 @@ func (f Folder) ContainsExtraVarsYaml() (ok bool, b []byte, e error) {
 func (f Folder) ContainsEnvYaml() (ok bool, b []byte, e error) {
 	ok, b, e = containsAndRead(f, EnvYamlFileName)
 	return
+}
+
+func (f Folder) Copy(content string, destination FolderPath) error {
+	if f.Contains(content) {
+		in, err := os.Open(JoinPaths(f.Path(), content))
+		if err != nil {
+			return err
+		}
+		defer in.Close()
+
+		out, err := os.Create(JoinPaths(destination.Path(), content))
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+
+		_, err = io.Copy(out, in)
+		if err != nil {
+			return err
+		}
+		return out.Close()
+	} else {
+		return fmt.Errorf("The content %s doesn't exist", content)
+	}
 }
 
 type Folder struct {
