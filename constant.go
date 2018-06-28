@@ -36,10 +36,6 @@ const (
 	// The name of the generated proxy configuration file
 	ProxyConfigFileName string = "proxy_env.yml"
 
-	// The name of the generated orchestrator config file for a node
-	// TODO Rename this file in param.yaml calling the orchestrator components
-	OrchestratorFileName string = "orchestrator.yaml"
-
 	// The name of the file containing the map of all components locations
 	ComponentPathsFileName string = "component_paths.yaml"
 
