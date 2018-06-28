@@ -52,7 +52,7 @@ const (
 	ParamYamlFileName string = "params.yaml"
 
 	// The name of file containing extra vars
-	ExtraVarYamlFileName string = "extra_vars.yaml"
+	ExtraVarYamlFileName string = "extra-vars.yaml"
 
 	// // The name of file containing environment variables
 	EnvYamlFileName string = "env.yaml"

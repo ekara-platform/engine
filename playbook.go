@@ -11,7 +11,7 @@ import (
 )
 
 // LaunchPlayBook launches the playbook located into the given folder with the extraVars
-func LaunchPlayBook(path string, playbook string, extraVars ExtraVars, logger log.Logger, envars ...string) {
+func LaunchPlayBook(path string, playbook string, extraVars ExtraVars, module string, logger log.Logger, envars ...string) {
 	logger.Printf(LOG_LAUNCHING_PLAYBOOK, playbook)
 	_, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -34,10 +34,23 @@ func LaunchPlayBook(path string, playbook string, extraVars ExtraVars, logger lo
 
 	var cmd *exec.Cmd
 	if extraVars.Bool {
-		logger.Printf("Return extra vars :%s", extraVars.String())
-		cmd = exec.Command("ansible-playbook", playbook, "--extra-vars", extraVars.String(), "--module-path", "/opt/lagoon/ansible/core/modules")
+		logger.Printf("launched with extra vars :%s", extraVars.String())
+		if module == "" {
+			logger.Printf("launched without module ")
+			cmd = exec.Command("ansible-playbook", playbook, "--extra-vars", extraVars.String())
+		} else {
+			logger.Printf("launched with module :%s", module)
+			cmd = exec.Command("ansible-playbook", playbook, "--extra-vars", extraVars.String(), "--module-path", module)
+		}
 	} else {
-		cmd = exec.Command("ansible-playbook", playbook, "--module-path", "/opt/lagoon/ansible/core/modules")
+		logger.Printf("launched without extra vars")
+		if module == "" {
+			logger.Printf("launched without module ")
+			cmd = exec.Command("ansible-playbook", playbook)
+		} else {
+			logger.Printf("launched with module :%s", module)
+			cmd = exec.Command("ansible-playbook", playbook, "--module-path", module)
+		}
 	}
 	cmd.Env = os.Environ()
 	for _, v := range envars {
