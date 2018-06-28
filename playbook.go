@@ -93,6 +93,18 @@ func (ev ExtraVars) String() string {
 	return r
 }
 
+// BuildEquals converts a map[string]string into a succession
+// of equalities of type "map key=map value"
+// 	Example:
+//		key1=val1 key2=val2 key3=val3
+func BuildEquals(m map[string]string) string {
+	var r string
+	for k, v := range m {
+		r = r + k + "=" + v + " "
+	}
+	return r
+}
+
 func BuildExtraVars(extraVars string, inputFolder FolderPath, outputFolder FolderPath) ExtraVars {
 	r := ExtraVars{}
 	r.Vals = make([]string, 0)
