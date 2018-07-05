@@ -102,7 +102,6 @@ func (ev ExtraVars) String() string {
 	for _, v := range ev.Vals {
 		r = r + " " + v
 	}
-
 	return r
 }
 
