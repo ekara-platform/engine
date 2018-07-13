@@ -34,14 +34,16 @@ func CreateBuffer() Buffer {
 
 // GetBuffer returns a buffer based on the content of the given folder.
 //
-//  - The "Envvars" of the buffer will be filled by the content of the file name like  EnvYamlFileName
-//  - The "Extravars" of the buffer will be filled by the content of the file name like  ExtraVarYamlFileName
-//  - The "Param" of the buffer will be filled by the content of the file name like  ParamYamlFileName
+// - The "Envvars" of the buffer will be filled by the content of the file name like  EnvYamlFileName
+// - The "Extravars" of the buffer will be filled by the content of the file name like  ExtraVarYamlFileName
+// - The "Param" of the buffer will be filled by the content of the file name like  ParamYamlFileName
+//
 //
 //	Parameters:
 //		f: the folder where to look for the buffer content
 //		logger: the logger
-//		location: a string used to specify into the log messages to which concept the buffer is related
+//		location: a string used to specify, into the log messages, to which concept the buffer is related
+//
 //
 // See Also :
 //  EnvYamlFileName
@@ -55,7 +57,7 @@ func GetBuffer(f *FolderPath, logger *log.Logger, location string) (err error, b
 	var b []byte
 
 	if ok, b, err = f.ContainsEnvYaml(); ok {
-		logger.Printf("Consuming %s from create for node %s", EnvYamlFileName, location)
+		logger.Printf("Consuming %s for %s", EnvYamlFileName, location)
 		if err != nil {
 			return
 		}
@@ -68,7 +70,7 @@ func GetBuffer(f *FolderPath, logger *log.Logger, location string) (err error, b
 	}
 
 	if ok, b, err = f.ContainsExtraVarsYaml(); ok {
-		logger.Printf("Consuming %s from create for node %s", ExtraVarYamlFileName, location)
+		logger.Printf("Consuming %s for %s", ExtraVarYamlFileName, location)
 		if err != nil {
 			return
 		}
@@ -81,7 +83,7 @@ func GetBuffer(f *FolderPath, logger *log.Logger, location string) (err error, b
 	}
 
 	if ok, b, err = f.ContainsParamYaml(); ok {
-		logger.Printf("Consuming %s from create for node %s", ParamYamlFileName, location)
+		logger.Printf("Consuming %s for  %s", ParamYamlFileName, location)
 		if err != nil {
 			return
 		}
