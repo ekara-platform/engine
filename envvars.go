@@ -1,6 +1,6 @@
 package engine
 
-// Buffer contains the extra vars to be passed to a playbook
+// EnvVars contains the extra vars to be passed to a playbook
 type EnvVars struct {
 	content map[string]string
 }
@@ -23,7 +23,7 @@ func (ev *EnvVars) Add(key, value string) {
 //
 // Only the "Extravars" content of the buffer will be processed.
 //
-// If any of the buffered key already exists then its content will be
+// If any of the buffered keys already exist then its content will be
 // overwritten by the by the corresponding buffered value.
 func (ev *EnvVars) AddBuffer(b Buffer) {
 	for k, v := range b.Envvars {
