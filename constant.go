@@ -54,6 +54,9 @@ const (
 	// The name of file containing extra vars
 	ExtraVarYamlFileName string = "extra-vars.yaml"
 
-	// // The name of file containing environment variables
+	//  The name of file containing environment variables
 	EnvYamlFileName string = "env.yaml"
+
+	// Componebt modules folder
+	ComponentModuleFolder string = "modules"
 )

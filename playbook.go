@@ -8,10 +8,26 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/lagoon-platform/model"
 )
 
 // LaunchPlayBook launches the playbook located into the given folder with the extraVars
-func LaunchPlayBook(path string, playbook string, extraVars ExtraVars, module string, logger log.Logger, envars ...string) {
+func LaunchPlayBook(manager ComponentManager, component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, logger log.Logger) {
+	// Path of the component where the plabook is supposed to be located
+	path := manager.ComponentPath(component.Id)
+
+	// We check if the component contains mmodules
+	module := JoinPaths(path, ComponentModuleFolder)
+	if _, err := os.Stat(module); err != nil {
+		if os.IsNotExist(err) {
+			logger.Printf("No module located in %s", module)
+			module = ""
+		}
+	} else {
+		logger.Printf("Module located in %s", module)
+	}
+
 	logger.Printf(LOG_LAUNCHING_PLAYBOOK, playbook)
 	_, err := ioutil.ReadDir(path)
 	if err != nil {
@@ -52,9 +68,10 @@ func LaunchPlayBook(path string, playbook string, extraVars ExtraVars, module st
 			cmd = exec.Command("ansible-playbook", playbook, "--module-path", module)
 		}
 	}
+
 	cmd.Env = os.Environ()
-	for _, v := range envars {
-		cmd.Env = append(cmd.Env, v)
+	for k, v := range envars.content {
+		cmd.Env = append(cmd.Env, k+"="+v)
 	}
 
 	cmd.Dir = path
@@ -92,19 +109,6 @@ func logPipe(rc io.ReadCloser, l log.Logger) {
 	}()
 }
 
-type ExtraVars struct {
-	Bool bool
-	Vals []string
-}
-
-func (ev ExtraVars) String() string {
-	r := ""
-	for _, v := range ev.Vals {
-		r = r + " " + v
-	}
-	return r
-}
-
 // BuildEquals converts a map[string]string into a succession
 // of equalities of type "map key=map value"
 // 	Example:
@@ -113,33 +117,6 @@ func BuildEquals(m map[string]string) string {
 	var r string
 	for k, v := range m {
 		r = r + k + "=" + v + " "
-	}
-	return r
-}
-
-func BuildExtraVars(extraVars string, inputFolder FolderPath, outputFolder FolderPath) ExtraVars {
-	r := ExtraVars{}
-	r.Vals = make([]string, 0)
-
-	vars := strings.Trim(extraVars, " ")
-	in := strings.Trim(inputFolder.Path(), " ")
-	out := strings.Trim(outputFolder.Path(), " ")
-	if vars == "" && in == "" && out == "" {
-		r.Bool = false
-	} else {
-		r.Bool = true
-		r.Vals = append(r.Vals, "--extra-vars")
-		if vars != "" {
-			r.Vals = append(r.Vals, vars)
-		}
-
-		if in != "" {
-			r.Vals = append(r.Vals, "input_dir="+in)
-		}
-
-		if out != "" {
-			r.Vals = append(r.Vals, "output_dir="+out)
-		}
 	}
 	return r
 }

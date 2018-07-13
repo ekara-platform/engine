@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -14,5 +15,7 @@ func TestBuildEquals(t *testing.T) {
 
 	r := BuildEquals(m)
 
-	assert.Equal(t, r, "key1=val1 key2=val2 key3=val3 ")
+	assert.Equal(t, true, strings.Contains(r, "key1=val1"))
+	assert.Equal(t, true, strings.Contains(r, "key2=val2"))
+	assert.Equal(t, true, strings.Contains(r, "key3=val3"))
 }

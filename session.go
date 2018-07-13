@@ -8,7 +8,7 @@ import (
 )
 
 type EngineSession struct {
-	CreationSession CreationSession
+	CreationSession *CreationSession
 	File            string
 }
 
@@ -17,21 +17,24 @@ type CreationSession struct {
 	Uids   map[string]string
 }
 
-func (s CreationSession) Add(name string, uid string) {
+//Add adds or replace the unique id for the given name
+func (s *CreationSession) Add(name string, uid string) {
 	s.Uids[name] = uid
 }
 
-func (s CreationSession) Content() (b []byte, e error) {
+// Content returns the json representation of the session
+func (s *CreationSession) Content() (b []byte, e error) {
 	b, e = json.Marshal(s)
 	return
 }
 
-func (s EngineSession) Delete() (b []byte, e error) {
+// TODO implement this
+func (s *EngineSession) DeleteTodo() (b []byte, e error) {
 	b, e = json.Marshal(s)
 	return
 }
 
-func HasCreationSession(ef ExchangeFolder) (logged bool, session EngineSession) {
+func HasCreationSession(ef ExchangeFolder) (logged bool, session *EngineSession) {
 	var s CreationSession
 
 	file := path.Join(ef.Location.Path(), CreationSessionFileName)
@@ -44,13 +47,13 @@ func HasCreationSession(ef ExchangeFolder) (logged bool, session EngineSession) 
 				log.Fatal(err.Error())
 			}
 			logged = true
-			session = EngineSession{CreationSession: s, File: file}
+			session = &EngineSession{CreationSession: &s, File: file}
 			return
 		} else {
 			log.Fatal(err.Error())
 		}
 	}
 	logged = false
-	session = EngineSession{}
+	session = &EngineSession{}
 	return
 }
