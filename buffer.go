@@ -34,9 +34,11 @@ func CreateBuffer() Buffer {
 
 // GetBuffer returns a buffer based on the content of the given folder.
 //
-// - The "Envvars" of the buffer will be filled by the content of the file name like  EnvYamlFileName
-// - The "Extravars" of the buffer will be filled by the content of the file name like  ExtraVarYamlFileName
-// - The "Param" of the buffer will be filled by the content of the file name like  ParamYamlFileName
+/*
+ - The "Envvars" of the buffer will be filled by the content of the file name like  EnvYamlFileName
+ - The "Extravars" of the buffer will be filled by the content of the file name like  ExtraVarYamlFileName
+ - The "Param" of the buffer will be filled by the content of the file name like  ParamYamlFileName
+*/
 //
 //
 //	Parameters:
