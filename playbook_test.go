@@ -21,7 +21,7 @@ func TestBuildEquals(t *testing.T) {
 	assert.Equal(t, true, strings.Contains(r, "key3=val3"))
 }
 
-func ExampleEquals(t *testing.T) {
+func ExampleBuildEquals(t *testing.T) {
 	m := make(map[string]string)
 	m["key1"] = "val1"
 	m["key2"] = "val2"
