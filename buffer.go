@@ -40,8 +40,7 @@ func CreateBuffer() Buffer {
  - The "Param" of the buffer will be filled by the content of the file name like  ParamYamlFileName.
 */
 //
-//
-//	Parameters:
+// Parameters:
 //		f: the folder where to look for the buffer content
 //		logger: the logger
 //		location: a string used to specify, into the log messages, to which concept the buffer is related
