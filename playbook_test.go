@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -18,4 +19,14 @@ func TestBuildEquals(t *testing.T) {
 	assert.Equal(t, true, strings.Contains(r, "key1=val1"))
 	assert.Equal(t, true, strings.Contains(r, "key2=val2"))
 	assert.Equal(t, true, strings.Contains(r, "key3=val3"))
+}
+
+func ExampleEquals(t *testing.T) {
+	m := make(map[string]string)
+	m["key1"] = "val1"
+	m["key2"] = "val2"
+	m["key3"] = "val3"
+
+	r := BuildEquals(m)
+	fmt.Println(r)
 }
