@@ -110,7 +110,6 @@ func Create(logger *log.Logger, baseDir string, location string, tag string) (La
 
 // BuildDescriptorUrl builds the url of environment descriptor based on the
 // url received has parameter
-//
 func BuildDescriptorUrl(url url.URL) url.URL {
 	if strings.HasSuffix(url.Path, "/") {
 		url.Path = url.Path + DescriptorFileName
@@ -179,27 +178,6 @@ func SaveFile(logger *log.Logger, folder FolderPath, name string, b []byte) erro
 	return nil
 }
 
-// Proxy describes the structure used to Marshal the content of the proxy file configuration
-/**
-type Proxy struct {
-	// The root of the proxy specification
-	ProxyEnv      ProxyEnv `yaml:"proxy_env"`
-	ProxyHost     string   `yaml:"proxy_host"`
-	ProxyPort     string   `yaml:"proxy_port"`
-	ProxyUser     string   `yaml:"proxy_user"`
-	ProxyPassword string   `yaml:"proxy_password"`
-}
-
-// ProxyEnv contains the proxy file configuration
-type ProxyEnv struct {
-	// The "HTTP PROXY" specification
-	Http string `yaml:"http_proxy"`
-	// The "HTTPS PROXY" specification
-	Https string `yaml:"https_proxy"`
-	// The "NO PROXY" specification
-	No string `yaml:"no_proxy"`
-}
-*/
 //CheckProxy returns the proxy setting from environment variables
 //
 // See:

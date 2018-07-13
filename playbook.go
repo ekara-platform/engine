@@ -111,7 +111,8 @@ func logPipe(rc io.ReadCloser, l log.Logger) {
 
 // BuildEquals converts a map[string]string into a succession
 // of equalities of type "map key=map value" separated by a space
-// 	Example of returned value :
+//
+//	Example of returned value :
 //		"key1=val1 key2=val2 key3=val3"
 func BuildEquals(m map[string]string) string {
 	var r string
