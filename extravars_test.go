@@ -48,12 +48,10 @@ func TestExtraVarsBuffer(t *testing.T) {
 	b := Buffer{}
 	extraVars := make(map[string]string)
 	extraVars["key1"] = "val1"
-	extraVars["key2"] = "val2"
 	b.Extravars = extraVars
 	ev := BuildExtraVars("", FolderPath{}, FolderPath{}, b)
 	assert.Equal(t, true, ev.Bool)
 	assert.Equal(t, 3, len(ev.Vals))
 	assert.Equal(t, "--extra-vars", ev.Vals[0])
 	assert.Equal(t, "key1=val1", ev.Vals[1])
-	assert.Equal(t, "key2=val2", ev.Vals[2])
 }
