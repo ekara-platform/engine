@@ -45,6 +45,8 @@
         git init
         git add .
         git commit -m "Content for v1.0.0"
+        git checkout -b test
+        git checkout master
         git tag v1.0.0
     )
 )
