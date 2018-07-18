@@ -42,8 +42,8 @@ type context struct {
 //		baseDir: the directory where the environment will take place among its
 //				 inclusions and related components
 //		location: the location of the environment descriptor
-//		tag: the version of the environment
-func Create(logger *log.Logger, baseDir string, location string, tag string) (Lagoon, error) {
+//		ref: the tag/branch reference to use
+func Create(logger *log.Logger, baseDir string, location string, ref string) (Lagoon, error) {
 	absBaseDir, err := filepath.Abs(baseDir)
 	if err != nil {
 		return nil, err
@@ -65,20 +65,20 @@ func Create(logger *log.Logger, baseDir string, location string, tag string) (La
 	// Create component manager
 	ctx.componentManager = createComponentManager(&ctx)
 
-	if tag == "" {
-		// Try to directly parse the descriptor if no tag is provided
-		ctx.logger.Println("trying to directly fetch descriptor at " + location)
+	if ref == "" {
+		// Try to directly parse the descriptor if no ref is provided
+		ctx.logger.Println("parsing descriptor at " + location)
 		ctx.environment, err = model.Parse(logger, model.EnsurePathSuffix(locationUrl, DescriptorFileName))
 	}
-	if tag != "" || err != nil {
-		// If no tag is provided or direct parsing is not possible, try fetching the repository
+	if ref != "" || err != nil {
+		// If no ref is provided or direct parsing is not possible, try fetching the repository
 		if err != nil {
-			ctx.logger.Println("descriptor is not directly accessible, fetching repository at " + location)
+			ctx.logger.Println("descriptor is not directly parsable, fetching repository at " + location)
 		} else {
 			ctx.logger.Println("fetching repository at " + location)
 		}
 		var envUrl *url.URL
-		envUrl, err = ctx.componentManager.Fetch(location, tag)
+		envUrl, err = ctx.componentManager.Fetch(location, ref)
 		if err != nil {
 			return nil, err
 		}

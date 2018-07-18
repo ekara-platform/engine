@@ -12,9 +12,9 @@ import (
 
 type ScmHandler interface {
 	Matches(source *url.URL, path string) bool
-	Fetch(source *url.URL, dest string) error
-	Update(dest string) error
-	Switch(path string, tag string) error
+	Fetch(source *url.URL, path string) error
+	Update(path string) error
+	Switch(path string, ref string) error
 }
 
 type ComponentManager interface {
@@ -22,7 +22,7 @@ type ComponentManager interface {
 	ComponentPath(id string) string
 	ComponentsPaths() map[string]string
 	SaveComponentsPaths(log *log.Logger, e model.Environment, dest FolderPath) error
-	Fetch(location string, version string) (*url.URL, error)
+	Fetch(location string, ref string) (*url.URL, error)
 	Ensure() error
 }
 
@@ -89,7 +89,7 @@ func (cm *componentManager) SaveComponentsPaths(log *log.Logger, e model.Environ
 	return nil
 }
 
-func (cm *componentManager) Fetch(location string, tag string) (*url.URL, error) {
+func (cm *componentManager) Fetch(location string, ref string) (*url.URL, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -104,7 +104,7 @@ func (cm *componentManager) Fetch(location string, tag string) (*url.URL, error)
 		return nil, err
 	}
 
-	path, e := cm.fetchComponent(cId, cUrl, tag)
+	path, e := cm.fetchComponent(cId, cUrl, ref)
 	if e != nil {
 		return nil, e
 	}
@@ -125,7 +125,7 @@ func (cm *componentManager) Ensure() error {
 	return nil
 }
 
-func (cm *componentManager) fetchComponent(cId string, cUrl *url.URL, tag string) (path string, err error) {
+func (cm *componentManager) fetchComponent(cId string, cUrl *url.URL, ref string) (path string, err error) {
 	scm := GitScmHandler{logger: cm.logger} // TODO dynamically select proper handler
 	cPath := filepath.Join(cm.directory, cId)
 	if _, err := os.Stat(cPath); err == nil {
@@ -151,11 +151,10 @@ func (cm *componentManager) fetchComponent(cId string, cUrl *url.URL, tag string
 			return "", err
 		}
 	}
-	if tag != "" {
-		err = scm.Switch(cPath, tag)
-		if err != nil {
-			return "", err
-		}
+
+	err = scm.Switch(cPath, ref)
+	if err != nil {
+		return "", err
 	}
 	return cPath, nil
 }

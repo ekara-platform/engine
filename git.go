@@ -5,7 +5,11 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"log"
 	"net/url"
+	"strings"
+	"fmt"
 )
+
+const defaultGitRemoteName = "origin"
 
 type GitScmHandler struct {
 	ScmHandler
@@ -32,9 +36,13 @@ func (gitScm GitScmHandler) Matches(source *url.URL, path string) bool {
 	return false
 }
 
-func (gitScm GitScmHandler) Fetch(source *url.URL, dest string) error {
+func (gitScm GitScmHandler) Fetch(source *url.URL, path string) error {
 	gitScm.logger.Println("cloning GIT repository " + source.String())
-	_, err := git.PlainClone(dest, false, &git.CloneOptions{URL: source.String()})
+	_, err := git.PlainClone(path, false, &git.CloneOptions{
+		RemoteName:   defaultGitRemoteName,
+		URL:          source.String(),
+		SingleBranch: false,
+		Tags:         git.AllTags})
 	if err != nil {
 		return err
 	}
@@ -51,7 +59,8 @@ func (gitScm GitScmHandler) Update(path string) error {
 		return err
 	}
 	gitScm.logger.Println("fetching latest data from " + config.Remotes["origin"].URLs[0])
-	err = repo.Fetch(&git.FetchOptions{Tags: git.AllTags})
+	err = repo.Fetch(&git.FetchOptions{
+		Tags: git.AllTags})
 	if err == git.NoErrAlreadyUpToDate {
 		gitScm.logger.Println("already up-to-date")
 		return nil
@@ -59,7 +68,7 @@ func (gitScm GitScmHandler) Update(path string) error {
 	return err
 }
 
-func (gitScm GitScmHandler) Switch(path string, tag string) error {
+func (gitScm GitScmHandler) Switch(path string, ref string) error {
 	repo, err := git.PlainOpen(path)
 	if err != nil {
 		return err
@@ -68,8 +77,18 @@ func (gitScm GitScmHandler) Switch(path string, tag string) error {
 	if err != nil {
 		return err
 	}
-	gitScm.logger.Println("checking out tag " + tag)
-	return tree.Checkout(&git.CheckoutOptions{
-		Branch: plumbing.ReferenceName("refs/tags/" + tag),
-		Force:  true})
+	if ref == "" {
+		ref = "#master"
+	}
+	if strings.HasPrefix(ref, "#") {
+		gitScm.logger.Println("checking out branch " + ref[1:])
+		return tree.Checkout(&git.CheckoutOptions{
+			Branch: plumbing.ReferenceName(fmt.Sprintf("refs/remotes/%s/%s", defaultGitRemoteName, ref[1:])),
+			Force:  true})
+	} else {
+		gitScm.logger.Println("checking out tag " + ref)
+		return tree.Checkout(&git.CheckoutOptions{
+			Branch: plumbing.ReferenceName(fmt.Sprintf("refs/tags/%s", ref)),
+			Force:  true})
+	}
 }
