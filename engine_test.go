@@ -35,9 +35,16 @@ func TestEngineLocalNoRef(t *testing.T) {
 	engine.ComponentManager().Ensure()
 }
 
+func TestEngineLocalWithRawRef(t *testing.T) {
+	os.RemoveAll("testdata/work")
+	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "refs/remotes/origin/test")
+	assertOnlyWarnings(t, e)
+	engine.ComponentManager().Ensure()
+}
+
 func TestEngineLocalWithBranchRef(t *testing.T) {
 	os.RemoveAll("testdata/work")
-	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "#test")
+	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "test")
 	assertOnlyWarnings(t, e)
 	engine.ComponentManager().Ensure()
 }

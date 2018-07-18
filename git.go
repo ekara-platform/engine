@@ -77,18 +77,27 @@ func (gitScm GitScmHandler) Switch(path string, ref string) error {
 	if err != nil {
 		return err
 	}
-	if ref == "" {
-		ref = "#master"
+	if ref != "" {
+		// Only do a checkout if a ref is specified
+		if strings.HasPrefix(ref, "refs/") {
+			// Raw refs are checked out as-is
+			gitScm.logger.Println("checking out " + ref)
+			err = checkout(tree, ref)
+		} else {
+			// Otherwise try tag first then branch
+			gitScm.logger.Println("checking out tag " + ref)
+			err = checkout(tree, fmt.Sprintf("refs/tags/%s", ref))
+			if err != nil {
+				gitScm.logger.Println("no tag named " + ref + " checking out branch instead")
+				err = checkout(tree, fmt.Sprintf("refs/remotes/%s/%s", defaultGitRemoteName, ref))
+			}
+		}
 	}
-	if strings.HasPrefix(ref, "#") {
-		gitScm.logger.Println("checking out branch " + ref[1:])
-		return tree.Checkout(&git.CheckoutOptions{
-			Branch: plumbing.ReferenceName(fmt.Sprintf("refs/remotes/%s/%s", defaultGitRemoteName, ref[1:])),
-			Force:  true})
-	} else {
-		gitScm.logger.Println("checking out tag " + ref)
-		return tree.Checkout(&git.CheckoutOptions{
-			Branch: plumbing.ReferenceName(fmt.Sprintf("refs/tags/%s", ref)),
-			Force:  true})
-	}
+	return err
+}
+
+func checkout(tree *git.Worktree, ref string) error {
+	return tree.Checkout(&git.CheckoutOptions{
+		Branch: plumbing.ReferenceName(ref),
+		Force:  true})
 }
