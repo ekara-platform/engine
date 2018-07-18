@@ -21,16 +21,23 @@ func TestEngineRemoteNoTag(t *testing.T) {
 	assert.NotNil(t, engine2)
 }
 */
-func TestEngineLocalWithTag(t *testing.T) {
+func TestEngineLocalWithTagRef(t *testing.T) {
 	os.RemoveAll("testdata/work")
 	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "v1.0.0")
 	assertOnlyWarnings(t, e)
 	engine.ComponentManager().Ensure()
 }
 
-func TestEngineLocalNoTag(t *testing.T) {
+func TestEngineLocalNoRef(t *testing.T) {
 	os.RemoveAll("testdata/work")
 	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "")
+	assertOnlyWarnings(t, e)
+	engine.ComponentManager().Ensure()
+}
+
+func TestEngineLocalWithBranchRef(t *testing.T) {
+	os.RemoveAll("testdata/work")
+	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "#test")
 	assertOnlyWarnings(t, e)
 	engine.ComponentManager().Ensure()
 }
