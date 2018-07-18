@@ -13,6 +13,15 @@ import (
 )
 
 // LaunchPlayBook launches the playbook located into the given folder with the extraVars
+//
+//
+//	Parameters:
+//		manager: the component manager in charge of the localization of the component
+//		component: the component holding the playbook to launch
+//		playbook: the playbook to launch
+//		extraVars: the extra vars passed to the playbook
+//		envars: the environment variables set on the command launching the playbook
+//		logger: the logger
 func LaunchPlayBook(manager ComponentManager, component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, logger log.Logger) {
 	// Path of the component where the plabook is supposed to be located
 	path := manager.ComponentPath(component.Id)
