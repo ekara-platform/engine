@@ -12,6 +12,10 @@ const (
 	// location between several Lagoon components.
 	StarterEnvVariableKey string = "LAGOON_ENV_DESCR"
 
+	// The environment variable used to pass the environment descriptor
+	// name between several Lagoon components.
+	StarterEnvNameVariableKey string = "LAGOON_ENV_DESCR_NAME"
+
 	// The name of the client requesting the action on the environment
 	ClientEnvVariableKey string = "LAGOON_CLIENT"
 

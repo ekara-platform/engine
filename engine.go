@@ -43,7 +43,7 @@ type context struct {
 //				 inclusions and related components
 //		location: the location of the environment descriptor
 //		ref: the tag/branch reference to use
-func Create(logger *log.Logger, baseDir string, location string, ref string) (Lagoon, error) {
+func Create(logger *log.Logger, baseDir string, location string, ref string, fileName string) (Lagoon, error) {
 	absBaseDir, err := filepath.Abs(baseDir)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func Create(logger *log.Logger, baseDir string, location string, ref string) (La
 	if ref == "" {
 		// Try to directly parse the descriptor if no ref is provided
 		ctx.logger.Println("parsing descriptor at " + location)
-		ctx.environment, err = model.Parse(logger, model.EnsurePathSuffix(locationUrl, DescriptorFileName))
+		ctx.environment, err = model.Parse(logger, model.EnsurePathSuffix(locationUrl, fileName))
 	}
 	if ref != "" || err != nil {
 		// If no ref is provided or direct parsing is not possible, try fetching the repository
@@ -82,7 +82,7 @@ func Create(logger *log.Logger, baseDir string, location string, ref string) (La
 		if err != nil {
 			return nil, err
 		}
-		ctx.environment, err = model.Parse(logger, model.EnsurePathSuffix(envUrl, DescriptorFileName))
+		ctx.environment, err = model.Parse(logger, model.EnsurePathSuffix(envUrl, fileName))
 	}
 
 	// If only warnings are issued, allow to continue
@@ -110,11 +110,11 @@ func Create(logger *log.Logger, baseDir string, location string, ref string) (La
 
 // BuildDescriptorUrl builds the url of environment descriptor based on the
 // url received has parameter
-func BuildDescriptorUrl(url url.URL) url.URL {
+func BuildDescriptorUrl(url url.URL, fileName string) url.URL {
 	if strings.HasSuffix(url.Path, "/") {
-		url.Path = url.Path + DescriptorFileName
+		url.Path = url.Path + fileName
 	} else {
-		url.Path = url.Path + "/" + DescriptorFileName
+		url.Path = url.Path + "/" + fileName
 	}
 	return url
 }
