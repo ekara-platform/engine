@@ -23,28 +23,28 @@ func TestEngineRemoteNoTag(t *testing.T) {
 */
 func TestEngineLocalWithTagRef(t *testing.T) {
 	os.RemoveAll("testdata/work")
-	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "v1.0.0")
+	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "v1.0.0", DescriptorFileName)
 	assertOnlyWarnings(t, e)
 	engine.ComponentManager().Ensure()
 }
 
 func TestEngineLocalNoRef(t *testing.T) {
 	os.RemoveAll("testdata/work")
-	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "")
+	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "", DescriptorFileName)
 	assertOnlyWarnings(t, e)
 	engine.ComponentManager().Ensure()
 }
 
 func TestEngineLocalWithRawRef(t *testing.T) {
 	os.RemoveAll("testdata/work")
-	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "refs/remotes/origin/test")
+	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "refs/remotes/origin/test", DescriptorFileName)
 	assertOnlyWarnings(t, e)
 	engine.ComponentManager().Ensure()
 }
 
 func TestEngineLocalWithBranchRef(t *testing.T) {
 	os.RemoveAll("testdata/work")
-	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "test")
+	engine, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "testdata/sample", "test", DescriptorFileName)
 	assertOnlyWarnings(t, e)
 	engine.ComponentManager().Ensure()
 }
