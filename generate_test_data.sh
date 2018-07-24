@@ -58,6 +58,24 @@
         git commit -a -m "Content for v1.2.1"
     )
 
+    mkdir -p components/lagoon-platform/monitoring-stack
+    (
+        cd components/lagoon-platform/monitoring-stack
+        git init
+        echo "v1.0.0" > VERSION
+        git add .
+        git commit -m "Content for v1.0.0"
+        git tag v1.0.0
+        echo "v1.1.0" > VERSION
+        git commit -a -m "Content for v1.1.0"
+        git tag v1.1.0
+        echo "v1.2.0" > VERSION
+        git commit -a -m "Content for v1.2.0"
+        git tag v1.2.0
+        echo "v1.2.1" > VERSION
+        git commit -a -m "Content for v1.2.1"
+    )
+
     mkdir -p sample
     (
         cd sample

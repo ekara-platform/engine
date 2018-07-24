@@ -6,13 +6,14 @@ lagoon:
   components:
     lagoon-platform/aws-provider: 1.1.0
     lagoon-platform/swarm-provider: 1.2.0
+    lagoon-platform/monitoring-stack: 1.0.0
+
+orchestrator:
+  repository: lagoon-platform/swarm-provider
 
 providers:
   aws:
     repository: lagoon-platform/aws-provider
-
-orchestrator:
-  repository: lagoon-platform/swarm-provider
 
 nodes:
   group1:
@@ -20,3 +21,6 @@ nodes:
       name: aws
     instances: 3
 
+stacks:
+  monitoring:
+    repository: lagoon-platform/monitoring-stack

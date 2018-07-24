@@ -99,12 +99,23 @@ func Create(logger *log.Logger, baseDir string, location string, ref string, fil
 	}
 
 	// Register the core component
+	ctx.logger.Println("Registering core")
 	ctx.componentManager.RegisterComponent(ctx.environment.Lagoon.Component)
+
+	// Register the orchestrator component
+	ctx.logger.Println("Registering orchestrator")
+	ctx.componentManager.RegisterComponent(ctx.environment.Orchestrator.Component)
 
 	// Register provider components
 	for pName, pComp := range ctx.environment.Providers {
 		ctx.logger.Println("Registering provider " + pName)
 		ctx.componentManager.RegisterComponent(pComp.Component)
+	}
+
+	// Register stack components
+	for sName, sComp := range ctx.environment.Stacks {
+		ctx.logger.Println("Registering stack " + sName)
+		ctx.componentManager.RegisterComponent(sComp.Component)
 	}
 
 	// Use context as Lagoon facade
