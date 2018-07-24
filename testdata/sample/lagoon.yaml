@@ -1,24 +1,18 @@
 name: testEnvironment
 version: 1.0.0
 
-settings:
+lagoon:
   componentBase: testdata/components
-
-lagoonPlatform:
-  repository: lagoon-platform/swarm-provider
-  version: 1.2.3
-
-components:
-  lagoon-platform/aws-provider: 1.2.0
+  components:
+    lagoon-platform/aws-provider: 1.1.0
+    lagoon-platform/swarm-provider: 1.2.0
 
 providers:
   aws:
     repository: lagoon-platform/aws-provider
 
 orchestrator:
-  name: swarm
   repository: lagoon-platform/swarm-provider
-  version: 1.2.3
 
 nodes:
   group1:

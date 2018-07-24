@@ -68,15 +68,15 @@ func (cm *componentManager) SaveComponentsPaths(log *log.Logger, e model.Environ
 	fMap.File = make(map[string]string)
 	// Adding the provider components
 	for _, p := range e.Providers {
-		repName := cm.ComponentPath(p.Component.Id)
-		fMap.File[p.Name] = repName
+		providerPath := cm.ComponentPath(p.Component.Id)
+		fMap.File[p.Name] = providerPath
 	}
 
-	repCoreName := cm.ComponentPath(e.LagoonPlatform.Component.Id)
-	fMap.File["core"] = repCoreName
+	corePath := cm.ComponentPath(e.Lagoon.Component.Id)
+	fMap.File["core"] = corePath
 
-	orchestratorName := cm.ComponentPath(e.Orchestrator.Component.Id)
-	fMap.File["orchestrator"] = orchestratorName
+	orchestratorPath := cm.ComponentPath(e.Orchestrator.Component.Id)
+	fMap.File["orchestrator"] = orchestratorPath
 
 	b, err := yaml.Marshal(&fMap)
 	if err != nil {

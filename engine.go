@@ -98,7 +98,10 @@ func Create(logger *log.Logger, baseDir string, location string, ref string, fil
 		}
 	}
 
-	// Register all environment components
+	// Register the core component
+	ctx.componentManager.RegisterComponent(ctx.environment.Lagoon.Component)
+
+	// Register provider components
 	for pName, pComp := range ctx.environment.Providers {
 		ctx.logger.Println("Registering provider " + pName)
 		ctx.componentManager.RegisterComponent(pComp.Component)
