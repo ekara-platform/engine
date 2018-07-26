@@ -165,7 +165,7 @@ func getOutboundIP() net.IP {
 //and name.
 //
 //If the file already exists then it will be replaced.
-func SaveFile(logger *log.Logger, folder FolderPath, name string, b []byte) error {
+func SaveFile(logger *log.Logger, folder FolderPath, name string, b []byte) (string, error) {
 	l := filepath.Join(folder.Path(), name)
 	logger.Printf(LOG_SAVING, l)
 	os.Remove(l)
@@ -173,7 +173,7 @@ func SaveFile(logger *log.Logger, folder FolderPath, name string, b []byte) erro
 		e := os.MkdirAll(folder.Path(), 0700)
 		if e != nil {
 			logger.Printf(ERROR, e.Error())
-			return e
+			return l, e
 		}
 
 		logger.Printf(LOG_CREATING_CONFIG_FILE, l)
@@ -181,15 +181,15 @@ func SaveFile(logger *log.Logger, folder FolderPath, name string, b []byte) erro
 		f, e := os.Create(l)
 		if e != nil {
 			logger.Printf(ERROR, e.Error())
-			return fmt.Errorf(ERROR_CREATING_CONFIG_FILE, name, e.Error())
+			return l, fmt.Errorf(ERROR_CREATING_CONFIG_FILE, name, e.Error())
 		}
 		defer f.Close()
 		_, e = f.Write(b)
 		if e != nil {
-			return e
+			return l, e
 		}
 	}
-	return nil
+	return l, nil
 }
 
 //CheckProxy returns the proxy setting from environment variables

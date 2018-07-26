@@ -82,7 +82,7 @@ func (cm *componentManager) SaveComponentsPaths(log *log.Logger, e model.Environ
 	if err != nil {
 		return err
 	}
-	err = SaveFile(log, dest, ComponentPathsFileName, b)
+	_, err = SaveFile(log, dest, ComponentPathsFileName, b)
 	if err != nil {
 		return err
 	}

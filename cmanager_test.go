@@ -2,10 +2,11 @@ package engine
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"log"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestComponentManager_Fetch(t *testing.T) {
