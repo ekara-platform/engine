@@ -150,7 +150,7 @@ func readMap(cKv chan KeyValue, exit chan bool, location string, m map[interface
 		ks := fmt.Sprintf("%v", k)
 		if reflect.ValueOf(v).Kind() == reflect.Map {
 			// The value is a map so we go deeper...
-			readMap(c, exit, location+ks, v.(map[interface{}]interface{}))
+			readMap(cKv, exit, location+ks, v.(map[interface{}]interface{}))
 		} else {
 			if v != nil {
 				vs := fmt.Sprintf("%v", v)
