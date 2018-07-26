@@ -1,0 +1,28 @@
+aws:
+  params_pack1:
+    params_pack1_key1: params_pack1_value1
+    params_pack1_key2: params_pack1_value2
+    params_pack1_key_nil_value:
+
+    params_pack1_sub_pack1: 
+      params_pack1_sub_pack1_key1: params_pack1_sub_pack1_value1
+      params_pack1_sub_pack1_key2: params_pack1_sub_pack1_value2
+
+  params_pack2:
+    params_pack2_key1: params_pack2_value1
+    params_pack2_key2: params_pack2_value2
+
+    params_pack2_sub_pack1: 
+      params_pack2_sub_pack1_key1: params_pack2_sub_pack1_value1
+      params_pack2_sub_pack1_key2: params_pack2_sub_pack1_value2
+
+    params_pack2_sub_pack2: 
+      params_pack2_sub_pack2_key1: params_pack2_sub_pack2_value1
+      params_pack2_sub_pack2_key2: params_pack2_sub_pack2_value2
+
+root_key1: root_val1
+root_key2: root_val2
+root_key3: root_val3
+root_key_nil_value: 
+111: root_111_val
+222: 333

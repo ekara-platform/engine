@@ -1,10 +1,21 @@
 package engine
 
 import (
+	"fmt"
+	"io/ioutil"
+	"reflect"
+
 	"gopkg.in/yaml.v2"
 )
 
 type ParamContent map[string]interface{}
+
+type ParamValues map[string]string
+
+type KeyValue struct {
+	key   string
+	value string
+}
 
 // BaseParam contains the extra vars to be passed to a playbook
 //
@@ -91,4 +102,68 @@ func (bp *BaseParam) AddBuffer(b Buffer) {
 func (bp BaseParam) Content() (b []byte, e error) {
 	b, e = yaml.Marshal(&bp.Body)
 	return
+}
+
+//ParseParamValues parses a yaml file into a map of "key:value"
+// All the nested yaml levels will be concatenated to create the keys of the map.
+//
+// As example :
+// 	level1:
+//    level2:value
+//
+// Will generate the following key/value
+// 	level1.level2=value
+func ParseParamValues(path string) (ParamValues, error) {
+	r := make(map[string]string)
+
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return r, err
+	}
+	cKv := make(chan KeyValue)
+	exit := make(chan bool)
+	env := make(map[interface{}]interface{})
+	err = yaml.Unmarshal(b, &env)
+	if err != nil {
+		panic(err)
+	}
+	go readMap(cKv, exit, "", env)
+
+	for {
+		select {
+		case <-exit:
+
+			return r, nil
+		case kv := <-cKv:
+			r[kv.key] = kv.value
+		}
+	}
+	return r, nil
+}
+
+func readMap(cKv chan KeyValue, exit chan bool, location string, m map[interface{}]interface{}) {
+	if location != "" {
+		location += "."
+	}
+
+	for k, v := range m {
+		ks := fmt.Sprintf("%v", k)
+		if reflect.ValueOf(v).Kind() == reflect.Map {
+			// The value is a map so we go deeper...
+			readMap(c, exit, location+ks, v.(map[interface{}]interface{}))
+		} else {
+			if v != nil {
+				vs := fmt.Sprintf("%v", v)
+				// The located leaf is returned...
+				cKv <- KeyValue{
+					key:   location + ks,
+					value: vs,
+				}
+			}
+		}
+	}
+	// Only the root map can trigger the exit
+	if location == "" {
+		exit <- true
+	}
 }
