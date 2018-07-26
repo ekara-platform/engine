@@ -109,7 +109,7 @@ func (bp BaseParam) Content() (b []byte, e error) {
 //
 // As example :
 // 	level1:
-// 		level2:value
+// 	  level2:value
 //
 // Will generate the following key/value
 // 	level1.level2=value
