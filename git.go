@@ -58,7 +58,7 @@ func (gitScm GitScmHandler) Update(path string) error {
 	if err != nil {
 		return err
 	}
-	gitScm.logger.Println("fetching latest data from " + config.Remotes["origin"].URLs[0])
+	gitScm.logger.Println("fetching latest data from " + config.Remotes[defaultGitRemoteName].URLs[0])
 	err = repo.Fetch(&git.FetchOptions{
 		Tags: git.AllTags})
 	if err == git.NoErrAlreadyUpToDate {

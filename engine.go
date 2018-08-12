@@ -17,6 +17,7 @@ import (
 )
 
 type Lagoon interface {
+	Init(repo string, ref string, data map[string]interface{}) error
 	Environment() model.Environment
 	ComponentManager() ComponentManager
 }
@@ -27,7 +28,8 @@ type context struct {
 	directory string
 
 	// Lagoon environment
-	environment model.Environment
+	environment *model.Environment
+	data        map[string]interface{}
 
 	// Subsystems
 	componentManager ComponentManager
@@ -41,85 +43,89 @@ type context struct {
 //		logger: the logger
 //		baseDir: the directory where the environment will take place among its
 //				 inclusions and related components
-//		location: the location of the environment descriptor
+//		repo: the repository of the environment descriptor
 //		ref: the tag/branch reference to use
-func Create(logger *log.Logger, baseDir string, location string, ref string, fileName string) (Lagoon, error) {
+//	    data: the data to use during the descriptor templating
+func Create(logger *log.Logger, baseDir string) (Lagoon, error) {
 	absBaseDir, err := filepath.Abs(baseDir)
 	if err != nil {
 		return nil, err
 	}
-
-	locationUrl, err := url.Parse(location)
-	if err != nil {
-		return nil, err
-	}
-	locationUrl, err = model.NormalizeUrl(locationUrl)
-	if err != nil {
-		return nil, err
-	}
-
 	ctx := context{
-		logger:    logger,
-		directory: absBaseDir}
-
-	// Create component manager
+		logger:      logger,
+		directory:   absBaseDir,
+		environment: &model.Environment{}}
 	ctx.componentManager = createComponentManager(&ctx)
+	return &ctx, nil
+}
 
-	if ref == "" {
-		// Try to directly parse the descriptor if no ref is provided
-		ctx.logger.Println("parsing descriptor at " + location)
-		ctx.environment, err = model.Parse(logger, model.EnsurePathSuffix(locationUrl, fileName))
-	}
-	if ref != "" || err != nil {
-		// If no ref is provided or direct parsing is not possible, try fetching the repository
-		if err != nil {
-			ctx.logger.Println("descriptor is not directly parsable, fetching repository at " + location)
-		} else {
-			ctx.logger.Println("fetching repository at " + location)
-		}
-		var envUrl *url.URL
-		envUrl, err = ctx.componentManager.Fetch(location, ref)
-		if err != nil {
-			return nil, err
-		}
-		ctx.environment, err = model.Parse(logger, model.EnsurePathSuffix(envUrl, fileName))
-	}
-
-	// If only warnings are issued, allow to continue
+func (ctx *context) Init(repo string, ref string, data map[string]interface{}) error {
+	wd, err := os.Getwd()
 	if err != nil {
-		switch err.(type) {
-		case model.ValidationErrors:
-			err.(model.ValidationErrors).Log(ctx.logger)
-			if err.(model.ValidationErrors).HasErrors() {
-				return nil, err
-			}
-		default:
-			return nil, err
-		}
+		return err
+	}
+	absWd, err := filepath.Abs(wd)
+	if err != nil {
+		return err
+	}
+	wdUrl, err := url.Parse("file://" + absWd)
+	if err != nil {
+		return err
+	}
+	wdUrl, err = model.NormalizeUrl(wdUrl)
+	if err != nil {
+		return err
+	}
+
+	// Register main component
+	mainComponent, err := model.CreateComponent(wdUrl, "__main__", repo, ref)
+	if err != nil {
+		return err
+	}
+	ctx.componentManager.RegisterComponent(mainComponent)
+
+	// Ensure the main component is present
+	err = ctx.componentManager.Ensure()
+	if err != nil {
+		return err
 	}
 
 	// Register the core component
 	ctx.logger.Println("Registering core")
-	ctx.componentManager.RegisterComponent(ctx.environment.Lagoon.Component)
+	ctx.componentManager.RegisterComponent(ctx.environment.Lagoon.Component.Resolve())
 
 	// Register the orchestrator component
 	ctx.logger.Println("Registering orchestrator")
-	ctx.componentManager.RegisterComponent(ctx.environment.Orchestrator.Component)
+	ctx.componentManager.RegisterComponent(ctx.environment.Orchestrator.Component.Resolve())
 
 	// Register provider components
 	for pName, pComp := range ctx.environment.Providers {
 		ctx.logger.Println("Registering provider " + pName)
-		ctx.componentManager.RegisterComponent(pComp.Component)
+		ctx.componentManager.RegisterComponent(pComp.Component.Resolve())
 	}
 
 	// Register stack components
 	for sName, sComp := range ctx.environment.Stacks {
 		ctx.logger.Println("Registering stack " + sName)
-		ctx.componentManager.RegisterComponent(sComp.Component)
+		ctx.componentManager.RegisterComponent(sComp.Component.Resolve())
+	}
+
+	// Ensure all components are present
+	err = ctx.componentManager.Ensure()
+	if err != nil {
+		return err
 	}
 
 	// Use context as Lagoon facade
-	return &ctx, nil
+	return nil
+}
+
+func (ctx *context) Environment() model.Environment {
+	return *ctx.environment
+}
+
+func (ctx *context) ComponentManager() ComponentManager {
+	return ctx.componentManager
 }
 
 // BuildDescriptorUrl builds the url of environment descriptor based on the
@@ -131,14 +137,6 @@ func BuildDescriptorUrl(url url.URL, fileName string) url.URL {
 		url.Path = url.Path + "/" + fileName
 	}
 	return url
-}
-
-func (c *context) Environment() model.Environment {
-	return c.environment
-}
-
-func (c *context) ComponentManager() ComponentManager {
-	return c.componentManager
 }
 
 func GetUId() string {

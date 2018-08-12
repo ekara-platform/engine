@@ -19,18 +19,19 @@ type ScmHandler interface {
 
 type ComponentManager interface {
 	RegisterComponent(c model.Component)
-	ComponentPath(id string) string
+	ComponentPath(cId string) string
 	ComponentsPaths() map[string]string
 	SaveComponentsPaths(log *log.Logger, e model.Environment, dest FolderPath) error
-	Fetch(location string, ref string) (*url.URL, error)
 	Ensure() error
 }
 
 type componentManager struct {
-	logger     *log.Logger
-	directory  string
-	components map[string]model.Component
-	paths      map[string]string
+	logger      *log.Logger
+	directory   string
+	components  map[string]model.Component
+	paths       map[string]string
+	environment *model.Environment
+	data        map[string]interface{}
 }
 
 // FileMap is used to Marshal the map of downloaded componebts
@@ -40,10 +41,12 @@ type FileMap struct {
 
 func createComponentManager(ctx *context) ComponentManager {
 	return &componentManager{
-		logger:     ctx.logger,
-		directory:  filepath.Join(ctx.directory, "components"),
-		components: map[string]model.Component{},
-		paths:      map[string]string{}}
+		logger:      ctx.logger,
+		directory:   filepath.Join(ctx.directory, "components"),
+		components:  map[string]model.Component{},
+		paths:       map[string]string{},
+		environment: ctx.environment,
+		data:        ctx.data}
 }
 
 func (cm *componentManager) RegisterComponent(c model.Component) {
@@ -65,19 +68,7 @@ func (cm *componentManager) SaveComponentsPaths(log *log.Logger, e model.Environ
 		return err
 	}
 	fMap := FileMap{}
-	fMap.File = make(map[string]string)
-	// Adding the provider components
-	for _, p := range e.Providers {
-		providerPath := cm.ComponentPath(p.Component.Id)
-		fMap.File[p.Name] = providerPath
-	}
-
-	corePath := cm.ComponentPath(e.Lagoon.Component.Id)
-	fMap.File["core"] = corePath
-
-	orchestratorPath := cm.ComponentPath(e.Orchestrator.Component.Id)
-	fMap.File["orchestrator"] = orchestratorPath
-
+	fMap.File = cm.ComponentsPaths()
 	b, err := yaml.Marshal(&fMap)
 	if err != nil {
 		return err
@@ -89,38 +80,24 @@ func (cm *componentManager) SaveComponentsPaths(log *log.Logger, e model.Environ
 	return nil
 }
 
-func (cm *componentManager) Fetch(location string, ref string) (*url.URL, error) {
-	cwd, err := os.Getwd()
-	if err != nil {
-		return nil, err
-	}
-	baseUrl, err := model.PathToUrl(cwd)
-	if err != nil {
-		return nil, err
-	}
-
-	cId, cUrl, err := model.ResolveRepositoryInfo(baseUrl, location)
-	if err != nil {
-		return nil, err
-	}
-
-	path, e := cm.fetchComponent(cId, cUrl, ref)
-	if e != nil {
-		return nil, e
-	}
-	return model.PathToUrl(path)
-}
-
 func (cm *componentManager) Ensure() error {
 	for cName, c := range cm.components {
 		cm.logger.Println("Ensuring that component " + cName + " is available")
-		path, err := cm.fetchComponent(c.Id, c.Repository, c.Version.String())
+		cPath, err := cm.fetchComponent(c.Id, c.Repository, c.Version.String())
 		if err != nil {
 			return err
 		}
-		cm.logger.Printf("Paths added: \"%s=%s\"", c.Id, path)
+		cEnv, err := cm.parseComponentDescriptor(cPath)
+		if err != nil {
+			return err
+		}
+		if cEnv != nil {
+			cm.logger.Printf("Merging component " + cName + " descriptor")
+			cm.environment.Merge(cEnv)
+		}
+		cm.logger.Printf("Paths added: \"%s=%s\"", c.Id, cPath)
 		c := cm.components[c.Id]
-		cm.paths[c.Id] = path
+		cm.paths[c.Id] = cPath
 	}
 	return nil
 }
@@ -157,4 +134,21 @@ func (cm *componentManager) fetchComponent(cId string, cUrl *url.URL, ref string
 		return "", err
 	}
 	return cPath, nil
+}
+
+func (cm *componentManager) parseComponentDescriptor(cPath string) (*model.Environment, error) {
+	cDescriptor := filepath.Join(cPath, DescriptorFileName)
+	if _, err := os.Stat(cDescriptor); err == nil {
+		locationUrl, err := url.Parse(cDescriptor)
+		if err != nil {
+			return nil, err
+		}
+		locationUrl, err = model.NormalizeUrl(locationUrl)
+		if err != nil {
+			return nil, err
+		}
+		return model.ParseWithData(cm.logger, locationUrl, cm.data)
+	} else {
+		return nil, nil
+	}
 }

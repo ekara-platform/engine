@@ -2,10 +2,6 @@ package engine
 
 const (
 	// The name of the environment file descriptor
-	//
-	// All requests of environment creation or update are made passing as parameter
-	// the root folder of the environment specification. Then the Laggon Engine
-	// will look for this specific file into the given folder.
 	DescriptorFileName string = "lagoon.yaml"
 
 	// The environment variable used to pass the environment descriptor
@@ -64,6 +60,6 @@ const (
 	//  The name of file containing environment variables
 	EnvYamlFileName string = "env.yaml"
 
-	// Componebt modules folder
+	// Component modules folder
 	ComponentModuleFolder string = "modules"
 )

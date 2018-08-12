@@ -4,16 +4,22 @@ version: 1.0.0
 lagoon:
   componentBase: testdata/components
   components:
-    lagoon-platform/aws-provider: 1.1.0
-    lagoon-platform/swarm-provider: 1.2.0
-    lagoon-platform/monitoring-stack: 1.0.0
+    aws:
+      repository: lagoon-platform/aws-provider
+      version: 1.1.0
+    swarm:
+      repository: lagoon-platform/swarm-orchestrator
+      version: 1.2.0
+    monitoring:
+      repository: lagoon-platform/monitoring-stack
+      version: 1.0.0
 
 orchestrator:
-  repository: lagoon-platform/swarm-provider
+  component: swarm
 
 providers:
   aws:
-    repository: lagoon-platform/aws-provider
+    component: aws
 
 nodes:
   group1:
@@ -23,4 +29,4 @@ nodes:
 
 stacks:
   monitoring:
-    repository: lagoon-platform/monitoring-stack
+    component: monitoring

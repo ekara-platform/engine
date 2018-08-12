@@ -79,6 +79,7 @@
     mkdir -p sample
     (
         cd sample
+	rm -rf .git
         git init
         git add .
         git commit -m "Content for v1.0.0"
