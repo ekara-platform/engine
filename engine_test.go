@@ -23,31 +23,31 @@ func TestEngineRemoteNoTag(t *testing.T) {
 */
 func TestEngineLocalWithTagRef(t *testing.T) {
 	engine := createTestEngine()
-	e := engine.Init("testdata/sample", "v1.0.0", map[string]interface{}{})
+	e := engine.Init("testdata/sample", "v1.0.0")
 	assertOnlyWarnings(t, e)
 }
 
 func TestEngineLocalNoRef(t *testing.T) {
 	engine := createTestEngine()
-	e := engine.Init("testdata/sample", "", map[string]interface{}{})
+	e := engine.Init("testdata/sample", "")
 	assertOnlyWarnings(t, e)
 }
 
 func TestEngineLocalWithRawRef(t *testing.T) {
 	engine := createTestEngine()
-	e := engine.Init("testdata/sample", "refs/remotes/origin/test", map[string]interface{}{})
+	e := engine.Init("testdata/sample", "refs/remotes/origin/test")
 	assertOnlyWarnings(t, e)
 }
 
 func TestEngineLocalWithBranchRef(t *testing.T) {
 	engine := createTestEngine()
-	e := engine.Init("testdata/sample", "test", map[string]interface{}{})
+	e := engine.Init("testdata/sample", "test")
 	assertOnlyWarnings(t, e)
 }
 
 func createTestEngine() Lagoon {
 	os.RemoveAll("testdata/work")
-	lagoon, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work")
+	lagoon, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", map[string]interface{}{})
 	if e != nil {
 		panic(e)
 	}
