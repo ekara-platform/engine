@@ -17,7 +17,7 @@ import (
 )
 
 type Lagoon interface {
-	Init(repo string, ref string, data map[string]interface{}) error
+	Init(repo string, ref string) error
 	Environment() model.Environment
 	ComponentManager() ComponentManager
 }
@@ -43,10 +43,7 @@ type context struct {
 //		logger: the logger
 //		baseDir: the directory where the environment will take place among its
 //				 inclusions and related components
-//		repo: the repository of the environment descriptor
-//		ref: the tag/branch reference to use
-//	    data: the data to use during the descriptor templating
-func Create(logger *log.Logger, baseDir string) (Lagoon, error) {
+func Create(logger *log.Logger, baseDir string, data map[string]interface{}) (Lagoon, error) {
 	absBaseDir, err := filepath.Abs(baseDir)
 	if err != nil {
 		return nil, err
@@ -54,12 +51,15 @@ func Create(logger *log.Logger, baseDir string) (Lagoon, error) {
 	ctx := context{
 		logger:      logger,
 		directory:   absBaseDir,
-		environment: &model.Environment{}}
+		environment: &model.Environment{},
+		data:        data,
+	}
 	ctx.componentManager = createComponentManager(&ctx)
 	return &ctx, nil
 }
 
-func (ctx *context) Init(repo string, ref string, data map[string]interface{}) error {
+func (ctx *context) Init(repo string, ref string) error {
+
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -174,7 +174,7 @@ func SaveFile(logger *log.Logger, folder FolderPath, name string, b []byte) (str
 			return l, e
 		}
 
-		logger.Printf(LOG_CREATING_CONFIG_FILE, l)
+		logger.Printf(LOG_CREATING_FILE, l)
 
 		f, e := os.Create(l)
 		if e != nil {
