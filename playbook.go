@@ -81,9 +81,7 @@ func LaunchPlayBook(manager ComponentManager, component model.Component, playboo
 	cmd.Env = os.Environ()
 	for k, v := range envars.content {
 		logger.Printf("setting environment variable: %v=%v ", k, v)
-		os.Setenv(k, v)
-		// TODO PASS THE ENVIRONMENT VARIABLES  TO THE COMMAND NOT TO THE WHOLE OS
-		//cmd.Env = append(cmd.Env, k+"="+v)
+		cmd.Env = append(cmd.Env, k+"="+v)
 	}
 
 	cmd.Dir = path
