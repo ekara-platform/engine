@@ -10,8 +10,8 @@ const (
 	ERROR_REQUIRED_ENV            string = "the environment variable \"%s\" should be defined"
 
 	// Log messages
-	LOG_SAVING               string = "Saving: %s"
-	LOG_CREATING_CONFIG_FILE string = "Creation of the configuration file %s"
-	LOG_LAUNCHING_PLAYBOOK   string = "Launching playbook %s"
-	LOG_STARTING_PLAYBOOK    string = "Starting playbook %s"
+	LOG_SAVING             string = "Saving: %s"
+	LOG_CREATING_FILE      string = "Creation of the file %s"
+	LOG_LAUNCHING_PLAYBOOK string = "Launching playbook %s"
+	LOG_STARTING_PLAYBOOK  string = "Starting playbook %s"
 )
