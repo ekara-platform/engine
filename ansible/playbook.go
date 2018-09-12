@@ -1,4 +1,4 @@
-package engine
+package ansible
 
 import (
 	"bufio"
@@ -8,7 +8,9 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"syscall"
 
+	"github.com/lagoon-platform/engine"
 	"github.com/lagoon-platform/model"
 )
 
@@ -22,12 +24,12 @@ import (
 //		extraVars: the extra vars passed to the playbook
 //		envars: the environment variables set on the command launching the playbook
 //		logger: the logger
-func LaunchPlayBook(manager ComponentManager, component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, logger log.Logger) {
+func LaunchPlayBook(manager engine.ComponentManager, component model.Component, playbook string, extraVars engine.ExtraVars, envars engine.EnvVars, logger log.Logger) {
 	// Path of the component where the plabook is supposed to be located
 	path := manager.ComponentPath(component.Id)
 
 	// We check if the component contains mmodules
-	module := JoinPaths(path, ComponentModuleFolder)
+	module := engine.JoinPaths(path, engine.ComponentModuleFolder)
 	if _, err := os.Stat(module); err != nil {
 		if os.IsNotExist(err) {
 			logger.Printf("No module located in %s", module)
@@ -37,7 +39,7 @@ func LaunchPlayBook(manager ComponentManager, component model.Component, playboo
 		logger.Printf("Module located in %s", module)
 	}
 
-	logger.Printf(LOG_LAUNCHING_PLAYBOOK, playbook)
+	logger.Printf(engine.LOG_LAUNCHING_PLAYBOOK, playbook)
 	_, err := ioutil.ReadDir(path)
 	if err != nil {
 		logger.Fatal(err)
@@ -52,9 +54,9 @@ func LaunchPlayBook(manager ComponentManager, component model.Component, playboo
 	}
 
 	if _, err := os.Stat(playBookPath); os.IsNotExist(err) {
-		logger.Fatalf(ERROR_MISSING, playBookPath)
+		logger.Fatalf(engine.ERROR_MISSING, playBookPath)
 	} else {
-		logger.Printf(LOG_STARTING_PLAYBOOK, playBookPath)
+		logger.Printf(engine.LOG_STARTING_PLAYBOOK, playBookPath)
 	}
 
 	var cmd *exec.Cmd
@@ -79,8 +81,8 @@ func LaunchPlayBook(manager ComponentManager, component model.Component, playboo
 	}
 
 	cmd.Env = os.Environ()
-	for k, v := range envars.content {
-		logger.Printf("setting environment variable: %v=%v ", k, v)
+	for k, v := range envars.Content {
+		//logger.Printf("setting environment variable: %v=%v ", k, v)
 		cmd.Env = append(cmd.Env, k+"="+v)
 	}
 
@@ -105,7 +107,15 @@ func LaunchPlayBook(manager ComponentManager, component model.Component, playboo
 
 	err = cmd.Wait()
 	if err != nil {
-		logger.Fatal(err)
+		e, ok := err.(*exec.ExitError)
+		if ok {
+			s := e.Sys().(syscall.WaitStatus)
+			code := s.ExitStatus()
+			logger.Printf("---> ANSIBLE RETURNED ERROR : %v\n", ReturnedError(code))
+			// TODO write report here
+		} else {
+			logger.Fatal(err)
+		}
 	}
 }
 
