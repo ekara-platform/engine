@@ -12,9 +12,6 @@ const (
 	// name between several Lagoon components.
 	StarterEnvNameVariableKey string = "LAGOON_ENV_DESCR_NAME"
 
-	// The name of the client requesting the action on the environment
-	ClientEnvVariableKey string = "LAGOON_CLIENT"
-
 	// The Name of the SSH Public key file
 	SSHPuplicKeyFileName string = "ssh.pub"
 
