@@ -8,7 +8,7 @@ import (
 
 func TestBuild(t *testing.T) {
 
-	bp := BuilBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
 	body := bp.Body
 
 	val, ok := body["connectionConfig"]
@@ -48,7 +48,7 @@ func TestBuild(t *testing.T) {
 
 func TestAddString(t *testing.T) {
 
-	bp := BuilBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	bp.AddString("string_key1", "string_val1")
 	bp.AddString("string_key2", "string_val2")
@@ -74,7 +74,7 @@ func TestAddString(t *testing.T) {
 
 func TestAddInt(t *testing.T) {
 
-	bp := BuilBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	bp.AddInt("string_key1", 11)
 	bp.AddInt("string_key2", 22)
@@ -100,7 +100,7 @@ func TestAddInt(t *testing.T) {
 
 func TestAddMapString(t *testing.T) {
 
-	bp := BuilBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "string_val1"
@@ -128,7 +128,7 @@ func TestAddMapString(t *testing.T) {
 
 func TestAddMapInt(t *testing.T) {
 
-	bp := BuilBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = 11
@@ -156,7 +156,7 @@ func TestAddMapInt(t *testing.T) {
 
 func TestAddInterface(t *testing.T) {
 
-	bp := BuilBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "String"
@@ -196,7 +196,7 @@ func TestAddInterface(t *testing.T) {
 
 func TestAddNamedMapString(t *testing.T) {
 
-	bp := BuilBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "string_val1"
@@ -224,7 +224,7 @@ func TestAddNamedMapString(t *testing.T) {
 
 func TestAddBuffer(t *testing.T) {
 
-	bp := BuilBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	buf := CreateBuffer()
 	buf.Param["string_key1"] = "string_val1"

@@ -1,5 +1,5 @@
 name: testEnvironment
-version: 1.0.0
+qualifier: testQualifier
 
 lagoon:
   componentBase: testdata/components
