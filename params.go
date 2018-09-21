@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"reflect"
 
+	"github.com/lagoon-platform/model"
 	"gopkg.in/yaml.v2"
 )
 
@@ -26,16 +27,16 @@ type BaseParam struct {
 	Body ParamContent
 }
 
-// BuilBaseParam the common parameters required by all playbooks.
+// BuildBaseParam the common parameters required by all playbooks.
 //
 // Parameters:
-//		client: the name of the client
+//		name: the qualified name of the environment
 //		uid: the unique id of the nodeset we are working with
 //		provider: the name of the provider where to create the nodeset
 //		pubK: the public SSH key to connect on the created nodeset ( the name of the file)
 //		privK: the private SSH key to connect on the created nodeset ( the name of the file)
 //
-func BuilBaseParam(client string, uid string, provider string, pubK string, privK string) BaseParam {
+func BuildBaseParam(name model.QualifiedName, uid string, provider string, pubK string, privK string) BaseParam {
 
 	baseParam := BaseParam{}
 	baseParam.Body = make(map[string]interface{})
@@ -53,8 +54,8 @@ func BuilBaseParam(client string, uid string, provider string, pubK string, priv
 	baseParam.Body["connectionConfig"] = connectionM
 
 	clientM := make(map[string]interface{})
-	if client != "" {
-		clientM["name"] = client
+	if name.String() != "" {
+		clientM["name"] = name.String()
 	}
 	if uid != "" {
 		clientM["uid"] = uid
