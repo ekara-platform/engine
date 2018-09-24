@@ -1,4 +1,4 @@
-package engine
+package util
 
 import (
 	"fmt"
@@ -196,6 +196,10 @@ func (f FolderPath) create() error {
 type FolderPath struct {
 	path     string
 	Children map[string]*ExchangeFolder
+}
+
+func CreateFolderPath(path string) FolderPath {
+	return FolderPath{path: path}
 }
 
 func CreateExchangeFolder(location string, folderName string) (*ExchangeFolder, error) {

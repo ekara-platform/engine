@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"github.com/lagoon-platform/engine/util"
 	"log"
 	"os"
 	"path"
@@ -34,10 +35,10 @@ func (s *EngineSession) DeleteTodo() (b []byte, e error) {
 	return
 }
 
-func HasCreationSession(ef ExchangeFolder) (logged bool, session *EngineSession) {
+func HasCreationSession(ef util.ExchangeFolder) (logged bool, session *EngineSession) {
 	var s CreationSession
 
-	file := path.Join(ef.Location.Path(), CreationSessionFileName)
+	file := path.Join(ef.Location.Path(), util.CreationSessionFileName)
 	if _, err := os.Stat(file); err == nil {
 		if data, err := os.Open(file); err == nil {
 

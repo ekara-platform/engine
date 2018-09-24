@@ -1,4 +1,4 @@
-package engine
+package ansible
 
 // EnvVars contains the extra vars to be passed to a playbook
 type EnvVars struct {

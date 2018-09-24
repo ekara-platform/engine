@@ -1,6 +1,7 @@
-package engine
+package ansible
 
 import (
+	"github.com/lagoon-platform/engine/util"
 	"strings"
 )
 
@@ -20,7 +21,7 @@ func (ev ExtraVars) String() string {
 	return r
 }
 
-func BuildExtraVars(extraVars string, inputFolder FolderPath, outputFolder FolderPath, b Buffer) ExtraVars {
+func BuildExtraVars(extraVars string, inputFolder util.FolderPath, outputFolder util.FolderPath, b Buffer) ExtraVars {
 	r := ExtraVars{}
 	r.Vals = make([]string, 0)
 
