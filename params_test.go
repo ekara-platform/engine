@@ -29,7 +29,7 @@ func TestBuild(t *testing.T) {
 		}
 	}
 
-	val, ok = body["client"]
+	val, ok = body["environment"]
 	assert.True(t, ok)
 
 	v, okType = val.(map[string]interface{})
