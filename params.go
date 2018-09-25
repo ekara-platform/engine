@@ -60,7 +60,7 @@ func BuildBaseParam(name model.QualifiedName, uid string, provider string, pubK 
 	if uid != "" {
 		clientM["uid"] = uid
 	}
-	baseParam.Body["client"] = clientM
+	baseParam.Body["environment"] = clientM
 
 	return baseParam
 }
