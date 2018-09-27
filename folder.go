@@ -106,6 +106,12 @@ func (f FolderPath) ContainsExtraVarsYaml() (ok bool, b []byte, e error) {
 	return
 }
 
+// ContainsInventoryYamlFileName returns true if this folder contains a file named InventoryYamlFileName
+func (f FolderPath) ContainsInventoryYamlFileName() (ok bool, b []byte, e error) {
+	ok, b, e = containsAndRead(f, InventoryYamlFileName)
+	return
+}
+
 // ContainsEnvYaml returns true if this folder contains a file named EnvYamlFileName
 func (f FolderPath) ContainsEnvYaml() (ok bool, b []byte, e error) {
 	ok, b, e = containsAndRead(f, EnvYamlFileName)

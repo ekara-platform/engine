@@ -57,6 +57,9 @@ const (
 	//  The name of file containing environment variables
 	EnvYamlFileName string = "env.yaml"
 
+	//  The name of file containing host inventories
+	InventoryYamlFileName string = "inventory.yaml"
+
 	// Component modules folder
 	ComponentModuleFolder string = "modules"
 )

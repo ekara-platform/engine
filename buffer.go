@@ -12,6 +12,8 @@ type Buffer struct {
 	Envvars map[string]string
 	// The extra vars to pass
 	Extravars map[string]string
+	// The inventories to pass
+	Inventories map[string]string
 	// The parameters to pass.
 	// The parameters can be any valid yaml content
 	Param map[string]interface{}
@@ -28,6 +30,7 @@ func CreateBuffer() Buffer {
 	b := Buffer{}
 	b.Envvars = make(map[string]string)
 	b.Extravars = make(map[string]string)
+	b.Inventories = make(map[string]string)
 	b.Param = make(map[string]interface{})
 	return b
 }
@@ -37,6 +40,7 @@ func CreateBuffer() Buffer {
 /*
  - The "Envvars" of the buffer will be filled by the content of the file name like  EnvYamlFileName.
  - The "Extravars" of the buffer will be filled by the content of the file name like  ExtraVarYamlFileName.
+ - The "Inventories" of the buffer will be filled by the content of the file name like  InventoryYamlFileName.
  - The "Param" of the buffer will be filled by the content of the file name like  ParamYamlFileName.
 */
 //
@@ -49,6 +53,7 @@ func CreateBuffer() Buffer {
 // See Also :
 //  EnvYamlFileName
 //  ExtraVarYamlFileName
+//  InventoryYamlFileName
 //  ParamYamlFileName
 //
 func GetBuffer(f *FolderPath, logger *log.Logger, location string) (err error, buffer Buffer) {
@@ -81,6 +86,19 @@ func GetBuffer(f *FolderPath, logger *log.Logger, location string) (err error, b
 		}
 	} else {
 		logger.Printf("No %s located...", ExtraVarYamlFileName)
+	}
+
+	if ok, b, err = f.ContainsInventoryYamlFileName(); ok {
+		logger.Printf("Consuming %s for %s", InventoryYamlFileName, location)
+		if err != nil {
+			return
+		}
+		err = yaml.Unmarshal([]byte(b), buffer.Inventories)
+		if err != nil {
+			return
+		}
+	} else {
+		logger.Printf("No %s located...", InventoryYamlFileName)
 	}
 
 	if ok, b, err = f.ContainsParamYaml(); ok {
