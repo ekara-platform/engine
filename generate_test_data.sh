@@ -88,3 +88,47 @@
         git tag v1.0.0
     )
 )
+(
+    cd `dirname $0`/component/testdata
+    mkdir -p components/lagoon-platform/c1
+    (
+        cd components/lagoon-platform/c1
+        git init
+        mkdir modules
+        echo "DUMMY" > modules/dummy
+        git add .
+        git commit -m "Content for v1.0.0"
+        git tag v1.0.0
+    )
+    mkdir -p components/lagoon-platform/c2
+    (
+        cd components/lagoon-platform/c2
+        git init
+        mkdir inventory
+        echo "DUMMY" > inventory/dummy
+        git add .
+        git commit -m "Content for v1.0.0"
+        git tag v1.0.0
+    )
+    mkdir -p components/lagoon-platform/c3
+    (
+        cd components/lagoon-platform/c3
+        git init
+        mkdir modules
+        echo "DUMMY" > modules/dummy
+        mkdir inventory
+        echo "DUMMY" > inventory/dummy
+        git add .
+        git commit -m "Content for v1.0.0"
+        git tag v1.0.0
+    )
+    mkdir -p components/lagoon-platform/c4
+    (
+        cd components/lagoon-platform/c4
+        git init
+        echo "DUMMY" > dummy
+        git add .
+        git commit -m "Content for v1.0.0"
+        git tag v1.0.0
+    )
+)
