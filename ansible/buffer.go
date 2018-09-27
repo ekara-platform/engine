@@ -90,7 +90,7 @@ func GetBuffer(f *util.FolderPath, logger *log.Logger, location string) (err err
 	}
 
 	if ok, b, err = f.ContainsInventoryYamlFileName(); ok {
-		logger.Printf("Consuming %s for %s", InventoryYamlFileName, location)
+		logger.Printf("Consuming %s for %s", util.InventoryYamlFileName, location)
 		if err != nil {
 			return
 		}
@@ -99,7 +99,7 @@ func GetBuffer(f *util.FolderPath, logger *log.Logger, location string) (err err
 			return
 		}
 	} else {
-		logger.Printf("No %s located...", InventoryYamlFileName)
+		logger.Printf("No %s located...", util.InventoryYamlFileName)
 	}
 
 	if ok, b, err = f.ContainsParamYaml(); ok {
