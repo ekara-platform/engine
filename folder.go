@@ -16,6 +16,7 @@ import (
 
 // ExchangeFolder represents a folder structure used to pass and get content to container.
 type ExchangeFolder struct {
+	RootFolder string
 	// Root location of the exchange folder
 	Location *FolderPath
 	// Input data passed to the container
@@ -27,6 +28,15 @@ type ExchangeFolder struct {
 // Create creates physically the ExchangeFolder.
 // If the ExchangeFolder already exist  it will remain untouched
 func (f ExchangeFolder) Create() error {
+
+	if _, err := os.Stat(f.RootFolder); os.IsNotExist(err) {
+		log.Printf("Creating exchange folder root %s", f.RootFolder)
+		e := os.Mkdir(f.RootFolder, 0777)
+		if e != nil {
+			return e
+		}
+	}
+
 	e := f.Location.create()
 	if e != nil {
 		return e
@@ -175,7 +185,7 @@ func (f FolderPath) Write(bytes []byte, fileName string) error {
 // this folder as root location
 func (f FolderPath) create() error {
 	if _, err := os.Stat(f.Path()); os.IsNotExist(err) {
-		e := os.Mkdir(f.Path(), 0700)
+		e := os.Mkdir(f.Path(), 0777)
 		if e != nil {
 			return e
 		}
@@ -199,16 +209,16 @@ type FolderPath struct {
 }
 
 func CreateExchangeFolder(location string, folderName string) (*ExchangeFolder, error) {
-	outputDir, err := filepath.Abs(location)
-
 	r := ExchangeFolder{}
+	var err error
+	r.RootFolder, err = filepath.Abs(location)
 	if err != nil {
 		return &r, err
 	}
 
-	r.Location = &FolderPath{path: JoinPaths(outputDir, folderName), Children: make(map[string]*ExchangeFolder)}
-	r.Output = &FolderPath{path: JoinPaths(outputDir, folderName, "output"), Children: make(map[string]*ExchangeFolder)}
-	r.Input = &FolderPath{path: JoinPaths(outputDir, folderName, "input"), Children: make(map[string]*ExchangeFolder)}
+	r.Location = &FolderPath{path: JoinPaths(r.RootFolder, folderName), Children: make(map[string]*ExchangeFolder)}
+	r.Output = &FolderPath{path: JoinPaths(r.RootFolder, folderName, "output"), Children: make(map[string]*ExchangeFolder)}
+	r.Input = &FolderPath{path: JoinPaths(r.RootFolder, folderName, "input"), Children: make(map[string]*ExchangeFolder)}
 	return &r, nil
 }
 
