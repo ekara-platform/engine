@@ -1,18 +1,19 @@
-package engine
+package ansible
 
 import (
+	"github.com/lagoon-platform/engine/util"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNoExtraVars(t *testing.T) {
-	ev := BuildExtraVars("", FolderPath{}, FolderPath{}, Buffer{})
+	ev := BuildExtraVars("", util.CreateFolderPath(""), util.CreateFolderPath(""), Buffer{})
 	assert.Equal(t, false, ev.Bool)
 }
 
 func TestExtraVarsString(t *testing.T) {
-	ev := BuildExtraVars("aa=bb", FolderPath{}, FolderPath{}, Buffer{})
+	ev := BuildExtraVars("aa=bb", util.CreateFolderPath(""), util.CreateFolderPath(""), Buffer{})
 	assert.Equal(t, true, ev.Bool)
 	assert.Equal(t, 2, len(ev.Vals))
 	assert.Equal(t, "--extra-vars", ev.Vals[0])
@@ -20,7 +21,7 @@ func TestExtraVarsString(t *testing.T) {
 }
 
 func TestExtraVarsInputFolder(t *testing.T) {
-	ev := BuildExtraVars("", FolderPath{path: "aa/bb"}, FolderPath{}, Buffer{})
+	ev := BuildExtraVars("", util.CreateFolderPath("aa/bb"), util.CreateFolderPath(""), Buffer{})
 	assert.Equal(t, true, ev.Bool)
 	assert.Equal(t, 2, len(ev.Vals))
 	assert.Equal(t, "--extra-vars", ev.Vals[0])
@@ -28,7 +29,7 @@ func TestExtraVarsInputFolder(t *testing.T) {
 }
 
 func TestExtraVarsOutputFolder(t *testing.T) {
-	ev := BuildExtraVars("", FolderPath{}, FolderPath{path: "aa/bb"}, Buffer{})
+	ev := BuildExtraVars("", util.CreateFolderPath(""), util.CreateFolderPath("aa/bb"), Buffer{})
 	assert.Equal(t, true, ev.Bool)
 	assert.Equal(t, 2, len(ev.Vals))
 	assert.Equal(t, "--extra-vars", ev.Vals[0])
@@ -36,7 +37,7 @@ func TestExtraVarsOutputFolder(t *testing.T) {
 }
 
 func TestExtraVarsInputOutputFolder(t *testing.T) {
-	ev := BuildExtraVars("", FolderPath{path: "aa/bb"}, FolderPath{path: "aa/bb"}, Buffer{})
+	ev := BuildExtraVars("", util.CreateFolderPath("aa/bb"), util.CreateFolderPath("aa/bb"), Buffer{})
 	assert.Equal(t, true, ev.Bool)
 	assert.Equal(t, 3, len(ev.Vals))
 	assert.Equal(t, "--extra-vars", ev.Vals[0])
@@ -49,7 +50,7 @@ func TestExtraVarsBuffer(t *testing.T) {
 	extraVars := make(map[string]string)
 	extraVars["key1"] = "val1"
 	b.Extravars = extraVars
-	ev := BuildExtraVars("", FolderPath{}, FolderPath{}, b)
+	ev := BuildExtraVars("", util.CreateFolderPath(""), util.CreateFolderPath(""), b)
 	assert.Equal(t, true, ev.Bool)
 	assert.Equal(t, 2, len(ev.Vals))
 	assert.Equal(t, "--extra-vars", ev.Vals[0])

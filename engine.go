@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"hash/crc64"
 	"log"
 	"net"
@@ -12,14 +11,21 @@ import (
 	"strings"
 	"time"
 
+	"github.com/lagoon-platform/engine/ansible"
+	"github.com/lagoon-platform/engine/component"
+	"github.com/lagoon-platform/engine/util"
+
 	"github.com/lagoon-platform/model"
 	_ "gopkg.in/yaml.v2"
 )
 
-type Lagoon interface {
+type Engine interface {
 	Init(repo string, ref string) error
+	Logger() *log.Logger
+	BaseDir() string
+	ComponentManager() component.ComponentManager
+	AnsibleManager() ansible.AnsibleManager
 	Environment() model.Environment
-	ComponentManager() ComponentManager
 }
 
 type context struct {
@@ -32,7 +38,8 @@ type context struct {
 	data        map[string]interface{}
 
 	// Subsystems
-	componentManager ComponentManager
+	componentManager component.ComponentManager
+	ansibleManager   ansible.AnsibleManager
 }
 
 // Create creates an environment descriptor based on the provided location.
@@ -43,23 +50,25 @@ type context struct {
 //		logger: the logger
 //		baseDir: the directory where the environment will take place among its
 //				 inclusions and related components
-func Create(logger *log.Logger, baseDir string, data map[string]interface{}) (Lagoon, error) {
+func Create(logger *log.Logger, baseDir string, data map[string]interface{}) (Engine, error) {
 	absBaseDir, err := filepath.Abs(baseDir)
 	if err != nil {
 		return nil, err
 	}
+
 	ctx := context{
 		logger:      logger,
 		directory:   absBaseDir,
 		environment: &model.Environment{},
-		data:        data,
-	}
-	ctx.componentManager = createComponentManager(&ctx)
+		data:        data}
+
+	ctx.componentManager = component.CreateComponentManager(ctx.logger, ctx.environment, data, absBaseDir)
+	ctx.ansibleManager = ansible.CreateAnsibleManager(ctx.logger, ctx.componentManager)
+
 	return &ctx, nil
 }
 
 func (ctx *context) Init(repo string, ref string) error {
-
 	wd, err := os.Getwd()
 	if err != nil {
 		return err
@@ -115,17 +124,27 @@ func (ctx *context) Init(repo string, ref string) error {
 	if err != nil {
 		return err
 	}
-
-	// Use context as Lagoon facade
 	return nil
+}
+
+func (ctx *context) Logger() *log.Logger {
+	return ctx.logger
+}
+
+func (ctx *context) BaseDir() string {
+	return ctx.directory
+}
+
+func (ctx *context) ComponentManager() component.ComponentManager {
+	return ctx.componentManager
+}
+
+func (ctx *context) AnsibleManager() ansible.AnsibleManager {
+	return ctx.ansibleManager
 }
 
 func (ctx *context) Environment() model.Environment {
 	return *ctx.environment
-}
-
-func (ctx *context) ComponentManager() ComponentManager {
-	return ctx.componentManager
 }
 
 // BuildDescriptorUrl builds the url of environment descriptor based on the
@@ -159,37 +178,6 @@ func getOutboundIP() net.IP {
 	return localAddr.IP
 }
 
-//SaveFile saves the given bytes into a fresh new file specified by its folder
-//and name.
-//
-//If the file already exists then it will be replaced.
-func SaveFile(logger *log.Logger, folder FolderPath, name string, b []byte) (string, error) {
-	l := filepath.Join(folder.Path(), name)
-	logger.Printf(LOG_SAVING, l)
-	os.Remove(l)
-	if _, err := os.Stat(name); os.IsNotExist(err) {
-		e := os.MkdirAll(folder.Path(), 0700)
-		if e != nil {
-			logger.Printf(ERROR, e.Error())
-			return l, e
-		}
-
-		logger.Printf(LOG_CREATING_FILE, l)
-
-		f, e := os.Create(l)
-		if e != nil {
-			logger.Printf(ERROR, e.Error())
-			return l, fmt.Errorf(ERROR_CREATING_CONFIG_FILE, name, e.Error())
-		}
-		defer f.Close()
-		_, e = f.Write(b)
-		if e != nil {
-			return l, e
-		}
-	}
-	return l, nil
-}
-
 //CheckProxy returns the proxy setting from environment variables
 //
 // See:
@@ -197,8 +185,8 @@ func SaveFile(logger *log.Logger, folder FolderPath, name string, b []byte) (str
 //		engine.HttpsProxyEnvVariableKey
 //		engine.NoProxyEnvVariableKey
 func CheckProxy() (httpProxy string, httpsProxy string, noProxy string) {
-	httpProxy = os.Getenv(HttpProxyEnvVariableKey)
-	httpsProxy = os.Getenv(HttpsProxyEnvVariableKey)
-	noProxy = os.Getenv(NoProxyEnvVariableKey)
+	httpProxy = os.Getenv(util.HttpProxyEnvVariableKey)
+	httpsProxy = os.Getenv(util.HttpsProxyEnvVariableKey)
+	noProxy = os.Getenv(util.NoProxyEnvVariableKey)
 	return
 }
