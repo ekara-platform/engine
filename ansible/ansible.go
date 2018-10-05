@@ -94,7 +94,6 @@ func (ctx context) Execute(component model.Component, playbook string, extraVars
 
 	cmd.Env = os.Environ()
 	for k, v := range envars.Content {
-		ctx.logger.Printf("--> ENV VARS :%s, %s", k, v)
 		cmd.Env = append(cmd.Env, k+"="+v)
 	}
 
