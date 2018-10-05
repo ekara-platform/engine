@@ -1,4 +1,4 @@
-package engine
+package component
 
 import (
 	"log"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/lagoon-platform/engine/util"
 	"github.com/lagoon-platform/model"
 	"gopkg.in/yaml.v2"
 )
@@ -21,66 +22,68 @@ type ComponentManager interface {
 	RegisterComponent(c model.Component)
 	ComponentPath(cId string) string
 	ComponentsPaths() map[string]string
-	SaveComponentsPaths(log *log.Logger, e model.Environment, dest FolderPath) error
+	SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error
 	Ensure() error
 }
 
-type componentManager struct {
+type context struct {
 	logger      *log.Logger
-	directory   string
-	components  map[string]model.Component
-	paths       map[string]string
 	environment *model.Environment
 	data        map[string]interface{}
+
+	directory  string
+	components map[string]model.Component
+	paths      map[string]string
 }
 
-// FileMap is used to Marshal the map of downloaded componebts
-type FileMap struct {
+// FileMap is used to Marshal the map of downloaded components
+type fileMap struct {
 	File map[string]string `yaml:"component_path"`
 }
 
-func createComponentManager(ctx *context) ComponentManager {
-	return &componentManager{
-		logger:      ctx.logger,
-		directory:   filepath.Join(ctx.directory, "components"),
+func CreateComponentManager(logger *log.Logger, environment *model.Environment, data map[string]interface{}, baseDir string) ComponentManager {
+	return &context{
+		logger:      logger,
+		environment: environment,
+		directory:   filepath.Join(baseDir, "components"),
 		components:  map[string]model.Component{},
 		paths:       map[string]string{},
-		environment: ctx.environment,
-		data:        ctx.data}
+		data:        data,
+	}
 }
 
-func (cm *componentManager) RegisterComponent(c model.Component) {
+func (cm *context) RegisterComponent(c model.Component) {
 	cm.logger.Println("Registering component " + c.Repository.String() + "@" + c.Version.String())
 	cm.components[c.Id] = c
 }
 
-func (cm *componentManager) ComponentPath(id string) string {
+func (cm *context) ComponentPath(id string) string {
 	return filepath.Join(cm.directory, id)
 }
 
-func (cm *componentManager) ComponentsPaths() map[string]string {
+func (cm *context) ComponentsPaths() map[string]string {
 	return cm.paths
 }
 
-func (cm *componentManager) SaveComponentsPaths(log *log.Logger, e model.Environment, dest FolderPath) error {
+func (cm *context) SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error {
 	err := cm.Ensure()
 	if err != nil {
 		return err
 	}
-	fMap := FileMap{}
+	fMap := fileMap{}
 	fMap.File = cm.ComponentsPaths()
 	b, err := yaml.Marshal(&fMap)
 	if err != nil {
 		return err
 	}
-	_, err = SaveFile(log, dest, ComponentPathsFileName, b)
+	_, err = util.SaveFile(log, dest, util.ComponentPathsFileName, b)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (cm *componentManager) Ensure() error {
+func (cm *context) Ensure() error {
 	for cName, c := range cm.components {
 		cm.logger.Println("Ensuring that component " + cName + " is available")
 		cPath, err := cm.fetchComponent(c.Id, c.Repository, c.Version.String())
@@ -102,7 +105,7 @@ func (cm *componentManager) Ensure() error {
 	return nil
 }
 
-func (cm *componentManager) fetchComponent(cId string, cUrl *url.URL, ref string) (path string, err error) {
+func (cm *context) fetchComponent(cId string, cUrl *url.URL, ref string) (path string, err error) {
 	scm := GitScmHandler{logger: cm.logger} // TODO dynamically select proper handler
 	cPath := filepath.Join(cm.directory, cId)
 	if _, err := os.Stat(cPath); err == nil {
@@ -136,8 +139,8 @@ func (cm *componentManager) fetchComponent(cId string, cUrl *url.URL, ref string
 	return cPath, nil
 }
 
-func (cm *componentManager) parseComponentDescriptor(cPath string) (*model.Environment, error) {
-	cDescriptor := filepath.Join(cPath, DescriptorFileName)
+func (cm *context) parseComponentDescriptor(cPath string) (*model.Environment, error) {
+	cDescriptor := filepath.Join(cPath, util.DescriptorFileName)
 	if _, err := os.Stat(cDescriptor); err == nil {
 		locationUrl, err := url.Parse(cDescriptor)
 		if err != nil {

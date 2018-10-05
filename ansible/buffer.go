@@ -1,6 +1,7 @@
-package engine
+package ansible
 
 import (
+	"github.com/lagoon-platform/engine/util"
 	"log"
 
 	"gopkg.in/yaml.v2"
@@ -56,14 +57,14 @@ func CreateBuffer() Buffer {
 //  InventoryYamlFileName
 //  ParamYamlFileName
 //
-func GetBuffer(f *FolderPath, logger *log.Logger, location string) (err error, buffer Buffer) {
+func GetBuffer(f *util.FolderPath, logger *log.Logger, location string) (err error, buffer Buffer) {
 	buffer = CreateBuffer()
 
 	var ok bool
 	var b []byte
 
 	if ok, b, err = f.ContainsEnvYaml(); ok {
-		logger.Printf("Consuming %s for %s", EnvYamlFileName, location)
+		logger.Printf("Consuming %s for %s", util.EnvYamlFileName, location)
 		if err != nil {
 			return
 		}
@@ -72,11 +73,11 @@ func GetBuffer(f *FolderPath, logger *log.Logger, location string) (err error, b
 			return
 		}
 	} else {
-		logger.Printf("No %s located...", EnvYamlFileName)
+		logger.Printf("No %s located...", util.EnvYamlFileName)
 	}
 
 	if ok, b, err = f.ContainsExtraVarsYaml(); ok {
-		logger.Printf("Consuming %s for %s", ExtraVarYamlFileName, location)
+		logger.Printf("Consuming %s for %s", util.ExtraVarYamlFileName, location)
 		if err != nil {
 			return
 		}
@@ -85,11 +86,11 @@ func GetBuffer(f *FolderPath, logger *log.Logger, location string) (err error, b
 			return
 		}
 	} else {
-		logger.Printf("No %s located...", ExtraVarYamlFileName)
+		logger.Printf("No %s located...", util.ExtraVarYamlFileName)
 	}
 
 	if ok, b, err = f.ContainsInventoryYamlFileName(); ok {
-		logger.Printf("Consuming %s for %s", InventoryYamlFileName, location)
+		logger.Printf("Consuming %s for %s", util.InventoryYamlFileName, location)
 		if err != nil {
 			return
 		}
@@ -98,11 +99,11 @@ func GetBuffer(f *FolderPath, logger *log.Logger, location string) (err error, b
 			return
 		}
 	} else {
-		logger.Printf("No %s located...", InventoryYamlFileName)
+		logger.Printf("No %s located...", util.InventoryYamlFileName)
 	}
 
 	if ok, b, err = f.ContainsParamYaml(); ok {
-		logger.Printf("Consuming %s for  %s", ParamYamlFileName, location)
+		logger.Printf("Consuming %s for  %s", util.ParamYamlFileName, location)
 		if err != nil {
 			return
 		}
@@ -112,7 +113,7 @@ func GetBuffer(f *FolderPath, logger *log.Logger, location string) (err error, b
 			return
 		}
 	} else {
-		logger.Printf("No %s located...", ParamYamlFileName)
+		logger.Printf("No %s located...", util.ParamYamlFileName)
 	}
 	return
 }

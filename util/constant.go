@@ -1,4 +1,4 @@
-package engine
+package util
 
 const (
 	// The name of the environment file descriptor
@@ -62,4 +62,7 @@ const (
 
 	// Component modules folder
 	ComponentModuleFolder string = "modules"
+
+	// Inventory modules folder
+	InventoryModuleFolder string = "inventory"
 )

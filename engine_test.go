@@ -45,7 +45,7 @@ func TestEngineLocalWithBranchRef(t *testing.T) {
 	assertOnlyWarnings(t, e)
 }
 
-func createTestEngine() Lagoon {
+func createTestEngine() Engine {
 	os.RemoveAll("testdata/work")
 	lagoon, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", map[string]interface{}{})
 	if e != nil {
