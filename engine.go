@@ -119,11 +119,6 @@ func (ctx *context) Init(repo string, ref string) error {
 		ctx.componentManager.RegisterComponent(sComp.Component.Resolve())
 	}
 
-	// Ensure all components are present
-	err = ctx.componentManager.Ensure()
-	if err != nil {
-		return err
-	}
 	return nil
 }
 

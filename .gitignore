@@ -18,8 +18,8 @@
 vendor/
 
 # Test generated input and output
-testdata/components
-testdata/work
+testdata/components/
+testdata/work/
+component/testdata/components/
+component/testdata/work/
 
-# Test generated folder
-testExFolder
