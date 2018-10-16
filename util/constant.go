@@ -2,15 +2,15 @@ package util
 
 const (
 	// The name of the environment file descriptor
-	DescriptorFileName string = "lagoon.yaml"
+	DescriptorFileName string = "ekara.yaml"
 
 	// The environment variable used to pass the environment descriptor
-	// location between several Lagoon components.
-	StarterEnvVariableKey string = "LAGOON_ENV_DESCR"
+	// location between several Ekara components.
+	StarterEnvVariableKey string = "EKARA_ENV_DESCR"
 
 	// The environment variable used to pass the environment descriptor
-	// name between several Lagoon components.
-	StarterEnvNameVariableKey string = "LAGOON_ENV_DESCR_NAME"
+	// name between several Ekara components.
+	StarterEnvNameVariableKey string = "EKARA_ENV_DESCR_NAME"
 
 	// The Name of the SSH Public key file
 	SSHPuplicKeyFileName string = "ssh.pub"
@@ -19,7 +19,7 @@ const (
 	SSHPrivateKeyFileName string = "ssh.pem"
 
 	// The action to perform on the environment
-	ActionEnvVariableKey string = "LAGOON_ACTION"
+	ActionEnvVariableKey string = "EKARA_ACTION"
 
 	// The environment variable used to get or store the http proxy definition
 	HttpProxyEnvVariableKey string = "http_proxy"
@@ -43,10 +43,10 @@ const (
 	CreationSessionFileName string = "create_session.json"
 
 	// Prefix for the installer logs
-	InstallerLogPrefix string = "Lagoon INSTALLER LOG:"
+	InstallerLogPrefix string = "Ekara INSTALLER LOG:"
 
 	// Volum location used by the installer
-	InstallerVolume string = "/opt/lagoon/output"
+	InstallerVolume string = "/opt/ekara/output"
 
 	// The name of file containing params
 	ParamYamlFileName string = "params.yaml"

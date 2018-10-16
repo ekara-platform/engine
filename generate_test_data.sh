@@ -3,9 +3,9 @@
 (
     cd `dirname $0`/testdata
 
-    mkdir -p components/lagoon-platform/core
+    mkdir -p components/ekara-platform/core
     (
-        cd components/lagoon-platform/core
+        cd components/ekara-platform/core
         git init
         echo "v1.0.0" > VERSION
         git add .
@@ -22,9 +22,9 @@
         git commit -a -m "Content for v2.0.1"
     )
 
-    mkdir -p components/lagoon-platform/aws-provider
+    mkdir -p components/ekara-platform/aws-provider
     (
-        cd components/lagoon-platform/aws-provider
+        cd components/ekara-platform/aws-provider
         git init
         echo "v1.0.0" > VERSION
         git add .
@@ -40,9 +40,9 @@
         git commit -a -m "Content for v1.2.1"
     )
 
-    mkdir -p components/lagoon-platform/swarm-orchestrator
+    mkdir -p components/ekara-platform/swarm-orchestrator
     (
-        cd components/lagoon-platform/swarm-orchestrator
+        cd components/ekara-platform/swarm-orchestrator
         git init
         echo "v1.0.0" > VERSION
         git add .
@@ -58,9 +58,9 @@
         git commit -a -m "Content for v1.2.1"
     )
 
-    mkdir -p components/lagoon-platform/monitoring-stack
+    mkdir -p components/ekara-platform/monitoring-stack
     (
-        cd components/lagoon-platform/monitoring-stack
+        cd components/ekara-platform/monitoring-stack
         git init
         echo "v1.0.0" > VERSION
         git add .

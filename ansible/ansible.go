@@ -10,9 +10,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/lagoon-platform/engine/component"
-	"github.com/lagoon-platform/engine/util"
-	"github.com/lagoon-platform/model"
+	"github.com/ekara-platform/engine/component"
+	"github.com/ekara-platform/engine/util"
+	"github.com/ekara-platform/model"
 )
 
 type AnsibleManager interface {

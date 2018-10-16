@@ -11,11 +11,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/lagoon-platform/engine/ansible"
-	"github.com/lagoon-platform/engine/component"
-	"github.com/lagoon-platform/engine/util"
+	"github.com/ekara-platform/engine/ansible"
+	"github.com/ekara-platform/engine/component"
+	"github.com/ekara-platform/engine/util"
 
-	"github.com/lagoon-platform/model"
+	"github.com/ekara-platform/model"
 	_ "gopkg.in/yaml.v2"
 )
 
@@ -33,7 +33,7 @@ type context struct {
 	logger    *log.Logger
 	directory string
 
-	// Lagoon environment
+	// Ekara environment
 	environment *model.Environment
 	data        map[string]interface{}
 
@@ -101,7 +101,7 @@ func (ctx *context) Init(repo string, ref string) error {
 
 	// Register the core component
 	ctx.logger.Println("Registering core")
-	ctx.componentManager.RegisterComponent(ctx.environment.Lagoon.Component.Resolve())
+	ctx.componentManager.RegisterComponent(ctx.environment.Ekara.Component.Resolve())
 
 	// Register the orchestrator component
 	ctx.logger.Println("Registering orchestrator")

@@ -5,18 +5,18 @@ import (
 	"os"
 	"testing"
 
-	"github.com/lagoon-platform/model"
+	"github.com/ekara-platform/model"
 	"github.com/stretchr/testify/assert"
 )
 
 /*
 func TestEngineRemoteNoTag(t *testing.T) {
 	os.RemoveAll("testdata/work")
-	engine1, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "https://github.com/lagoon-platform/demomode/l", "")
+	engine1, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "https://github.com/ekara-platform/demomode/l", "")
 	assertOnlyWarnings(t, e)
 	assert.NotNil(t, engine1)
 
-	engine2, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "https://github.com/lagoon-platform/demomodel/", "")
+	engine2, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "https://github.com/ekara-platform/demomodel/", "")
 	assertOnlyWarnings(t, e)
 	assert.NotNil(t, engine2)
 }
@@ -47,11 +47,11 @@ func TestEngineLocalWithBranchRef(t *testing.T) {
 
 func createTestEngine() Engine {
 	os.RemoveAll("testdata/work")
-	lagoon, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", map[string]interface{}{})
+	ekara, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", map[string]interface{}{})
 	if e != nil {
 		panic(e)
 	}
-	return lagoon
+	return ekara
 }
 
 func assertOnlyWarnings(t *testing.T, e error) {

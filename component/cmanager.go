@@ -6,8 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/lagoon-platform/engine/util"
-	"github.com/lagoon-platform/model"
+	"github.com/ekara-platform/engine/util"
+	"github.com/ekara-platform/model"
 	"gopkg.in/yaml.v2"
 )
 

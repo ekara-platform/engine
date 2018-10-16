@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"reflect"
 
-	"github.com/lagoon-platform/model"
+	"github.com/ekara-platform/model"
 	"gopkg.in/yaml.v2"
 )
 
