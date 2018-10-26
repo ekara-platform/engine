@@ -77,9 +77,8 @@ func (ctx context) Execute(component model.Component, playbook string, extraVars
 	}
 	if inventories != "" {
 		ctx.logger.Printf("launched with inventories :%s", inventories)
-		strs := strings.Split(inventories, " ")
-		for _, v := range strs {
-			calls = append(calls, v)
+		for _, v := range strings.Split(inventories, " ") {
+			args = append(args, v)
 		}
 	}
 

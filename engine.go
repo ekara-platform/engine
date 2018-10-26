@@ -31,7 +31,6 @@ type context struct {
 
 	// Ekara environment
 	environment *model.Environment
-	data        map[string]interface{}
 
 	// Subsystems
 	componentManager component.ComponentManager
@@ -55,8 +54,7 @@ func Create(logger *log.Logger, baseDir string, data map[string]interface{}) (En
 	ctx := context{
 		logger:      logger,
 		directory:   absBaseDir,
-		environment: &model.Environment{},
-		data:        data}
+		environment: &model.Environment{}}
 
 	ctx.componentManager = component.CreateComponentManager(ctx.logger, ctx.environment, data, absBaseDir)
 	ctx.ansibleManager = ansible.CreateAnsibleManager(ctx.logger, ctx.componentManager)
@@ -75,11 +73,18 @@ func (ctx *context) Init(repo string, ref string, descriptor string) error {
 	}
 
 	// Register main component
-	mainComponent, err := model.CreateComponent(wdUrl, "__main__", repo, ref, descriptor)
+	mainComponent, err := model.CreateComponent(wdUrl, "__main__", repo, ref)
 	if err != nil {
 		return err
 	}
-	ctx.componentManager.RegisterComponent(mainComponent)
+	var cDescriptor = descriptor
+	if descriptor == "" {
+		cDescriptor = util.DescriptorFileName
+	}
+	ctx.componentManager.RegisterComponent(mainComponent, cDescriptor)
+	if err != nil {
+		return err
+	}
 
 	// Ensure the main component is present
 	err = ctx.componentManager.Ensure()
@@ -89,22 +94,22 @@ func (ctx *context) Init(repo string, ref string, descriptor string) error {
 
 	// Register the core component
 	ctx.logger.Println("Registering core")
-	ctx.componentManager.RegisterComponent(ctx.environment.Ekara.Component.Resolve())
+	ctx.componentManager.RegisterComponent(ctx.environment.Ekara.Component.Resolve(), util.DescriptorFileName)
 
 	// Register the orchestrator component
 	ctx.logger.Println("Registering orchestrator")
-	ctx.componentManager.RegisterComponent(ctx.environment.Orchestrator.Component.Resolve())
+	ctx.componentManager.RegisterComponent(ctx.environment.Orchestrator.Component.Resolve(), util.DescriptorFileName)
 
 	// Register provider components
 	for pName, pComp := range ctx.environment.Providers {
 		ctx.logger.Println("Registering provider " + pName)
-		ctx.componentManager.RegisterComponent(pComp.Component.Resolve())
+		ctx.componentManager.RegisterComponent(pComp.Component.Resolve(), util.DescriptorFileName)
 	}
 
 	// Register stack components
 	for sName, sComp := range ctx.environment.Stacks {
 		ctx.logger.Println("Registering stack " + sName)
-		ctx.componentManager.RegisterComponent(sComp.Component.Resolve())
+		ctx.componentManager.RegisterComponent(sComp.Component.Resolve(), util.DescriptorFileName)
 	}
 
 	return nil

@@ -1,7 +1,8 @@
 package component
 
 import (
-	"github.com/lagoon-platform/model"
+	"github.com/ekara-platform/engine/util"
+	"github.com/ekara-platform/model"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"net/url"
@@ -24,10 +25,10 @@ func TestComponentManager_DirectoriesMatching(t *testing.T) {
 
 func buildComponentManager(t *testing.T) ComponentManager {
 	os.RemoveAll("testdata/work")
-	manager := CreateComponentManager(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), &model.Environment{}, "testdata/work")
+	manager := CreateComponentManager(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), &model.Environment{}, map[string]interface{}{}, "testdata/work")
 	wd, e := os.Getwd()
 	assert.Nil(t, e)
-	base, e := url.Parse(filepath.Join(wd, "testdata", "components") + "/")
+	base, e := url.Parse("file:///" + filepath.Join(wd, "testdata", "components") + "/")
 	assert.Nil(t, e)
 	registerComponent(t, manager, base, "c1")
 	registerComponent(t, manager, base, "c2")
@@ -37,7 +38,7 @@ func buildComponentManager(t *testing.T) ComponentManager {
 }
 
 func registerComponent(t *testing.T, manager ComponentManager, base *url.URL, id string) {
-	component, e := model.CreateComponent(base, id, "lagoon-platform/"+id, "1.0.0")
+	component, e := model.CreateComponent(base, id, "ekara-platform/"+id, "1.0.0")
 	assert.Nil(t, e)
-	manager.RegisterComponent(component)
+	manager.RegisterComponent(component, util.DescriptorFileName)
 }
