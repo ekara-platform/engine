@@ -69,15 +69,7 @@ func Create(logger *log.Logger, baseDir string, data map[string]interface{}) (En
 }
 
 func (ctx *context) Init(repo string, ref string) error {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	absWd, err := filepath.Abs(wd)
-	if err != nil {
-		return err
-	}
-	wdUrl, err := url.Parse("file://" + absWd)
+	wdUrl, err := getCurrentDirectoryURL(ctx)
 	if err != nil {
 		return err
 	}

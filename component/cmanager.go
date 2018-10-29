@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/ekara-platform/engine/util"
 	"github.com/ekara-platform/model"
@@ -141,7 +142,13 @@ func (cm *context) fetchComponent(cId string, cUrl *url.URL, ref string) (path s
 
 func (cm *context) parseComponentDescriptor(cPath string) (*model.Environment, error) {
 	cDescriptor := filepath.Join(cPath, util.DescriptorFileName)
+
 	if _, err := os.Stat(cDescriptor); err == nil {
+		if strings.HasPrefix(cDescriptor, "/") {
+			cDescriptor = "file://" + filepath.ToSlash(cDescriptor)
+		} else {
+			cDescriptor = "file:///" + filepath.ToSlash(cDescriptor)
+		}
 		locationUrl, err := url.Parse(cDescriptor)
 		if err != nil {
 			return nil, err

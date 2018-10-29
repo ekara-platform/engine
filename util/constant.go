@@ -8,6 +8,8 @@ const (
 	// location between several Ekara components.
 	StarterEnvVariableKey string = "EKARA_ENV_DESCR"
 
+	StarterEnvQualifiedVariableKey string = "EKARA_QUALIFIED_NAME"
+
 	// The environment variable used to pass the environment descriptor
 	// name between several Ekara components.
 	StarterEnvNameVariableKey string = "EKARA_ENV_DESCR_NAME"
