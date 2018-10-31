@@ -20,7 +20,7 @@ import (
 )
 
 type Engine interface {
-	Init(repo string, ref string) error
+	Init(repo string, ref string, descriptor string) error
 	Logger() *log.Logger
 	BaseDir() string
 	ComponentManager() component.ComponentManager
@@ -68,7 +68,7 @@ func Create(logger *log.Logger, baseDir string, data map[string]interface{}) (En
 	return &ctx, nil
 }
 
-func (ctx *context) Init(repo string, ref string) error {
+func (ctx *context) Init(repo string, ref string, descriptor string) error {
 	wdUrl, err := getCurrentDirectoryURL(ctx)
 	if err != nil {
 		return err
@@ -79,7 +79,7 @@ func (ctx *context) Init(repo string, ref string) error {
 	}
 
 	// Register main component
-	mainComponent, err := model.CreateComponent(wdUrl, "__main__", repo, ref)
+	mainComponent, err := model.CreateComponent(wdUrl, "__main__", repo, ref, descriptor)
 	if err != nil {
 		return err
 	}

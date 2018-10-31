@@ -91,7 +91,7 @@ func (cm *context) Ensure() error {
 		if err != nil {
 			return err
 		}
-		cEnv, err := cm.parseComponentDescriptor(cPath)
+		cEnv, err := cm.parseComponentDescriptor(cPath, c.Descriptor)
 		if err != nil {
 			return err
 		}
@@ -140,8 +140,13 @@ func (cm *context) fetchComponent(cId string, cUrl *url.URL, ref string) (path s
 	return cPath, nil
 }
 
-func (cm *context) parseComponentDescriptor(cPath string) (*model.Environment, error) {
-	cDescriptor := filepath.Join(cPath, util.DescriptorFileName)
+func (cm *context) parseComponentDescriptor(cPath string, descriptor string) (*model.Environment, error) {
+	var cDescriptor string
+	if descriptor != "" {
+		cDescriptor = filepath.Join(cPath, descriptor)
+	} else {
+		cDescriptor = filepath.Join(cPath, util.DescriptorFileName)
+	}
 
 	if _, err := os.Stat(cDescriptor); err == nil {
 		if strings.HasPrefix(cDescriptor, "/") {

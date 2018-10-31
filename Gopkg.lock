@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/ekara-platform/model"
   packages = ["."]
-  revision = "323d1cd9479c5e7967cbd12160f99a0701c4508f"
+  revision = "39de05bffd596d1c875994965e0760f1d6f7a8b1"
 
 [[projects]]
   name = "github.com/emirpasic/gods"
@@ -76,8 +76,8 @@
     "token",
     "types"
   ]
-  revision = "f187355171c936ac84a82793659ebb4936bc1c23"
-  version = "v1.3.0"
+  revision = "1ac3a1ac202429a54835fe8408a92880156b489d"
+  version = "v1.4.0"
 
 [[projects]]
   name = "github.com/stretchr/testify"
@@ -112,19 +112,19 @@
     "ssh/agent",
     "ssh/knownhosts"
   ]
-  revision = "0c41d7ab0a0ee717d4590a44bcb987dfd9e183eb"
+  revision = "4d3f4d9ffa16a13f451c3b2999e9c49e9750bf06"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
-  revision = "49bb7cea24b1df9410e1712aa6433dae904ff66a"
+  revision = "c44066c5c816ec500d459a2a324a753f78531ae0"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["windows"]
-  revision = "fa43e7bc11baaae89f3f902b2b4d832b68234844"
+  revision = "7e31e0c00fa05cb5fbf4347b585621d6709e19a4"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -195,8 +195,8 @@
     "utils/merkletrie/internal/frame",
     "utils/merkletrie/noder"
   ]
-  revision = "d3cec13ac0b195bfb897ed038a08b5130ab9969e"
-  version = "v4.7.0"
+  revision = "cd64b4d630b6c2d2b3d72e9615e14f9d58bb5787"
+  version = "v4.7.1"
 
 [[projects]]
   name = "gopkg.in/warnings.v0"
@@ -213,6 +213,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6007b9cce6947d25ac7ddafd366a5ae3d7530ecf9a3de5b432db07c0598137af"
+  inputs-digest = "bc17507913d1dda90c617b770f6fdb80eff105a1ed9ad069e04afbb47efc2505"
   solver-name = "gps-cdcl"
   solver-version = 1
