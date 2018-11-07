@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/ekara-platform/model"
   packages = ["."]
-  revision = "39de05bffd596d1c875994965e0760f1d6f7a8b1"
+  revision = "c8d7b21469f91b3e3b715d31229dd909bd0b5d00"
 
 [[projects]]
   name = "github.com/emirpasic/gods"
@@ -112,19 +112,19 @@
     "ssh/agent",
     "ssh/knownhosts"
   ]
-  revision = "4d3f4d9ffa16a13f451c3b2999e9c49e9750bf06"
+  revision = "e4dc69e5b2fd71dcaf8bd5d054eb936deb78d1fa"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
-  revision = "c44066c5c816ec500d459a2a324a753f78531ae0"
+  revision = "a544f70c90f196e50d198126db0c4cb2b562fec0"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["windows"]
-  revision = "7e31e0c00fa05cb5fbf4347b585621d6709e19a4"
+  revision = "3a76605856fddce5718553cbb8bd50ca492a7274"
 
 [[projects]]
   name = "golang.org/x/text"
