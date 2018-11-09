@@ -17,6 +17,7 @@ import (
 
 type AnsibleManager interface {
 	Execute(component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (error, int)
+	Contains(component model.Component, playbook string) bool
 }
 
 type ExecutionReport struct {
@@ -31,6 +32,15 @@ func CreateAnsibleManager(logger *log.Logger, componentManager component.Compone
 	return &context{
 		logger:           logger,
 		componentManager: componentManager}
+}
+
+func (ctx context) Contains(component model.Component, file string) bool {
+	path := ctx.componentManager.ComponentPath(component.Id)
+	playbookPath := util.JoinPaths(path, file)
+	if _, err := os.Stat(playbookPath); !os.IsNotExist(err) {
+		return true
+	}
+	return false
 }
 
 func (ctx context) Execute(component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (error, int) {
@@ -65,7 +75,11 @@ func (ctx context) Execute(component model.Component, playbook string, extraVars
 	if _, err := os.Stat(playBookPath); os.IsNotExist(err) {
 		return err, 0
 	} else {
+		ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
+		ctx.logger.Println("* * * * * A N S I B L E - - P L A Y B O O K  * * * * ")
+		ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
 		ctx.logger.Printf(util.LOG_STARTING_PLAYBOOK, playBookPath)
+		ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
 	}
 
 	calls := make([]string, 0)
