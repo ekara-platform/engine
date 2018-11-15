@@ -1,14 +1,14 @@
 package ansible
 
 import (
+	"github.com/ekara-platform/model"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBuild(t *testing.T) {
-
-	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
 	body := bp.Body
 
 	val, ok := body["connectionConfig"]
@@ -37,8 +37,12 @@ func TestBuild(t *testing.T) {
 	for k, v := range v {
 		switch k {
 		case "name":
-			assert.Equal(t, "client_val", v)
-		case "uid":
+			assert.Equal(t, "client", v)
+		case "qualifier":
+			assert.Equal(t, "val", v)
+		case "id":
+			assert.Equal(t, "client_val", v.(model.QualifiedName).String())
+		case "nodeset":
 			assert.Equal(t, "uid_val", v)
 		default:
 			assert.Fail(t, "unknown key")
@@ -47,8 +51,7 @@ func TestBuild(t *testing.T) {
 }
 
 func TestAddString(t *testing.T) {
-
-	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	bp.AddString("string_key1", "string_val1")
 	bp.AddString("string_key2", "string_val2")
@@ -74,7 +77,7 @@ func TestAddString(t *testing.T) {
 
 func TestAddInt(t *testing.T) {
 
-	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	bp.AddInt("string_key1", 11)
 	bp.AddInt("string_key2", 22)
@@ -100,7 +103,7 @@ func TestAddInt(t *testing.T) {
 
 func TestAddMapString(t *testing.T) {
 
-	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "string_val1"
@@ -128,7 +131,7 @@ func TestAddMapString(t *testing.T) {
 
 func TestAddMapInt(t *testing.T) {
 
-	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = 11
@@ -156,7 +159,7 @@ func TestAddMapInt(t *testing.T) {
 
 func TestAddInterface(t *testing.T) {
 
-	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "String"
@@ -196,7 +199,7 @@ func TestAddInterface(t *testing.T) {
 
 func TestAddNamedMapString(t *testing.T) {
 
-	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "string_val1"
@@ -224,7 +227,7 @@ func TestAddNamedMapString(t *testing.T) {
 
 func TestAddBuffer(t *testing.T) {
 
-	bp := BuildBaseParam("client_val", "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
 
 	buf := CreateBuffer()
 	buf.Param["string_key1"] = "string_val1"

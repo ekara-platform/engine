@@ -30,6 +30,7 @@ type ComponentManager interface {
 	ComponentsPaths() map[string]string
 	SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error
 	Ensure() error
+	Environment() model.Environment
 }
 
 type componentDef struct {
@@ -147,6 +148,10 @@ func (cm *context) Ensure() error {
 	} else {
 		return nil
 	}
+}
+
+func (cm *context) Environment() model.Environment {
+	return *cm.environment
 }
 
 func (cm *context) isFetchNeeded() bool {
