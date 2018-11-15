@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/ekara-platform/model"
   packages = ["."]
-  revision = "d86ecdc3eae2f06e18b98bc627a288b0fe4e0ae4"
+  revision = "e39406778962f180ef17acb222d0cdcd02daf1f3"
 
 [[projects]]
   name = "github.com/emirpasic/gods"
@@ -25,12 +25,6 @@
   ]
   revision = "1615341f118ae12f353cc8a983f35b584342c9b3"
   version = "v1.12.0"
-
-[[projects]]
-  name = "github.com/imdario/mergo"
-  packages = ["."]
-  revision = "9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4"
-  version = "v0.3.6"
 
 [[projects]]
   branch = "master"
@@ -195,8 +189,8 @@
     "utils/merkletrie/internal/frame",
     "utils/merkletrie/noder"
   ]
-  revision = "d3cec13ac0b195bfb897ed038a08b5130ab9969e"
-  version = "v4.7.0"
+  revision = "cd64b4d630b6c2d2b3d72e9615e14f9d58bb5787"
+  version = "v4.7.1"
 
 [[projects]]
   name = "gopkg.in/warnings.v0"
@@ -213,6 +207,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6007b9cce6947d25ac7ddafd366a5ae3d7530ecf9a3de5b432db07c0598137af"
+  inputs-digest = "bc17507913d1dda90c617b770f6fdb80eff105a1ed9ad069e04afbb47efc2505"
   solver-name = "gps-cdcl"
   solver-version = 1

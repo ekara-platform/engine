@@ -1,6 +1,8 @@
 package component
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"net/url"
 	"os"
@@ -11,6 +13,8 @@ import (
 	"github.com/ekara-platform/model"
 	"gopkg.in/yaml.v2"
 )
+
+const maxFetchIterations = 9
 
 type ScmHandler interface {
 	Matches(source *url.URL, path string) bool
@@ -48,10 +52,10 @@ type fileMap struct {
 	File map[string]string `yaml:"component_path"`
 }
 
-func CreateComponentManager(logger *log.Logger, environment *model.Environment, data map[string]interface{}, baseDir string) ComponentManager {
+func CreateComponentManager(logger *log.Logger, data map[string]interface{}, baseDir string) ComponentManager {
 	return &context{
 		logger:      logger,
-		environment: environment,
+		environment: nil,
 		directory:   filepath.Join(baseDir, "components"),
 		components:  map[string]componentDef{},
 		paths:       map[string]string{},
@@ -60,10 +64,12 @@ func CreateComponentManager(logger *log.Logger, environment *model.Environment, 
 }
 
 func (cm *context) RegisterComponent(c model.Component, descriptor string) {
-	cm.logger.Println("Registering component " + c.Repository.String() + "@" + c.Version.String())
-	cm.components[c.Id] = componentDef{
-		component:  c,
-		descriptor: descriptor}
+	if _, ok := cm.components[c.Id]; !ok {
+		cm.logger.Println("Registering component " + c.Repository.String() + "@" + c.Version.String())
+		cm.components[c.Id] = componentDef{
+			component:  c,
+			descriptor: descriptor}
+	}
 }
 
 func (cm *context) ComponentPath(id string) string {
@@ -104,21 +110,52 @@ func (cm *context) SaveComponentsPaths(log *log.Logger, dest util.FolderPath) er
 }
 
 func (cm *context) Ensure() error {
-	for cName, c := range cm.components {
-		cm.logger.Println("Ensuring that component " + cName + " is available")
-		cPath, err := cm.fetchComponent(c.component.Id, c.component.Repository, c.component.Version.String())
-		if err != nil {
-			return err
+	for i := 0; i < maxFetchIterations && cm.isFetchNeeded(); i++ {
+		// Fetch all known components
+		for cName, c := range cm.components {
+			cm.logger.Println("Ensuring that component " + cName + " is available")
+			cPath, err := cm.fetchComponent(c.component.Id, c.component.Repository, c.component.Version.String())
+			if err != nil {
+				return err
+			}
+			err = cm.parseComponentDescriptor(cName, cPath, c.descriptor)
+			if err != nil {
+				return err
+			}
+			cm.logger.Printf("Component %s has been downloaded in %s", c.component.Id, cPath)
+			c := cm.components[c.component.Id]
+			cm.paths[c.component.Id] = cPath
 		}
-		err = cm.parseComponentDescriptor(cName, cPath, c.descriptor)
-		if err != nil {
-			return err
+
+		// Register additionally discovered components
+		if cm.environment != nil {
+			cm.RegisterComponent(cm.environment.Ekara.Component.Resolve(), util.DescriptorFileName)
+			cm.RegisterComponent(cm.environment.Orchestrator.Component.Resolve(), util.DescriptorFileName)
+			for _, pComp := range cm.environment.Providers {
+				cm.RegisterComponent(pComp.Component.Resolve(), util.DescriptorFileName)
+			}
+			for _, sComp := range cm.environment.Stacks {
+				cm.RegisterComponent(sComp.Component.Resolve(), util.DescriptorFileName)
+			}
+			for _, tComp := range cm.environment.Tasks {
+				cm.RegisterComponent(tComp.Component.Resolve(), util.DescriptorFileName)
+			}
 		}
-		cm.logger.Printf("Component %s has been downloaded in %s", c.component.Id, cPath)
-		c := cm.components[c.component.Id]
-		cm.paths[c.component.Id] = cPath
 	}
-	return nil
+	if cm.isFetchNeeded() {
+		return errors.New(fmt.Sprintf("not all components have been fetched after %d iterations, check for import loops in descriptors", maxFetchIterations))
+	} else {
+		return nil
+	}
+}
+
+func (cm *context) isFetchNeeded() bool {
+	for id := range cm.components {
+		if _, ok := cm.paths[id]; !ok {
+			return true
+		}
+	}
+	return false
 }
 
 func (cm *context) fetchComponent(cId string, cUrl *url.URL, ref string) (path string, err error) {
@@ -176,7 +213,11 @@ func (cm *context) parseComponentDescriptor(cName string, cPath string, descript
 		if err != nil {
 			return err
 		}
-		return cm.environment.Merge(cEnv)
+		if cm.environment == nil {
+			cm.environment = &cEnv
+		} else {
+			return cm.environment.Merge(cEnv)
+		}
 	}
 	return nil
 }

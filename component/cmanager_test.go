@@ -25,7 +25,7 @@ func TestComponentManager_DirectoriesMatching(t *testing.T) {
 
 func buildComponentManager(t *testing.T) ComponentManager {
 	os.RemoveAll("testdata/work")
-	manager := CreateComponentManager(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), &model.Environment{}, map[string]interface{}{}, "testdata/work")
+	manager := CreateComponentManager(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), map[string]interface{}{}, "testdata/work")
 	wd, e := os.Getwd()
 	assert.Nil(t, e)
 	base, e := url.Parse("file:///" + filepath.Join(wd, "testdata", "components") + "/")

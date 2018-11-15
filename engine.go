@@ -21,16 +21,12 @@ type Engine interface {
 	BaseDir() string
 	ComponentManager() component.ComponentManager
 	AnsibleManager() ansible.AnsibleManager
-	Environment() model.Environment
 }
 
 type context struct {
 	// Base attributes
 	logger    *log.Logger
 	directory string
-
-	// Ekara environment
-	environment *model.Environment
 
 	// Subsystems
 	componentManager component.ComponentManager
@@ -45,6 +41,7 @@ type context struct {
 //		logger: the logger
 //		baseDir: the directory where the environment will take place among its
 //				 inclusions and related components
+//		data: the user data for templating the environment descriptor
 func Create(logger *log.Logger, baseDir string, data map[string]interface{}) (Engine, error) {
 	absBaseDir, err := filepath.Abs(baseDir)
 	if err != nil {
@@ -52,11 +49,10 @@ func Create(logger *log.Logger, baseDir string, data map[string]interface{}) (En
 	}
 
 	ctx := context{
-		logger:      logger,
-		directory:   absBaseDir,
-		environment: &model.Environment{}}
+		logger:    logger,
+		directory: absBaseDir}
 
-	ctx.componentManager = component.CreateComponentManager(ctx.logger, ctx.environment, data, absBaseDir)
+	ctx.componentManager = component.CreateComponentManager(ctx.logger, data, absBaseDir)
 	ctx.ansibleManager = ansible.CreateAnsibleManager(ctx.logger, ctx.componentManager)
 
 	return &ctx, nil
@@ -92,26 +88,6 @@ func (ctx *context) Init(repo string, ref string, descriptor string) error {
 		return err
 	}
 
-	// Register the core component
-	ctx.logger.Println("Registering core")
-	ctx.componentManager.RegisterComponent(ctx.environment.Ekara.Component.Resolve(), util.DescriptorFileName)
-
-	// Register the orchestrator component
-	ctx.logger.Println("Registering orchestrator")
-	ctx.componentManager.RegisterComponent(ctx.environment.Orchestrator.Component.Resolve(), util.DescriptorFileName)
-
-	// Register provider components
-	for pName, pComp := range ctx.environment.Providers {
-		ctx.logger.Println("Registering provider " + pName)
-		ctx.componentManager.RegisterComponent(pComp.Component.Resolve(), util.DescriptorFileName)
-	}
-
-	// Register stack components
-	for sName, sComp := range ctx.environment.Stacks {
-		ctx.logger.Println("Registering stack " + sName)
-		ctx.componentManager.RegisterComponent(sComp.Component.Resolve(), util.DescriptorFileName)
-	}
-
 	return nil
 }
 
@@ -129,10 +105,6 @@ func (ctx *context) ComponentManager() component.ComponentManager {
 
 func (ctx *context) AnsibleManager() ansible.AnsibleManager {
 	return ctx.ansibleManager
-}
-
-func (ctx *context) Environment() model.Environment {
-	return *ctx.environment
 }
 
 // BuildDescriptorUrl builds the url of environment descriptor based on the
