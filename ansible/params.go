@@ -31,12 +31,12 @@ type BaseParam struct {
 //
 // Parameters:
 //		name: the qualified name of the environment
-//		uid: the unique id of the nodeset we are working with
+//		nodesetName: the name of the nodeset we are working with
 //		provider: the name of the provider where to create the nodeset
 //		pubK: the public SSH key to connect on the created nodeset ( the name of the file)
 //		privK: the private SSH key to connect on the created nodeset ( the name of the file)
 //
-func BuildBaseParam(name model.QualifiedName, uid string, provider string, pubK string, privK string) BaseParam {
+func BuildBaseParam(env model.Environment, nodesetName string, provider string, pubK string, privK string) BaseParam {
 
 	baseParam := BaseParam{}
 	baseParam.Body = make(map[string]interface{})
@@ -54,11 +54,12 @@ func BuildBaseParam(name model.QualifiedName, uid string, provider string, pubK 
 	baseParam.Body["connectionConfig"] = connectionM
 
 	clientM := make(map[string]interface{})
-	if name.String() != "" {
-		clientM["name"] = name.String()
-	}
-	if uid != "" {
-		clientM["uid"] = uid
+	clientM["id"] = env.QualifiedName()
+	clientM["name"] = env.Name
+	clientM["qualifier"] = env.Qualifier
+
+	if nodesetName != "" {
+		clientM["nodeset"] = nodesetName
 	}
 	baseParam.Body["environment"] = clientM
 

@@ -1,15 +1,11 @@
 package engine
 
 import (
-	"hash/crc64"
 	"log"
-	"net"
 	"net/url"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
@@ -143,26 +139,6 @@ func BuildDescriptorUrl(url url.URL, fileName string) url.URL {
 		url.Path = url.Path + "/" + fileName
 	}
 	return url
-}
-
-func GetUId() string {
-	sIp := getOutboundIP().String()
-	sTime := time.Now().UTC().String()
-	s := sIp + sTime
-	aStringToHash := []byte(s)
-	crc64Table := crc64.MakeTable(0xC96C5795D7870F42)
-	crc64Int := crc64.Checksum(aStringToHash, crc64Table)
-	return strconv.FormatUint(crc64Int, 16)
-}
-
-func getOutboundIP() net.IP {
-	conn, err := net.Dial("udp", "8.8.8.8:80")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer conn.Close()
-	localAddr := conn.LocalAddr().(*net.UDPAddr)
-	return localAddr.IP
 }
 
 //CheckProxy returns the proxy setting from environment variables
