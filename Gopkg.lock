@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/ekara-platform/model"
   packages = ["."]
-  revision = "e7285304cd7701c349b4185689588a425c04f833"
+  revision = "e39406778962f180ef17acb222d0cdcd02daf1f3"
 
 [[projects]]
   name = "github.com/emirpasic/gods"
@@ -25,12 +25,6 @@
   ]
   revision = "1615341f118ae12f353cc8a983f35b584342c9b3"
   version = "v1.12.0"
-
-[[projects]]
-  name = "github.com/imdario/mergo"
-  packages = ["."]
-  revision = "9f23e2d6bd2a77f959b2bf6acdbefd708a83a4a4"
-  version = "v0.3.6"
 
 [[projects]]
   branch = "master"
@@ -76,8 +70,8 @@
     "token",
     "types"
   ]
-  revision = "1ac3a1ac202429a54835fe8408a92880156b489d"
-  version = "v1.4.0"
+  revision = "f187355171c936ac84a82793659ebb4936bc1c23"
+  version = "v1.3.0"
 
 [[projects]]
   name = "github.com/stretchr/testify"
@@ -112,19 +106,19 @@
     "ssh/agent",
     "ssh/knownhosts"
   ]
-  revision = "e4dc69e5b2fd71dcaf8bd5d054eb936deb78d1fa"
+  revision = "0c41d7ab0a0ee717d4590a44bcb987dfd9e183eb"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
-  revision = "a544f70c90f196e50d198126db0c4cb2b562fec0"
+  revision = "49bb7cea24b1df9410e1712aa6433dae904ff66a"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
   packages = ["windows"]
-  revision = "3a76605856fddce5718553cbb8bd50ca492a7274"
+  revision = "fa43e7bc11baaae89f3f902b2b4d832b68234844"
 
 [[projects]]
   name = "golang.org/x/text"

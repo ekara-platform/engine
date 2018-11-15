@@ -18,6 +18,8 @@
 vendor/
 
 # Test generated input and output
+component/testdata/components
+component/testdata/work
 testdata/components/
 testdata/work/
 component/testdata/components/

@@ -3,10 +3,10 @@ package ansible
 import (
 	"bufio"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"syscall"
 
@@ -44,34 +44,10 @@ func (ctx context) Contains(component model.Component, file string) bool {
 }
 
 func (ctx context) Execute(component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (error, int) {
-	// Path of the component where the plabook is supposed to be located
+	// Path of the component where the playbook is supposed to be located
 	path := ctx.componentManager.ComponentPath(component.Id)
 
-	// We check if the component contains mmodules
-	module := util.JoinPaths(path, util.ComponentModuleFolder)
-	if _, err := os.Stat(module); err != nil {
-		if os.IsNotExist(err) {
-			ctx.logger.Printf("No module located in %s", module)
-			module = ""
-		}
-	} else {
-		ctx.logger.Printf("Module located in %s", module)
-	}
-
-	ctx.logger.Printf(util.LOG_LAUNCHING_PLAYBOOK, playbook)
-	_, err := ioutil.ReadDir(path)
-	if err != nil {
-		return err, 0
-	}
-
-	var playBookPath string
-
-	if strings.HasSuffix(path, "/") {
-		playBookPath = path + playbook
-	} else {
-		playBookPath = path + "/" + playbook
-	}
-
+	playBookPath := filepath.Join(path, playbook)
 	if _, err := os.Stat(playBookPath); os.IsNotExist(err) {
 		return err, 0
 	} else {
@@ -81,37 +57,44 @@ func (ctx context) Execute(component model.Component, playbook string, extraVars
 		ctx.logger.Printf(util.LOG_STARTING_PLAYBOOK, playBookPath)
 		ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
 	}
+	ctx.logger.Printf(util.LOG_LAUNCHING_PLAYBOOK, playBookPath)
 
-	calls := make([]string, 0)
-	calls = append(calls, playbook)
-	if extraVars.Bool {
-		ctx.logger.Printf("launched with extra vars :%s", extraVars.String())
-		calls = append(calls, "--extra-vars")
-		calls = append(calls, extraVars.String())
+	var args = []string{playbook}
+	moduleDirectories := ctx.componentManager.MatchingDirectories(util.ComponentModuleFolder)
+	if len(moduleDirectories) > 0 {
+		ctx.logger.Printf("Detected %d modules directories for launch: %s", len(moduleDirectories), moduleDirectories)
+		args = append(args, "--module-path", strings.Join(moduleDirectories, ":"))
+	} else {
+		ctx.logger.Printf("No module directory detected for launch")
 	}
 
-	if module != "" {
-		ctx.logger.Printf("launched with module :%s", module)
-		calls = append(calls, "--module-path")
-		calls = append(calls, module)
+	inventoryDirectories := ctx.componentManager.MatchingDirectories(util.InventoryModuleFolder)
+	if len(inventoryDirectories) > 0 {
+		ctx.logger.Printf("Detected %d inventory directories for launch: %s", len(moduleDirectories), moduleDirectories)
+		args = append(args, "--inventory", strings.Join(inventoryDirectories, ":"))
+	} else {
+		ctx.logger.Printf("No inventory directory detected for launch")
 	}
-
 	if inventories != "" {
 		ctx.logger.Printf("launched with inventories :%s", inventories)
-		strs := strings.Split(inventories, " ")
-		for _, v := range strs {
-			calls = append(calls, v)
+		for _, v := range strings.Split(inventories, " ") {
+			args = append(args, v)
 		}
 	}
 
-	cmd := exec.Command("ansible-playbook", calls...)
+	if extraVars.Bool {
+		ctx.logger.Printf("Playbook extra-vars: %s", extraVars.String())
+		args = append(args, "--extra-vars", extraVars.String())
+	} else {
+		ctx.logger.Printf("No extra-vars")
+	}
 
+	cmd := exec.Command("ansible-playbook", args...)
+	cmd.Dir = path
 	cmd.Env = os.Environ()
 	for k, v := range envars.Content {
 		cmd.Env = append(cmd.Env, k+"="+v)
 	}
-
-	cmd.Dir = path
 
 	errReader, err := cmd.StderrPipe()
 	if err != nil {
