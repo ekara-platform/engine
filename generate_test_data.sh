@@ -1,5 +1,6 @@
 #!/bin/bash
 
+mkdir -p `dirname $0`/testdata
 (
     cd `dirname $0`/testdata
 
@@ -88,8 +89,10 @@
         git tag v1.0.0
     )
 )
+mkdir -p `dirname $0`/component/testdata
 (
     cd `dirname $0`/component/testdata
+
     mkdir -p components/ekara-platform/c1
     (
         cd components/ekara-platform/c1
