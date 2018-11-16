@@ -54,9 +54,18 @@ func BuildBaseParam(env model.Environment, nodesetName string, provider string, 
 	baseParam.Body["connectionConfig"] = connectionM
 
 	clientM := make(map[string]interface{})
-	clientM["id"] = env.QualifiedName()
-	clientM["name"] = env.Name
-	clientM["qualifier"] = env.Qualifier
+
+	if env.QualifiedName() != "" {
+		clientM["id"] = env.QualifiedName().String() + "_" + nodesetName
+	}
+
+	if env.Name != "" {
+		clientM["name"] = env.Name
+	}
+
+	if env.Qualifier != "" {
+		clientM["qualifier"] = env.Qualifier
+	}
 
 	if nodesetName != "" {
 		clientM["nodeset"] = nodesetName

@@ -1,8 +1,9 @@
 package ansible
 
 import (
-	"github.com/ekara-platform/model"
 	"testing"
+
+	"github.com/ekara-platform/model"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -33,6 +34,7 @@ func TestBuild(t *testing.T) {
 	assert.True(t, ok)
 
 	v, okType = val.(map[string]interface{})
+	assert.Equal(t, len(v), 4)
 	assert.True(t, okType)
 	for k, v := range v {
 		switch k {
@@ -41,7 +43,7 @@ func TestBuild(t *testing.T) {
 		case "qualifier":
 			assert.Equal(t, "val", v)
 		case "id":
-			assert.Equal(t, "client_val", v.(model.QualifiedName).String())
+			assert.Equal(t, "client_val_uid_val", v)
 		case "nodeset":
 			assert.Equal(t, "uid_val", v)
 		default:
