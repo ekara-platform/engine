@@ -5,34 +5,34 @@ import (
 )
 
 const (
-	ansible_ok                int = 0
-	ansible_error             int = 1
-	ansible_failed            int = 2
-	ansible_unreachable       int = 3
-	ansible_parser            int = 4
-	ansible_bar_or_incomplete int = 5
-	ansible_user_insterrupted int = 99
-	ansible_unexpected_error  int = 250
+	ansibleOk               int = 0
+	ansibleError            int = 1
+	ansibleFailed           int = 2
+	ansibleUreachable       int = 3
+	ansibleParser           int = 4
+	ansibleBarOrIncomplete  int = 5
+	ansibleUserInsterrupted int = 99
+	ansibleUnexpectedError  int = 250
 )
 
 func ReturnedError(code int) error {
 
 	switch code {
-	case 0:
+	case ansibleOk:
 		return nil // OK or no hosts matched
-	case 1:
+	case ansibleError:
 		return buildError("Error") // Error
-	case 2:
+	case ansibleFailed:
 		return buildError("One or more hosts failed") //One or more hosts failed
-	case 3:
+	case ansibleUreachable:
 		return buildError("One or more hosts were unreachable") //One or more hosts were unreachable
-	case 4:
+	case ansibleParser:
 		return buildError("Parser error") //
-	case 5:
+	case ansibleBarOrIncomplete:
 		return buildError("Bad or incomplete options") //
-	case 99:
+	case ansibleUserInsterrupted:
 		return buildError("User interrupted execution") //
-	case 250:
+	case ansibleUnexpectedError:
 		return buildError("Unexpected error  ") //
 	}
 	return nil
