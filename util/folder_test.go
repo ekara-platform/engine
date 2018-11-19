@@ -170,11 +170,12 @@ func TestContainsOK(t *testing.T) {
 	defer ef.Delete()
 
 	ef.Create()
+	b := []byte("Dummy file Content \n")
 	err = ef.Input.Write(b, "test_contains.txt")
 	assert.Nil(t, err)
 
-	b := ef.Input.Contains("test_contains.txt")
-	assert.True(t, b)
+	bo := ef.Input.Contains("test_contains.txt")
+	assert.True(t, bo)
 }
 
 func TestContainsKO(t *testing.T) {
