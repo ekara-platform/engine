@@ -130,16 +130,36 @@ func (cm *context) Ensure() error {
 
 		// Register additionally discovered components
 		if cm.environment != nil {
-			cm.RegisterComponent(cm.environment.Ekara.Component.Resolve(), util.DescriptorFileName)
-			cm.RegisterComponent(cm.environment.Orchestrator.Component.Resolve(), util.DescriptorFileName)
-			for _, pComp := range cm.environment.Providers {
-				cm.RegisterComponent(pComp.Component.Resolve(), util.DescriptorFileName)
+			coreComponent, e := cm.environment.Ekara.Component.Resolve()
+			if e != nil {
+				return e
 			}
-			for _, sComp := range cm.environment.Stacks {
-				cm.RegisterComponent(sComp.Component.Resolve(), util.DescriptorFileName)
+			cm.RegisterComponent(coreComponent, util.DescriptorFileName)
+			orchestratorComponent, e := cm.environment.Orchestrator.Component.Resolve()
+			if e != nil {
+				return e
 			}
-			for _, tComp := range cm.environment.Tasks {
-				cm.RegisterComponent(tComp.Component.Resolve(), util.DescriptorFileName)
+			cm.RegisterComponent(orchestratorComponent, util.DescriptorFileName)
+			for _, provider := range cm.environment.Providers {
+				providerComponent, e := provider.Component.Resolve()
+				if e != nil {
+					return e
+				}
+				cm.RegisterComponent(providerComponent, util.DescriptorFileName)
+			}
+			for _, stack := range cm.environment.Stacks {
+				stackComponent, e := stack.Component.Resolve()
+				if e != nil {
+					return e
+				}
+				cm.RegisterComponent(stackComponent, util.DescriptorFileName)
+			}
+			for _, task := range cm.environment.Tasks {
+				taskComponent, e := task.Component.Resolve()
+				if e != nil {
+					return e
+				}
+				cm.RegisterComponent(taskComponent, util.DescriptorFileName)
 			}
 		}
 	}
@@ -197,31 +217,33 @@ func (cm *context) fetchComponent(cId string, cUrl *url.URL, ref string) (path s
 	return cPath, nil
 }
 
-func (cm *context) parseComponentDescriptor(cName string, cPath string, descriptor string) (error) {
-	cDescriptor := filepath.Join(cPath, descriptor)
-	if _, err := os.Stat(cDescriptor); err == nil {
-		if strings.HasPrefix(cDescriptor, "/") {
-			cDescriptor = "file://" + filepath.ToSlash(cDescriptor)
-		} else {
-			cDescriptor = "file:///" + filepath.ToSlash(cDescriptor)
-		}
-		locationUrl, err := url.Parse(cDescriptor)
-		if err != nil {
-			return err
-		}
-		locationUrl, err = model.NormalizeUrl(locationUrl)
-		if err != nil {
-			return err
-		}
-		cm.logger.Printf("Parsing descriptor from component " + cName)
-		cEnv, err := model.CreateEnvironment(cm.logger, locationUrl, cm.data)
-		if err != nil {
-			return err
-		}
-		if cm.environment == nil {
-			cm.environment = &cEnv
-		} else {
-			return cm.environment.Merge(cEnv)
+func (cm *context) parseComponentDescriptor(cName string, cPath string, descriptors ... string) (error) {
+	for _, descriptor := range descriptors {
+		cDescriptor := filepath.Join(cPath, descriptor)
+		if _, err := os.Stat(cDescriptor); err == nil {
+			if strings.HasPrefix(cDescriptor, "/") {
+				cDescriptor = "file://" + filepath.ToSlash(cDescriptor)
+			} else {
+				cDescriptor = "file:///" + filepath.ToSlash(cDescriptor)
+			}
+			locationUrl, err := url.Parse(cDescriptor)
+			if err != nil {
+				return err
+			}
+			locationUrl, err = model.NormalizeUrl(locationUrl)
+			if err != nil {
+				return err
+			}
+			cm.logger.Printf("Parsing descriptor %s from component %s", descriptor, cName)
+			cEnv, err := model.CreateEnvironment(cm.logger, locationUrl, cm.data)
+			if err != nil {
+				return err
+			}
+			if cm.environment == nil {
+				cm.environment = &cEnv
+			} else {
+				return cm.environment.Merge(cEnv)
+			}
 		}
 	}
 	return nil
