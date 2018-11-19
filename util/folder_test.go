@@ -163,3 +163,27 @@ func TestContent(t *testing.T) {
 	ok = ef.Output.Contains("test.txt")
 	assert.False(t, ok)
 }
+
+func TestContainsOK(t *testing.T) {
+	ef, err := CreateExchangeFolder(".", "testExFolder")
+	assert.Nil(t, err)
+	defer ef.Delete()
+
+	ef.Create()
+	err = ef.Input.Write(b, "test_contains.txt")
+	assert.Nil(t, err)
+
+	b := ef.Input.Contains("test_contains.txt")
+	assert.True(t, b)
+}
+
+func TestContainsKO(t *testing.T) {
+	ef, err := CreateExchangeFolder(".", "testExFolder")
+	assert.Nil(t, err)
+	defer ef.Delete()
+
+	ef.Create()
+
+	b := ef.Input.Contains("test_contains.txt")
+	assert.False(t, b)
+}
