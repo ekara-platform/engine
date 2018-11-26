@@ -130,16 +130,36 @@ func (cm *context) Ensure() error {
 
 		// Register additionally discovered components
 		if cm.environment != nil {
-			cm.RegisterComponent(cm.environment.Ekara.Component.Resolve(), util.DescriptorFileName)
-			cm.RegisterComponent(cm.environment.Orchestrator.Component.Resolve(), util.DescriptorFileName)
+			er, err := cm.environment.Ekara.Component.Resolve()
+			if err != nil {
+				return err
+			}
+			cm.RegisterComponent(er, util.DescriptorFileName)
+			or, err := cm.environment.Orchestrator.Component.Resolve()
+			if err != nil {
+				return err
+			}
+			cm.RegisterComponent(or, util.DescriptorFileName)
 			for _, pComp := range cm.environment.Providers {
-				cm.RegisterComponent(pComp.Component.Resolve(), util.DescriptorFileName)
+				pr, err := pComp.Component.Resolve()
+				if err != nil {
+					return err
+				}
+				cm.RegisterComponent(pr, util.DescriptorFileName)
 			}
 			for _, sComp := range cm.environment.Stacks {
-				cm.RegisterComponent(sComp.Component.Resolve(), util.DescriptorFileName)
+				sr, err := sComp.Component.Resolve()
+				if err != nil {
+					return err
+				}
+				cm.RegisterComponent(sr, util.DescriptorFileName)
 			}
 			for _, tComp := range cm.environment.Tasks {
-				cm.RegisterComponent(tComp.Component.Resolve(), util.DescriptorFileName)
+				tr, err := tComp.Component.Resolve()
+				if err != nil {
+					return err
+				}
+				cm.RegisterComponent(tr, util.DescriptorFileName)
 			}
 		}
 	}
@@ -197,7 +217,7 @@ func (cm *context) fetchComponent(cId string, cUrl *url.URL, ref string) (path s
 	return cPath, nil
 }
 
-func (cm *context) parseComponentDescriptor(cName string, cPath string, descriptor string) (error) {
+func (cm *context) parseComponentDescriptor(cName string, cPath string, descriptor string) error {
 	cDescriptor := filepath.Join(cPath, descriptor)
 	if _, err := os.Stat(cDescriptor); err == nil {
 		if strings.HasPrefix(cDescriptor, "/") {

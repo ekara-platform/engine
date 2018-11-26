@@ -7,28 +7,28 @@ import (
 )
 
 func TestError_Fetch(t *testing.T) {
-	e := ReturnedError(ansible_ok)
+	e := ReturnedError(ansibleOk)
 	assert.Nil(t, e)
 
-	e = ReturnedError(ansible_error)
+	e = ReturnedError(ansibleError)
 	assert.NotNil(t, e)
 
-	e = ReturnedError(ansible_failed)
+	e = ReturnedError(ansibleFailed)
 	assert.NotNil(t, e)
 
-	e = ReturnedError(ansible_unreachable)
+	e = ReturnedError(ansibleUnreachable)
 	assert.NotNil(t, e)
 
-	e = ReturnedError(ansible_parser)
+	e = ReturnedError(ansibleParser)
 	assert.NotNil(t, e)
 
-	e = ReturnedError(ansible_bar_or_incomplete)
+	e = ReturnedError(ansibleBarOrIncomplete)
 	assert.NotNil(t, e)
 
-	e = ReturnedError(ansible_user_insterrupted)
+	e = ReturnedError(ansibleUserInsterrupted)
 	assert.NotNil(t, e)
 
-	e = ReturnedError(ansible_unexpected_error)
+	e = ReturnedError(ansibleUnexpectedError)
 	assert.NotNil(t, e)
 
 	e = ReturnedError(999999)

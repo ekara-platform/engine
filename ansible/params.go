@@ -55,7 +55,7 @@ func BuildBaseParam(env model.Environment, nodesetName string, provider string, 
 
 	clientM := make(map[string]interface{})
 
-	if env.QualifiedName() != "" {
+	if env.QualifiedName().String() != "" {
 		clientM["id"] = env.QualifiedName().String() + "_" + nodesetName
 	}
 

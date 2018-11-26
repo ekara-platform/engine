@@ -15,18 +15,28 @@ import (
 	"github.com/ekara-platform/model"
 )
 
-type AnsibleManager interface {
-	Execute(component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (error, int)
-	Contains(component model.Component, playbook string) bool
-}
+type (
+	// A AnsibleManager is capable of executing an ansible playbook
+	AnsibleManager interface {
+		// Execute runs a playbook within a component
+		//
+		// Parameters:
+		//		component: the component holding the playbook to launch
+		//		playbook: the name of the playbook to launch
+		//		extraVars: the extra vars passed to the playbook
+		//		envars: the environment variables set before launching the playbook
+		//		inventories: the inventory where to run the playbook
+		//
+		Execute(component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (error, int)
+		// Contains indicates if the given component holds the playbook
+		Contains(component model.Component, playbook string) bool
+	}
 
-type ExecutionReport struct {
-}
-
-type context struct {
-	logger           *log.Logger
-	componentManager component.ComponentManager
-}
+	context struct {
+		logger           *log.Logger
+		componentManager component.ComponentManager
+	}
+)
 
 func CreateAnsibleManager(logger *log.Logger, componentManager component.ComponentManager) AnsibleManager {
 	return &context{
