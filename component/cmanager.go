@@ -160,6 +160,7 @@ func (cm *context) Ensure() error {
 					return err
 				}
 				cm.RegisterComponent(tr, util.DescriptorFileName)
+
 			}
 		}
 	}
