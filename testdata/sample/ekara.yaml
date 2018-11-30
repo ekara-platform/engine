@@ -1,8 +1,12 @@
 name: testEnvironment
 qualifier: testQualifier
 
+imports:
+  - infra.yaml
+  - app.yaml
+
 ekara:
-  componentBase: testdata/components
+  base: testdata/components
   components:
     aws:
       repository: ekara-platform/aws-provider
@@ -13,20 +17,3 @@ ekara:
     monitoring:
       repository: ekara-platform/monitoring-stack
       version: 1.0.0
-
-orchestrator:
-  component: swarm
-
-providers:
-  aws:
-    component: aws
-
-nodes:
-  group1:
-    provider:
-      name: aws
-    instances: 3
-
-stacks:
-  monitoring:
-    component: monitoring

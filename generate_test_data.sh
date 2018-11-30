@@ -4,9 +4,9 @@ mkdir -p `dirname $0`/testdata
 (
     cd `dirname $0`/testdata
 
-    mkdir -p components/ekara-platform/core
+    mkdir -p components/ekara-platform/distribution
     (
-        cd components/ekara-platform/core
+        cd components/ekara-platform/distribution
         git init
         echo "v1.0.0" > VERSION
         git add .
