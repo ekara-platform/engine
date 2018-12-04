@@ -234,8 +234,7 @@ func (cm *context) parseComponentDescriptor(cName string, cPath string, descript
 		if err != nil {
 			return err
 		}
-		cm.logger.Printf("Parsing descriptor from component " + cName)
-		cEnv, err := model.CreateEnvironment(cm.logger, locationUrl, cm.data)
+		cEnv, err := model.CreateEnvironment(locationUrl, cm.data)
 		if err != nil {
 			return err
 		}
