@@ -23,7 +23,7 @@ func TestEngineRemoteNoTag(t *testing.T) {
 */
 func TestEngineLocalWithTagRef(t *testing.T) {
 	engine := createTestEngine()
-	e := engine.Init("testdata/sample", "v1.0.0", "")
+	e := engine.Init("testdata/sample", "1.0.0", "")
 	assertOnlyWarnings(t, e)
 }
 
