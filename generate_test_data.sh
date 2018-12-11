@@ -27,54 +27,54 @@ mkdir -p `dirname $0`/testdata
     (
         cd components/ekara-platform/aws-provider
         git init
-        echo "v1.0.0" > VERSION
+        echo "1.0.0" > VERSION
         git add .
-        git commit -m "Content for v1.0.0"
-        git tag v1.0.0
-        echo "v1.1.0" > VERSION
-        git commit -a -m "Content for v1.1.0"
-        git tag v1.1.0
-        echo "v1.2.0" > VERSION
-        git commit -a -m "Content for v1.2.0"
-        git tag v1.2.0
-        echo "v1.2.1" > VERSION
-        git commit -a -m "Content for v1.2.1"
+        git commit -m "Content for 1.0.0"
+        git tag 1.0.0
+        echo "1.1.0" > VERSION
+        git commit -a -m "Content for 1.1.0"
+        git tag 1.1.0
+        echo "1.2.0" > VERSION
+        git commit -a -m "Content for 1.2.0"
+        git tag 1.2.0
+        echo "1.2.1" > VERSION
+        git commit -a -m "Content for 1.2.1"
     )
 
     mkdir -p components/ekara-platform/swarm-orchestrator
     (
         cd components/ekara-platform/swarm-orchestrator
         git init
-        echo "v1.0.0" > VERSION
+        echo "1.0.0" > VERSION
         git add .
-        git commit -m "Content for v1.0.0"
-        git tag v1.0.0
-        echo "v1.1.0" > VERSION
-        git commit -a -m "Content for v1.1.0"
-        git tag v1.1.0
-        echo "v1.2.0" > VERSION
-        git commit -a -m "Content for v1.2.0"
-        git tag v1.2.0
-        echo "v1.2.1" > VERSION
-        git commit -a -m "Content for v1.2.1"
+        git commit -m "Content for 1.0.0"
+        git tag 1.0.0
+        echo "1.1.0" > VERSION
+        git commit -a -m "Content for 1.1.0"
+        git tag 1.1.0
+        echo "1.2.0" > VERSION
+        git commit -a -m "Content for 1.2.0"
+        git tag 1.2.0
+        echo "1.2.1" > VERSION
+        git commit -a -m "Content for 1.2.1"
     )
 
     mkdir -p components/ekara-platform/monitoring-stack
     (
         cd components/ekara-platform/monitoring-stack
         git init
-        echo "v1.0.0" > VERSION
+        echo "1.0.0" > VERSION
         git add .
-        git commit -m "Content for v1.0.0"
-        git tag v1.0.0
-        echo "v1.1.0" > VERSION
-        git commit -a -m "Content for v1.1.0"
-        git tag v1.1.0
-        echo "v1.2.0" > VERSION
-        git commit -a -m "Content for v1.2.0"
-        git tag v1.2.0
-        echo "v1.2.1" > VERSION
-        git commit -a -m "Content for v1.2.1"
+        git commit -m "Content for 1.0.0"
+        git tag 1.0.0
+        echo "1.1.0" > VERSION
+        git commit -a -m "Content for 1.1.0"
+        git tag 1.1.0
+        echo "1.2.0" > VERSION
+        git commit -a -m "Content for 1.2.0"
+        git tag 1.2.0
+        echo "1.2.1" > VERSION
+        git commit -a -m "Content for 1.2.1"
     )
 
     mkdir -p sample
@@ -83,10 +83,10 @@ mkdir -p `dirname $0`/testdata
 	    rm -rf .git
         git init
         git add .
-        git commit -m "Content for v1.0.0"
+        git commit -m "Content for 1.0.0"
         git checkout -b test
         git checkout master
-        git tag v1.0.0
+        git tag 1.0.0
     )
 )
 mkdir -p `dirname $0`/component/testdata
@@ -100,8 +100,8 @@ mkdir -p `dirname $0`/component/testdata
         mkdir modules
         echo "DUMMY" > modules/dummy
         git add .
-        git commit -m "Content for v1.0.0"
-        git tag v1.0.0
+        git commit -m "Content for 1.0.0"
+        git tag 1.0.0
     )
     mkdir -p components/ekara-platform/c2
     (
@@ -110,8 +110,8 @@ mkdir -p `dirname $0`/component/testdata
         mkdir inventory
         echo "DUMMY" > inventory/dummy
         git add .
-        git commit -m "Content for v1.0.0"
-        git tag v1.0.0
+        git commit -m "Content for 1.0.0"
+        git tag 1.0.0
     )
     mkdir -p components/ekara-platform/c3
     (
@@ -122,8 +122,8 @@ mkdir -p `dirname $0`/component/testdata
         mkdir inventory
         echo "DUMMY" > inventory/dummy
         git add .
-        git commit -m "Content for v1.0.0"
-        git tag v1.0.0
+        git commit -m "Content for 1.0.0"
+        git tag 1.0.0
     )
     mkdir -p components/ekara-platform/c4
     (
@@ -131,7 +131,7 @@ mkdir -p `dirname $0`/component/testdata
         git init
         echo "DUMMY" > dummy
         git add .
-        git commit -m "Content for v1.0.0"
-        git tag v1.0.0
+        git commit -m "Content for 1.0.0"
+        git tag 1.0.0
     )
 )
