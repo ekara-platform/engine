@@ -1,5 +1,6 @@
 package component
 
+import "C"
 import (
 	"errors"
 	"fmt"
@@ -18,13 +19,13 @@ const maxFetchIterations = 9
 
 type ScmHandler interface {
 	Matches(source *url.URL, path string) bool
-	Fetch(source *url.URL, path string) error
-	Update(path string) error
+	Fetch(source *url.URL, path string, auth model.Parameters) error
+	Update(path string, auth model.Parameters) error
 	Switch(path string, ref string) error
 }
 
 type ComponentManager interface {
-	RegisterComponent(c model.Component, descriptor string)
+	RegisterComponent(c model.Component, imports ... string)
 	MatchingDirectories(dirName string) []string
 	ComponentPath(cId string) string
 	ComponentsPaths() map[string]string
@@ -34,18 +35,20 @@ type ComponentManager interface {
 }
 
 type componentDef struct {
-	component  model.Component
-	descriptor string
+	component model.Component
+	imports   []string
 }
 
 type context struct {
-	logger      *log.Logger
-	environment *model.Environment
-	data        map[string]interface{}
+	// Common to all environments
+	logger *log.Logger
+	data   map[string]interface{}
 
-	directory  string
-	components map[string]componentDef
-	paths      map[string]string
+	// Local to one environment (in the case multiple environments will be supported)
+	directory   string
+	components  map[string]componentDef
+	paths       map[string]string
+	environment *model.Environment
 }
 
 // FileMap is used to Marshal the map of downloaded components
@@ -64,12 +67,12 @@ func CreateComponentManager(logger *log.Logger, data map[string]interface{}, bas
 	}
 }
 
-func (cm *context) RegisterComponent(c model.Component, descriptor string) {
+func (cm *context) RegisterComponent(c model.Component, imports ... string) {
 	if _, ok := cm.components[c.Id]; !ok {
-		cm.logger.Println("Registering component " + c.Repository.String() + "@" + c.Version.String())
+		cm.logger.Println("registering component " + c.Repository.String() + "@" + c.Ref)
 		cm.components[c.Id] = componentDef{
-			component:  c,
-			descriptor: descriptor}
+			component: c,
+			imports:   imports}
 	}
 }
 
@@ -113,54 +116,62 @@ func (cm *context) SaveComponentsPaths(log *log.Logger, dest util.FolderPath) er
 func (cm *context) Ensure() error {
 	for i := 0; i < maxFetchIterations && cm.isFetchNeeded(); i++ {
 		// Fetch all known components
-		for cName, c := range cm.components {
-			cm.logger.Println("Ensuring that component " + cName + " is available")
-			cPath, err := cm.fetchComponent(c.component.Id, c.component.Repository, c.component.Version.String())
-			if err != nil {
-				return err
+		for cId, c := range cm.components {
+			if cm.isComponentFetchNeeded(cId) {
+				// Fetch component
+				cPath, err := cm.fetchComponent(c.component)
+				if err != nil {
+					return err
+				}
+				// Parse default descriptor
+				err = cm.parseComponentDescriptor(cId, cPath, util.DescriptorFileName)
+				if err != nil {
+					return err
+				}
+				// Parse external imports
+				for _, imp := range c.imports {
+					if filepath.Clean(imp) != util.DescriptorFileName {
+						err = cm.parseComponentDescriptor(cId, cPath, imp)
+						if err != nil {
+							return err
+						}
+					}
+				}
+				cm.logger.Printf("component %s is available in %s", c.component.Id, cPath)
+				c := cm.components[c.component.Id]
+				cm.paths[c.component.Id] = cPath
 			}
-			err = cm.parseComponentDescriptor(cName, cPath, c.descriptor)
-			if err != nil {
-				return err
-			}
-			cm.logger.Printf("Component %s has been downloaded in %s", c.component.Id, cPath)
-			c := cm.components[c.component.Id]
-			cm.paths[c.component.Id] = cPath
 		}
 
 		// Register additionally discovered components
 		if cm.environment != nil {
-			er, err := cm.environment.Ekara.Component.Resolve()
-			if err != nil {
-				return err
-			}
-			cm.RegisterComponent(er, util.DescriptorFileName)
+			cm.RegisterComponent(cm.environment.Ekara.Distribution)
+
 			or, err := cm.environment.Orchestrator.Component.Resolve()
 			if err != nil {
 				return err
 			}
-			cm.RegisterComponent(or, util.DescriptorFileName)
+			cm.RegisterComponent(or)
 			for _, pComp := range cm.environment.Providers {
 				pr, err := pComp.Component.Resolve()
 				if err != nil {
 					return err
 				}
-				cm.RegisterComponent(pr, util.DescriptorFileName)
+				cm.RegisterComponent(pr)
 			}
 			for _, sComp := range cm.environment.Stacks {
 				sr, err := sComp.Component.Resolve()
 				if err != nil {
 					return err
 				}
-				cm.RegisterComponent(sr, util.DescriptorFileName)
+				cm.RegisterComponent(sr)
 			}
 			for _, tComp := range cm.environment.Tasks {
 				tr, err := tComp.Component.Resolve()
 				if err != nil {
 					return err
 				}
-				cm.RegisterComponent(tr, util.DescriptorFileName)
-
+				cm.RegisterComponent(tr)
 			}
 		}
 	}
@@ -177,19 +188,24 @@ func (cm *context) Environment() model.Environment {
 
 func (cm *context) isFetchNeeded() bool {
 	for id := range cm.components {
-		if _, ok := cm.paths[id]; !ok {
+		if cm.isComponentFetchNeeded(id) {
 			return true
 		}
 	}
 	return false
 }
 
-func (cm *context) fetchComponent(cId string, cUrl *url.URL, ref string) (path string, err error) {
+func (cm *context) isComponentFetchNeeded(id string) bool {
+	_, present := cm.paths[id]
+	return !present
+}
+
+func (cm *context) fetchComponent(c model.Component) (path string, err error) {
 	scm := GitScmHandler{logger: cm.logger} // TODO dynamically select proper handler
-	cPath := filepath.Join(cm.directory, cId)
+	cPath := filepath.Join(cm.directory, c.Id)
 	if _, err := os.Stat(cPath); err == nil {
-		if scm.Matches(cUrl, cPath) {
-			err = scm.Update(cPath)
+		if scm.Matches(c.Repository, cPath) {
+			err = scm.Update(cPath, c.Authentication)
 			if err != nil {
 				return "", err
 			}
@@ -199,19 +215,18 @@ func (cm *context) fetchComponent(cId string, cUrl *url.URL, ref string) (path s
 			if err != nil {
 				return "", err
 			}
-			err = scm.Fetch(cUrl, cPath)
+			err = scm.Fetch(c.Repository, cPath, c.Authentication)
 			if err != nil {
 				return "", err
 			}
 		}
 	} else {
-		err = scm.Fetch(cUrl, cPath)
+		err = scm.Fetch(c.Repository, cPath, c.Authentication)
 		if err != nil {
 			return "", err
 		}
 	}
-
-	err = scm.Switch(cPath, ref)
+	err = scm.Switch(cPath, c.Ref)
 	if err != nil {
 		return "", err
 	}
@@ -221,6 +236,7 @@ func (cm *context) fetchComponent(cId string, cUrl *url.URL, ref string) (path s
 func (cm *context) parseComponentDescriptor(cName string, cPath string, descriptor string) error {
 	cDescriptor := filepath.Join(cPath, descriptor)
 	if _, err := os.Stat(cDescriptor); err == nil {
+		// Calculating descriptor path
 		if strings.HasPrefix(cDescriptor, "/") {
 			cDescriptor = "file://" + filepath.ToSlash(cDescriptor)
 		} else {
@@ -234,14 +250,26 @@ func (cm *context) parseComponentDescriptor(cName string, cPath string, descript
 		if err != nil {
 			return err
 		}
+
+		// Parsing the descriptor
 		cEnv, err := model.CreateEnvironment(locationUrl, cm.data)
 		if err != nil {
 			return err
 		}
+
+		// Merge the resulting environment into the global one
 		if cm.environment == nil {
 			cm.environment = &cEnv
 		} else {
-			return cm.environment.Merge(cEnv)
+			err = cm.environment.Merge(cEnv)
+			if err != nil {
+				return err
+			}
+		}
+
+		// Recursively parse descriptor internal imports
+		for _, imp := range cEnv.Imports {
+			cm.parseComponentDescriptor(cName, cPath, imp)
 		}
 	}
 	return nil

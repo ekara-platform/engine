@@ -38,7 +38,7 @@ func buildComponentManager(t *testing.T) ComponentManager {
 }
 
 func registerComponent(t *testing.T, manager ComponentManager, base *url.URL, id string) {
-	component, e := model.CreateComponent(base, id, "ekara-platform/"+id, "1.0.0")
+	component, e := model.CreateComponent(base, id, "ekara-platform/"+id, "v1.0.0")
 	assert.Nil(t, e)
 	manager.RegisterComponent(component, util.DescriptorFileName)
 }

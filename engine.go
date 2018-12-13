@@ -42,17 +42,17 @@ type context struct {
 //		baseDir: the directory where the environment will take place among its
 //				 inclusions and related components
 //		data: the user data for templating the environment descriptor
-func Create(logger *log.Logger, baseDir string, data map[string]interface{}) (Engine, error) {
-	absBaseDir, err := filepath.Abs(baseDir)
+func Create(logger *log.Logger, workDir string, data map[string]interface{}) (Engine, error) {
+	absWorkDir, err := filepath.Abs(workDir)
 	if err != nil {
 		return nil, err
 	}
 
 	ctx := context{
 		logger:    logger,
-		directory: absBaseDir}
+		directory: absWorkDir}
 
-	ctx.componentManager = component.CreateComponentManager(ctx.logger, data, absBaseDir)
+	ctx.componentManager = component.CreateComponentManager(ctx.logger, data, absWorkDir)
 	ctx.ansibleManager = ansible.CreateAnsibleManager(ctx.logger, ctx.componentManager)
 
 	return &ctx, nil
@@ -73,11 +73,11 @@ func (ctx *context) Init(repo string, ref string, descriptor string) error {
 	if err != nil {
 		return err
 	}
-	var cDescriptor = descriptor
 	if descriptor == "" {
-		cDescriptor = util.DescriptorFileName
+		ctx.componentManager.RegisterComponent(mainComponent)
+	} else {
+		ctx.componentManager.RegisterComponent(mainComponent, descriptor)
 	}
-	ctx.componentManager.RegisterComponent(mainComponent, cDescriptor)
 	if err != nil {
 		return err
 	}
