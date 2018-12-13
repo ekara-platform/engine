@@ -69,7 +69,7 @@ func CreateComponentManager(logger *log.Logger, data map[string]interface{}, bas
 
 func (cm *context) RegisterComponent(c model.Component, imports ... string) {
 	if _, ok := cm.components[c.Id]; !ok {
-		cm.logger.Println("registering component " + c.Repository.String() + "@" + c.Version.String())
+		cm.logger.Println("registering component " + c.Repository.String() + "@" + c.Ref)
 		cm.components[c.Id] = componentDef{
 			component: c,
 			imports:   imports}
@@ -226,7 +226,7 @@ func (cm *context) fetchComponent(c model.Component) (path string, err error) {
 			return "", err
 		}
 	}
-	err = scm.Switch(cPath, c.Version.String())
+	err = scm.Switch(cPath, c.Ref)
 	if err != nil {
 		return "", err
 	}
