@@ -118,3 +118,23 @@ func GetBuffer(f *util.FolderPath, logger *log.Logger, location string) (err err
 	}
 	return
 }
+
+func (b Buffer) isEmpy() bool {
+	return !b.hasEnvvars() && !b.hasExtravars() && !b.hasInventories() && !b.hasParam()
+}
+
+func (b Buffer) hasEnvvars() bool {
+	return len(b.Envvars) == 0
+}
+
+func (b Buffer) hasExtravars() bool {
+	return len(b.Extravars) == 0
+}
+
+func (b Buffer) hasInventories() bool {
+	return len(b.Inventories) == 0
+}
+
+func (b Buffer) hasParam() bool {
+	return len(b.Param) == 0
+}

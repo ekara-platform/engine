@@ -25,7 +25,7 @@ type ScmHandler interface {
 }
 
 type ComponentManager interface {
-	RegisterComponent(c model.Component, imports ... string)
+	RegisterComponent(c model.Component, imports ...string)
 	MatchingDirectories(dirName string) []string
 	ComponentPath(cId string) string
 	ComponentsPaths() map[string]string
@@ -67,7 +67,7 @@ func CreateComponentManager(logger *log.Logger, data map[string]interface{}, bas
 	}
 }
 
-func (cm *context) RegisterComponent(c model.Component, imports ... string) {
+func (cm *context) RegisterComponent(c model.Component, imports ...string) {
 	if _, ok := cm.components[c.Id]; !ok {
 		cm.logger.Println("registering component " + c.Repository.String() + "@" + c.Ref)
 		cm.components[c.Id] = componentDef{

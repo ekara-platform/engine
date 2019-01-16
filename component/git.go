@@ -3,12 +3,13 @@ package component
 import (
 	"errors"
 	"fmt"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
-	"gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 	"log"
 	"net/url"
 	"strings"
+
+	"gopkg.in/src-d/go-git.v4/plumbing/transport"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/http"
+	"gopkg.in/src-d/go-git.v4/plumbing/transport/ssh"
 
 	"github.com/ekara-platform/model"
 	"gopkg.in/src-d/go-git.v4"
@@ -52,7 +53,11 @@ func (gitScm GitScmHandler) Fetch(source *url.URL, path string, auth model.Param
 	if e != nil {
 		return errors.New("error cloning git repository " + source.String() + ": " + e.Error())
 	} else {
-		options.Auth = authMethod
+		if authMethod != nil {
+			options.Auth = authMethod
+		} else {
+			log.Println("Git without authorization method")
+		}
 	}
 	gitScm.logger.Println("cloning GIT repository " + source.String())
 	_, err := git.PlainClone(path, false, &options)

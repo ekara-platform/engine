@@ -31,6 +31,7 @@ type context struct {
 	// Subsystems
 	componentManager component.ComponentManager
 	ansibleManager   ansible.AnsibleManager
+	actionManager    actionManager
 }
 
 // Create creates an environment descriptor based on the provided location.
@@ -54,7 +55,7 @@ func Create(logger *log.Logger, workDir string, data map[string]interface{}) (En
 
 	ctx.componentManager = component.CreateComponentManager(ctx.logger, data, absWorkDir)
 	ctx.ansibleManager = ansible.CreateAnsibleManager(ctx.logger, ctx.componentManager)
-
+	ctx.actionManager = CreateActionManager()
 	return &ctx, nil
 }
 

@@ -56,7 +56,11 @@ func BuildBaseParam(env model.Environment, nodesetName string, provider string, 
 	clientM := make(map[string]interface{})
 
 	if env.QualifiedName().String() != "" {
-		clientM["id"] = env.QualifiedName().String() + "_" + nodesetName
+		if nodesetName != "" {
+			clientM["id"] = env.QualifiedName().String() + "_" + nodesetName
+		} else {
+			clientM["id"] = env.QualifiedName().String()
+		}
 	}
 
 	if env.Name != "" {
@@ -113,6 +117,25 @@ func (bp *BaseParam) AddBuffer(b Buffer) {
 func (bp BaseParam) Content() (b []byte, e error) {
 	b, e = yaml.Marshal(&bp.Body)
 	return
+}
+
+// Copy returns a copy of the base parameter
+func (bp BaseParam) Copy() BaseParam {
+	result := BaseParam{}
+	result.Body = make(map[string]interface{})
+	for k, v := range bp.Body {
+		val, okType := v.(map[string]interface{})
+		if okType {
+			m := make(map[string]interface{})
+			for kVal, vVal := range val {
+				m[kVal] = vVal
+			}
+			result.Body[k] = m
+		} else {
+			result.Body[k] = v
+		}
+	}
+	return result
 }
 
 //ParseParamValues parses a yaml file into a map of "key:value"

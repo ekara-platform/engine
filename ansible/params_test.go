@@ -255,3 +255,117 @@ func TestAddBuffer(t *testing.T) {
 	vString = string(v)
 	assert.Equal(t, "string_val2", vString)
 }
+
+func TestCopy(t *testing.T) {
+	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
+	copy := bp.Copy()
+
+	bpB := bp.Body
+	cB := copy.Body
+
+	assert.Equal(t, len(bpB), len(cB))
+
+	// check origin
+	val, ok := bpB["connectionConfig"]
+	assert.True(t, ok)
+	v, okType := val.(map[string]interface{})
+	assert.True(t, okType)
+	for k, v := range v {
+		switch k {
+		case "provider":
+			assert.Equal(t, "provider_val", v)
+		case "machine_public_key":
+			assert.Equal(t, "pubK_val", v)
+		case "machine_private_key":
+			assert.Equal(t, "privK_val", v)
+		default:
+			assert.Fail(t, "unknown key")
+		}
+	}
+
+	// check copy
+	val, ok = cB["connectionConfig"]
+	assert.True(t, ok)
+	v, okType = val.(map[string]interface{})
+	assert.True(t, okType)
+	for k, v := range v {
+		switch k {
+		case "provider":
+			assert.Equal(t, "provider_val", v)
+		case "machine_public_key":
+			assert.Equal(t, "pubK_val", v)
+		case "machine_private_key":
+			assert.Equal(t, "privK_val", v)
+		default:
+			assert.Fail(t, "unknown key")
+		}
+	}
+
+	// check origin
+	val, ok = bpB["environment"]
+	assert.True(t, ok)
+
+	v, okType = val.(map[string]interface{})
+	assert.Equal(t, len(v), 4)
+	assert.True(t, okType)
+	for k, v := range v {
+		switch k {
+		case "name":
+			assert.Equal(t, "client", v)
+		case "qualifier":
+			assert.Equal(t, "val", v)
+		case "id":
+			assert.Equal(t, "client_val_uid_val", v)
+		case "nodeset":
+			assert.Equal(t, "uid_val", v)
+		default:
+			assert.Fail(t, "unknown key")
+		}
+	}
+
+	// check target
+	val, ok = cB["environment"]
+	assert.True(t, ok)
+
+	v, okType = val.(map[string]interface{})
+	assert.Equal(t, len(v), 4)
+	assert.True(t, okType)
+	for k, v := range v {
+		switch k {
+		case "name":
+			assert.Equal(t, "client", v)
+		case "qualifier":
+			assert.Equal(t, "val", v)
+		case "id":
+			assert.Equal(t, "client_val_uid_val", v)
+		case "nodeset":
+			assert.Equal(t, "uid_val", v)
+		default:
+			assert.Fail(t, "unknown key")
+		}
+	}
+
+	// a addition on the target mustn't affect the origin
+	copy.AddString("newKey", "newValue")
+	assert.Equal(t, len(bpB)+1, len(cB))
+
+	// a modification on the target mustn't affect the origin
+	val, ok = cB["environment"]
+	assert.True(t, ok)
+	v, okType = val.(map[string]interface{})
+	assert.True(t, okType)
+	v["name"] = "updated"
+
+	val, ok = bpB["environment"]
+	assert.True(t, ok)
+	v, okType = val.(map[string]interface{})
+	assert.True(t, okType)
+	assert.Equal(t, v["name"], "client")
+
+	val, ok = cB["environment"]
+	assert.True(t, ok)
+	v, okType = val.(map[string]interface{})
+	assert.True(t, okType)
+	assert.Equal(t, v["name"], "updated")
+
+}
