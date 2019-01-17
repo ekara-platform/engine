@@ -1,6 +1,6 @@
 package component
 
-import "C"
+
 import (
 	"errors"
 	"fmt"
