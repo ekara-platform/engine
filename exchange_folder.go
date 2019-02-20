@@ -11,14 +11,14 @@ func createChildExchangeFolder(parent *util.FolderPath, name string, sr *StepRes
 	ef, e := parent.AddChildExchangeFolder(name)
 	if e != nil {
 		err := fmt.Errorf(ERROR_ADDING_EXCHANGE_FOLDER, name, e.Error())
-		log.Printf(err.Error())
+		log.Printf("%s\n", err.Error())
 		FailsOnCode(sr, e, err.Error(), nil)
 		return ef, true
 	}
 	e = ef.Create()
 	if e != nil {
 		err := fmt.Errorf(ERROR_CREATING_EXCHANGE_FOLDER, name, e.Error())
-		log.Printf(err.Error())
+		log.Printf("%s\n", err.Error())
 		FailsOnCode(sr, e, err.Error(), nil)
 		return ef, true
 	}

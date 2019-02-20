@@ -18,7 +18,7 @@ func flogCheck(lC LaunchContext, rC *runtimeContext) StepResults {
 		if !ok {
 			FailsOnDescriptor(&sc, ve, fmt.Sprintf(ERROR_PARSING_ENVIRONMENT, ve.Error()), nil)
 		} else {
-			lC.Log().Printf(ve.Error())
+			lC.Log().Printf("%s\n", ve.Error())
 			b, e := vErrs.JSonContent()
 			if e != nil {
 				FailsOnDescriptor(&sc, e, fmt.Sprintf(ERROR_GENERIC, e), nil)

@@ -47,16 +47,15 @@ func (am actionManager) Run(id ActionId, lC LaunchContext) {
 	rC := &runtimeContext{}
 	rC.buffer = make(map[string]ansible.Buffer)
 
-	lC.Log().Println(LOG_LAUNCHING_ACTION, a.name)
+	lC.Log().Printf(LOG_LAUNCHING_ACTION, a.name)
 	e, report := a.run(am, lC, rC)
 	if e != nil {
 		// Do something with the error here
 		panic(e)
 	}
 	e = writeReport(*report)
-	lC.Log().Printf("Report blocks length: %d", len(report.Steps.Results))
 	if e != nil {
 		// DO something with the error here
-		panic(e)
+
 	}
 }

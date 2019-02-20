@@ -33,21 +33,39 @@ func fstack(lC LaunchContext, rC *runtimeContext) StepResults {
 }
 
 func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *StepResults) {
+
+	ps := make(map[string]model.Provider, len(lC.Ekara().ComponentManager().Environment().NodeSets))
+
 	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
 
 		sc := InitPlaybookStepResult("Running the stack playbook installation phase", model.ChainDescribable(s, n), NoCleanUpRequired)
+
 		p, err := n.Provider.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the nodeset"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the provider"), nil)
 			sCs.Add(sc)
 			continue
 		}
+
+		if _, ok := ps[p.Name]; ok {
+			continue // The provider has already been processed
+		}
+		ps[p.Name] = p
 
 		// Provider setup exchange folder
 		setupProviderEf := lC.Ef().Input.Children["setup_provider_"+p.Name]
 		// We check if we have a buffer corresponding to the provider setup
 		bufferPro := rC.getBuffer(setupProviderEf.Output)
 
+		// Stack install exchange folder for the given provider
+		fName := fmt.Sprintf("install_stack_%s_for_%s", s.Name, p.Name)
+
+		stackEf, ko := createChildExchangeFolder(lC.Ef().Input, fName, &sc, lC.Log())
+		if ko {
+			sCs.Add(sc)
+			continue
+		}
+		// We use the provider inventory
 		inventory := ""
 		if len(bufferPro.Inventories) > 0 {
 			inventory = bufferPro.Inventories["inventory_path"]
@@ -56,17 +74,30 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 		// We use an empty buffer because no one is coming from the previous step
 		buffer := ansible.CreateBuffer()
 
-		bp := BuildBaseParam(lC, n.Name, p.Name)
+		bp := BuildBaseParam(lC, "", p.Name)
+		bp.AddNamedMap("params", s.Parameters)
+
+		if ko := saveBaseParams(bp, lC, stackEf.Input, &sc); ko {
+			sCs.Add(sc)
+			continue
+		}
+
+		// Prepare components map
+		if ko := saveComponentMap(lC, stackEf.Input, &sc); ko {
+			sCs.Add(sc)
+			continue
+		}
 
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
 		env.Add("http_proxy", lC.HttpProxy())
 		env.Add("https_proxy", lC.HttpsProxy())
 		env.Add("no_proxy", lC.NoProxy())
-		env.AddBuffer(buffer)
 
-		// ugly but .... TODO change this
-		env.AddBuffer(bufferPro)
+		// Adding the environment variables from the stack
+		for envK, envV := range s.EnvVars {
+			env.Add(envK, envV)
+		}
 
 		// Process hook : environment - deploy - before
 		RunHookBefore(lC,
@@ -86,15 +117,6 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 			NoCleanUpRequired,
 		)
 
-		// Stack install exchange folder
-		fName := fmt.Sprintf("install_stack_%s_on_%s", s.Name, n.Name)
-
-		stackEf, ko := createChildExchangeFolder(lC.Ef().Input, fName, &sc, lC.Log())
-		if ko {
-			sCs.Add(sc)
-			continue
-		}
-
 		// Prepare extra vars
 		exv := ansible.BuildExtraVars("", *stackEf.Input, *stackEf.Output, buffer)
 
@@ -107,12 +129,6 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 		}
 		err, code := lC.Ekara().AnsibleManager().Execute(r, "install.yml", exv, env, inventory)
 		if err != nil {
-			r, err := p.Component.Resolve()
-			if err != nil {
-				FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the provider"), nil)
-				sCs.Add(sc)
-				continue
-			}
 			pfd := playBookFailureDetail{
 				Playbook:  "install.yml",
 				Compoment: r.Id,
