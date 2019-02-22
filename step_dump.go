@@ -15,7 +15,7 @@ func fdump(lC LaunchContext, rC *runtimeContext) StepResults {
 
 	environmentYaml, err := yaml.Marshal(lC.Ekara().ComponentManager().Environment())
 	if err != nil {
-		FailsOnDescriptor(&sc, err, fmt.Sprintf("Error marshalling the environment Yaml content:", err.Error()), nil)
+		FailsOnDescriptor(&sc, err, fmt.Sprintf("Error marshalling the environment Yaml content: %s", err.Error()), nil)
 	}
 
 	path, err := util.SaveFile(lC.Log(), *lC.Ef().Output, DUMP_YAML_OUTPUT_FILE, environmentYaml)
@@ -26,7 +26,7 @@ func fdump(lC LaunchContext, rC *runtimeContext) StepResults {
 
 	environmentYaml, err = yaml.Marshal(lC.Ekara().ComponentManager().Environment().OriginalEnv)
 	if err != nil {
-		FailsOnDescriptor(&sc, err, fmt.Sprintf("Error marshalling the environment source Yaml content:", err.Error()), nil)
+		FailsOnDescriptor(&sc, err, fmt.Sprintf("Error marshalling the environment source Yaml content:%s", err.Error()), nil)
 	}
 
 	path, err = util.SaveFile(lC.Log(), *lC.Ef().Output, DUMP_SOURCE_YAML_OUTPUT_FILE, environmentYaml)
