@@ -16,7 +16,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 
 		p, err := n.Provider.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the nodeset"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the provider"), nil)
 			sCs.Add(sc)
 			continue
 		}

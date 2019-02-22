@@ -23,10 +23,10 @@ type (
 		Status          stepResultStatus
 		Context         stepResultContext
 		FailureCause    failureCause `json:",omitempty"`
-		error           error        `json:",omitempty"`
-		ErrorMessage    string       `json:",omitempty"`
-		ReadableMessage string       `json:",omitempty"`
-		RawContent      interface{}  `json:",omitempty"`
+		error           error
+		ErrorMessage    string      `json:",omitempty"`
+		ReadableMessage string      `json:",omitempty"`
+		RawContent      interface{} `json:",omitempty"`
 		cleanUp         Cleanup
 	}
 

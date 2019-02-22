@@ -14,10 +14,10 @@ const (
 
 	// Log messages
 	LOG_VALIDATION_SUCCESSFUL     string = "The envinronment descriptor validation is successful!"
-	LOG_PROCESSING_NODE           string = "Processing node: %s"
+	LOG_PROCESSING_NODE           string = "Processing node: %s\n"
 	LOG_RUNNING_SETUP_FOR         string = "Running setup for provider %s"
-	LOG_LAUNCHING_ACTION          string = "Engine, launcheing action %s"
-	LOG_RUNNING_ACTION            string = "Engine, running action %s"
+	LOG_LAUNCHING_ACTION          string = "Engine, launching action %s\n"
+	LOG_RUNNING_ACTION            string = "Engine, running action %s\n"
 	LOG_PROCESSING_STACK_PLAYBOOK string = "Processing playbook for stack: %s on node: %s"
 	LOG_PROCESSING_STACK_COMPOSE  string = "Processing Docker Compose for stack: %s on node: %s"
 	LOG_REPORT_WRITTEN            string = "The execution report file has been written in %s\n"

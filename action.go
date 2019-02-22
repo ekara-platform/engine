@@ -34,6 +34,8 @@ const (
 	ActionDeployId
 	// Validation of the environment descriptor
 	ActionCheckId
+	// Dump of the environment descriptor
+	ActionDumpId
 	// Update of an environment
 	ActionUpdateId
 	// Deletion of an environment
@@ -56,6 +58,7 @@ func InitActions() []action {
 	r = append(r, action{ActionInstallId, ActionCreateId, "Install", installSteps})
 	r = append(r, action{ActionDeployId, ActionInstallId, "Deploy", deploySteps})
 	r = append(r, action{ActionCheckId, ActionNilId, "Check", checkSteps})
+	r = append(r, action{ActionDumpId, ActionCheckId, "Dump", dumpSteps})
 	return r
 }
 
@@ -82,7 +85,7 @@ func (a action) run(m actionManager, lC LaunchContext, rC *runtimeContext) (erro
 
 	}
 
-	lC.Log().Println(LOG_RUNNING_ACTION, a.name)
+	lC.Log().Printf(LOG_RUNNING_ACTION, a.name)
 
 	// Run the actions steps
 	rep := launch(a.steps, lC, rC)

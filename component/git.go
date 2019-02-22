@@ -55,8 +55,6 @@ func (gitScm GitScmHandler) Fetch(source *url.URL, path string, auth model.Param
 	} else {
 		if authMethod != nil {
 			options.Auth = authMethod
-		} else {
-			log.Println("Git without authorization method")
 		}
 	}
 	gitScm.logger.Println("cloning GIT repository " + source.String())

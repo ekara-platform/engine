@@ -14,7 +14,7 @@ func TestManagerInitialGrossContent(t *testing.T) {
 
 	// Check actions preloaded into the manager
 	assert.False(t, am.empty())
-	assert.Equal(t, len(am.actions), 6)
+	assert.Equal(t, len(am.actions), 7)
 
 	v, err := am.get(ActionFailId)
 	assert.Nil(t, err)
@@ -39,6 +39,11 @@ func TestManagerInitialGrossContent(t *testing.T) {
 	v, err = am.get(ActionCheckId)
 	assert.Nil(t, err)
 	check(t, v, ActionCheckId, ActionNilId, "Check")
+
+	v, err = am.get(ActionDumpId)
+	assert.Nil(t, err)
+	check(t, v, ActionDumpId, ActionCheckId, "Dump")
+
 	// The nil action shouldn't be strored into the manager
 	_, err = am.get(ActionNilId)
 	assert.NotNil(t, err)
