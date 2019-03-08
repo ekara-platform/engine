@@ -1,6 +1,5 @@
 package component
 
-
 import (
 	"errors"
 	"fmt"
@@ -269,7 +268,10 @@ func (cm *context) parseComponentDescriptor(cName string, cPath string, descript
 
 		// Recursively parse descriptor internal imports
 		for _, imp := range cEnv.Imports {
-			cm.parseComponentDescriptor(cName, cPath, imp)
+			err := cm.parseComponentDescriptor(cName, cPath, imp)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
