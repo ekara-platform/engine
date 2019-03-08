@@ -212,7 +212,7 @@ func ParseParams(path string) (ParamContent, error) {
 	}
 	err = yaml.Unmarshal(b, &r)
 	if err != nil {
-		panic(err)
+		return r, err
 	}
 	return r, nil
 }
