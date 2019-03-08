@@ -1,7 +1,6 @@
 package ansible
 
 import (
-	"log"
 	"reflect"
 	"testing"
 
@@ -44,18 +43,18 @@ func checkContent(t *testing.T, pt ParamContent, wanted string) {
 	assert.Equal(t, 1, len(pt))
 
 	val, ok := pt["key1"]
-	assert.True(t, ok)
-	log.Println(reflect.TypeOf(val).Kind())
-	_, ok = val.(map[interface{}]interface{})
-	assert.True(t, ok)
-
-	switch x := val.(type) {
-	case map[interface{}]interface{}:
-		assert.Equal(t, 1, len(x))
-		val2, ok := x["key2"]
+	if assert.True(t, ok) {
+		_, ok = val.(map[interface{}]interface{})
 		assert.True(t, ok)
-		assert.Equal(t, wanted, val2)
-	default:
-		assert.FailNow(t, "Wrong type")
+
+		switch x := val.(type) {
+		case map[interface{}]interface{}:
+			assert.Equal(t, 1, len(x))
+			val2, ok := x["key2"]
+			assert.True(t, ok)
+			assert.Equal(t, wanted, val2)
+		default:
+			assert.FailNow(t, "Wrong type")
+		}
 	}
 }
