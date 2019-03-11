@@ -1,7 +1,6 @@
 package ansible
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
