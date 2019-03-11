@@ -1,0 +1,208 @@
+name: lagoon
+qualifier: dev3
+
+ekara:
+ 
+  components:
+    helios:
+      repository: tbouvet/openstack-provider
+      ref: fix-modules
+    swarm:
+      repository: ekara-platform/swarm-orchestrator
+      ref: 1.0.0-beta1      
+    visualizer:
+      repository: ekara-platform/swarm-visualizer
+      ref: 1.0.0-beta1
+    prometheus: 
+      repository: tbouvet/stack-prometheus  
+      ref: init-stack
+      
+    distrib:
+     repository: https://github.psa-cloud.com/u063326/lagoon-distribution
+     ref: reflex-addon    
+     auth:
+       method: basic
+       user: {{ .git.user }}
+       password: {{ .git.password }}
+    
+tasks:
+  testhook_pre:
+    component: distrib
+    playbook: pre-create.yml
+
+  testhook_post:
+    component: distrib
+    playbook: post-create.yml
+    params:
+      param1: "{{ .key1.key2 }}-{{.key1.key3.key4}}"
+      param2: {{.key1.key3.key4}}
+
+orchestrator:
+  component: swarm
+  docker:
+    params:
+      log-driver: json-file
+      log-opts: 
+        max-size: "20m"
+        max-file: "3"
+      disable-legacy-registry: true
+      userland-proxy: true
+      live-restore: false
+      hosts: 
+      - "unix:///var/run/docker.sock"
+      - "tcp://0.0.0.0:2376"
+      tls: true
+      tlscacert: "/etc/docker/certs/ca.pem"
+      tlscert: "/etc/docker/certs/cert.pem"
+      tlskey: "/etc/docker/certs/key.pem"
+      tlsverify: true 
+      registry-mirrors:
+      - "https://repository.inetpsa.com/"
+      
+    registries:
+      repository.inetpsa.com:
+        certificate: {{ .repository_cert }}
+        username: {{ .docker_username }}
+        password: {{ .docker_password }}
+
+providers:
+  helios:
+    component: helios
+
+    params: 
+      config:
+        auth:
+          auth_url: 'https://helios-be.inetpsa.com:5000/v3/'
+          username: {{ .user_name }}
+          password: {{ .user_password }}
+          user_domain_name: ldap
+          project_domain_name: Default
+        identity_api_version: 3
+      cacert: 
+      - {{ .cert_one }}
+      - {{ .cert_two }}
+
+    proxy:
+      http_proxy: {{ .proxy_http }}
+      https_proxy: {{ .proxy_https }}
+      no_proxy: "{{ .proxy_no }}"
+
+
+nodes:
+  nodeset1:
+    instances: 2
+    
+    provider:
+      name: helios
+      proxy:
+        http_proxy: {{ .proxy_http }}
+        https_proxy: {{ .proxy_https }}
+        no_proxy: "{{ .proxy_no }}"
+
+      params:
+        prefix_names: noreflex 
+        image: PSA_Ubuntu_16.04
+        zone: intranet
+
+        private_network: beos0025_net_dev
+        public_network: L3OUT_Intranet_Safety
+        security_groups: 
+        - beos0025_sg_dev
+        - beos0025_sg_wallix
+        flavor: docker.medium
+        dns_zone: {{ .dns }}
+
+        user_data: |
+          #cloud-config    
+          chpasswd:
+            list: |
+              ubuntu:{{ .user_ubuntu }}
+              root:{{ .root_password }}
+            expire: False
+          system_info:
+            default_user:
+              name: ubuntu
+              plain_text_passwd: '{{ .user_ubuntu }}'
+              home: /home/ubuntu
+              shell: /bin/bash
+              lock_passwd: false
+              sudo: ALL=(ALL) NOPASSWD:ALL
+  
+    volumes:
+    - path: /users
+      params:
+        volume_type: CEPH-1000
+        volume_size: 50
+    - path: /var/lib/docker
+      params:
+        volume_type: CEPH-1000
+        volume_size: 100
+      
+    hooks:
+      provision:
+        before:
+          - task: testhook_pre
+        
+        after:
+          - task: testhook_post
+            params:
+              tower_user: "{{ .tower_user }}"
+              tower_password: "{{ .tower_password }}"
+              param_in_hook: value_in_hook
+
+volumes:
+  volume_name1:
+    content:
+    - component: visualizer   
+      path: /modules/docker_swarm_service.py
+    - component: helios   
+      path: /templates/heats/
+  volume_name2:
+    content:
+    - component: helios   
+      path: /templates/heats/heat-stack.yaml
+      
+stacks:
+  visualizer:
+    component: visualizer
+  prometheus:
+    component: prometheus
+    params:
+      alertmanager:
+        conf:
+          global:
+            resolve_timeout: 3m
+          route:
+            receiver: 'sdi'
+            repeat_interval: 4h
+          receivers:
+          - name: 'sdi'
+            webhook_configs:
+            - url: http://platform.inetpsa.com/alert/sdi/rest/alertmanager
+      grafana:
+        ldap:
+          servers:
+          - host: annuaire.inetpsa.com
+            port: 389
+            use_ssl: false
+            start_tls: false
+            ssl_skip_verify: false
+            bind_dn: 'cn=mzplagld,ou=programs,o=psa'
+            bind_password: ldlag00n
+            search_filter: "(uid=%s)"
+            search_base_dns:
+            - "o=psa"
+            group_search_filter: '(&(objectClass=psareunisgroup)(|(uniquemember=cn=%s,ou=programs, o=psa)(uniquemember=cn=%s,ou=users, o=psa)))'
+            group_search_base_dns:
+            - "o=psa"
+          servers_attributes:
+            name: givenName
+            surname: sn
+            username: cn
+            member_of: cn
+            email: mail
+          servers_group_mappings:
+          - group_dn: 'LAG.GROUP.ADMIN'
+            org_role: Admin
+          - group_dn: 'MY_GROUP'
+            org_role: Editor
