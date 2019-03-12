@@ -49,7 +49,7 @@ func TestTemplateNoDot(t *testing.T) {
 	locationUrl, err := model.NormalizeUrl(url)
 	assert.Nil(t, err)
 	// Parsing the descriptor
-	env, err := model.CreateEnvironment(locationUrl, params)
+	_, err = model.CreateEnvironment(locationUrl, params)
 	assert.NotNil(t, err)
 
 }
