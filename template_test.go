@@ -1,7 +1,7 @@
 package engine
 
 import (
-	_ "io/ioutil"
+	"log"
 	"net/url"
 	"testing"
 
@@ -35,5 +35,22 @@ func TestTemplate(t *testing.T) {
 	val, ok = ta.Parameters["param2"]
 	assert.True(t, ok)
 	assert.Equal(t, "key4_value", val)
+
+}
+
+func TestTemplateNoDot(t *testing.T) {
+
+	path := "./testdata/template/template-params.yaml"
+	params, err := ansible.ParseParams(path)
+	assert.Nil(t, err)
+	assert.NotNil(t, params)
+
+	url, err := url.Parse("./testdata/template/descriptor_no_dot.yaml")
+
+	locationUrl, err := model.NormalizeUrl(url)
+	assert.Nil(t, err)
+	// Parsing the descriptor
+	env, err := model.CreateEnvironment(locationUrl, params)
+	assert.NotNil(t, err)
 
 }
