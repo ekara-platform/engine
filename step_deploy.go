@@ -18,7 +18,7 @@ func fstack(lC LaunchContext, rC *runtimeContext) StepResults {
 		// Check if the stacks holds an "install.yml" playbook
 		r, err := s.Component.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the stack"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the stack"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -41,7 +41,7 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 
 		p, err := n.Provider.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the provider"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -122,7 +122,7 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 		// We launch the playbook
 		r, err := s.Component.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the stack"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the stack"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -133,7 +133,7 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 				Compoment: r.Id,
 				Code:      code,
 			}
-			FailsOnPlaybook(&sc, err, "An error occured executing the playbook", pfd)
+			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
 			continue
 		}
@@ -174,7 +174,7 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, coreStack model.Compone
 
 		p, err := n.Provider.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the provider"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -252,7 +252,7 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, coreStack model.Compone
 		// We launch the playbook
 		r, err := s.Component.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the stack"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the stack"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -267,7 +267,7 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, coreStack model.Compone
 				Compoment: r.Id,
 				Code:      code,
 			}
-			FailsOnPlaybook(&sc, err, "An error occured executing the playbook", pfd)
+			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
 			continue
 		}
