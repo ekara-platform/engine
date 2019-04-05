@@ -62,7 +62,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		// We launch the playbook
 		r, err := p.Component.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the provider"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -71,7 +71,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		if err != nil {
 			r, err := p.Component.Resolve()
 			if err != nil {
-				FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the provider"), nil)
+				FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 				sCs.Add(sc)
 				continue
 			}
@@ -80,7 +80,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 				Compoment: r.Id,
 				Code:      code,
 			}
-			FailsOnPlaybook(&sc, err, "An error occured executing the playbook", pfd)
+			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
 			continue
 		}
@@ -97,7 +97,7 @@ func fconsumesetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		setupProviderEfOut := lC.Ef().Input.Children["setup_provider_"+p.Name].Output
 		err, buffer := ansible.GetBuffer(setupProviderEfOut, lC.Log(), "provider:"+p.Name)
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured getting the buffer"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the buffer"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -117,7 +117,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 
 		p, err := n.Provider.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the provider"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -189,7 +189,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		// We launch the playbook
 		r, err := p.Component.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the provider"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -200,7 +200,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 				Compoment: r.Id,
 				Code:      code,
 			}
-			FailsOnPlaybook(&sc, err, "An error occured executing the playbook", pfd)
+			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
 			continue
 		}
@@ -236,7 +236,7 @@ func fconsumecreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		err, buffer := ansible.GetBuffer(nodeCreateEf, lC.Log(), "node:"+n.Name)
 		// Keep a reference on the buffer based on the output folder
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured getting the buffer"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the buffer"), nil)
 			sCs.Add(sc)
 			continue
 		}

@@ -166,13 +166,11 @@ func ParseParamValues(path string) (ParamValues, error) {
 	for {
 		select {
 		case <-exit:
-
 			return r, nil
 		case kv := <-cKv:
 			r[kv.key] = kv.value
 		}
 	}
-	return r, nil
 }
 
 func readMap(cKv chan KeyValue, exit chan bool, location string, m map[interface{}]interface{}) {

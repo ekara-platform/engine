@@ -2,6 +2,7 @@ package engine
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/ekara-platform/engine/util"
 )
@@ -42,20 +43,38 @@ func (er ExecutionReport) Content() (b []byte, e error) {
 }
 
 func (er *ExecutionReport) aggregate(r ExecutionReport) {
-
 	if r.Error != nil {
 		er.Error = r.Error
 	}
 	res := make([]StepResult, 0)
+	var totalDuration time.Duration
+
 	for _, v := range er.Steps.Results {
+		i := int64(v.ExecutionTime / time.Millisecond)
+		if i == 0 {
+			v.ExecutionTime, _ = time.ParseDuration("1ms")
+		}
 		res = append(res, v)
+		totalDuration = totalDuration + v.ExecutionTime
 	}
 
 	for _, v := range r.Steps.Results {
+		i := int64(v.ExecutionTime / time.Millisecond)
+		if i == 0 {
+			v.ExecutionTime, _ = time.ParseDuration("1ms")
+		}
 		res = append(res, v)
+		totalDuration = totalDuration + v.ExecutionTime
 	}
+
+	i := int64(totalDuration / time.Millisecond)
+	if i == 0 {
+		totalDuration, _ = time.ParseDuration("1ms")
+	}
+
 	er.Steps = StepResults{
-		Results: res,
+		Results:            res,
+		TotalExecutionTime: totalDuration,
 	}
 }
 

@@ -1,6 +1,9 @@
 package engine
 
 import (
+	"encoding/json"
+	"time"
+
 	"github.com/ekara-platform/model"
 )
 
@@ -12,7 +15,8 @@ type (
 
 	// stepResults represents a chain of steps execution results
 	StepResults struct {
-		Results []StepResult
+		Results            []StepResult
+		TotalExecutionTime time.Duration
 	}
 
 	// stepResult represents the execution result of a single step with its context
@@ -28,6 +32,8 @@ type (
 		ReadableMessage string      `json:",omitempty"`
 		RawContent      interface{} `json:",omitempty"`
 		cleanUp         Cleanup
+		startedAt       time.Time
+		ExecutionTime   time.Duration
 	}
 
 	// step represents a sinlge step used to compose a process executed by the installer
@@ -73,6 +79,7 @@ func initResult(o stepResultContext) func(stepName string, appliedTo model.Descr
 
 	return func(stepName string, appliedTo model.Describable, c Cleanup) StepResult {
 		result := StepResult{Context: o}
+		result.startedAt = time.Now()
 		result.StepName = stepName
 		if appliedTo != nil {
 			result.AppliedToType = appliedTo.DescType()
@@ -86,14 +93,29 @@ func initResult(o stepResultContext) func(stepName string, appliedTo model.Descr
 
 // Array() initializes an array with the step result
 func (sc StepResult) Array() StepResults {
-	return StepResults{
-		Results: []StepResult{sc},
+	sc.ExecutionTime = time.Since(sc.startedAt)
+	i := int64(sc.ExecutionTime / time.Millisecond)
+	if i == 0 {
+		sc.ExecutionTime, _ = time.ParseDuration("1ms")
 	}
+	r := StepResults{
+		Results:            []StepResult{sc},
+		TotalExecutionTime: sc.ExecutionTime,
+	}
+
+	return r
+
 }
 
 // Add adds the given stepResult to the results
 func (sc *StepResults) Add(c StepResult) {
+	c.ExecutionTime = time.Since(c.startedAt)
+	i := int64(c.ExecutionTime / time.Millisecond)
+	if i == 0 {
+		c.ExecutionTime, _ = time.ParseDuration("1ms")
+	}
 	sc.Results = append(sc.Results, c)
+	sc.TotalExecutionTime = sc.TotalExecutionTime + c.ExecutionTime
 }
 
 // InitStepResults initializes an empty stepResults
@@ -101,4 +123,45 @@ func InitStepResults() *StepResults {
 	sRs := &StepResults{}
 	sRs.Results = make([]StepResult, 0)
 	return sRs
+}
+
+// Content returns the json representation of the report steps
+func (sr *StepResults) MarshalJSON() (b []byte, e error) {
+	temp := struct {
+		Results            []StepResult
+		TotalExecutionTime string
+	}{
+		Results:            sr.Results,
+		TotalExecutionTime: fmtDuration(sr.TotalExecutionTime),
+	}
+	b, e = json.MarshalIndent(&temp, "", "    ")
+	return
+}
+
+func (sr *StepResult) MarshalJSON() (b []byte, e error) {
+	temp := struct {
+		StepName        string
+		AppliedToType   string `json:",omitempty"`
+		AppliedToName   string `json:",omitempty"`
+		Status          stepResultStatus
+		Context         stepResultContext
+		FailureCause    failureCause `json:",omitempty"`
+		ErrorMessage    string       `json:",omitempty"`
+		ReadableMessage string       `json:",omitempty"`
+		RawContent      interface{}  `json:",omitempty"`
+		ExecutionTime   string
+	}{
+		StepName:        sr.StepName,
+		AppliedToType:   sr.AppliedToType,
+		AppliedToName:   sr.AppliedToName,
+		Status:          sr.Status,
+		Context:         sr.Context,
+		FailureCause:    sr.FailureCause,
+		ErrorMessage:    sr.ErrorMessage,
+		ReadableMessage: sr.ReadableMessage,
+		RawContent:      sr.RawContent,
+		ExecutionTime:   fmtDuration(sr.ExecutionTime),
+	}
+	b, e = json.MarshalIndent(&temp, "", "    ")
+	return
 }
