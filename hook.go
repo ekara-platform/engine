@@ -37,7 +37,7 @@ func RunHookBefore(lC LaunchContext, rC *runtimeContext, r *StepResults, h model
 
 		t, err := hook.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the task"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the task"), nil)
 			r.Add(sc)
 			continue
 		}
@@ -76,7 +76,7 @@ func RunHookAfter(lC LaunchContext, rC *runtimeContext, r *StepResults, h model.
 
 		t, err := hook.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the task"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the task"), nil)
 			r.Add(sc)
 			continue
 		}
@@ -106,7 +106,7 @@ func runTask(lC LaunchContext, rC *runtimeContext, task model.Task, target model
 
 	comp, err := task.Component.Resolve()
 	if err != nil {
-		FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the task's component"), nil)
+		FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the task's component"), nil)
 		r.Add(sc)
 		return
 	}
@@ -118,7 +118,7 @@ func runTask(lC LaunchContext, rC *runtimeContext, task model.Task, target model
 			Compoment: comp.Id,
 			Code:      code,
 		}
-		FailsOnPlaybook(&sc, err, "An error occured executing the playbook", pfd)
+		FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 		r.Add(sc)
 		return
 	}

@@ -11,12 +11,15 @@ func TestExchangeFolder(t *testing.T) {
 	assert.Nil(t, err)
 
 	ok, err := ef.Location.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	ok, err = ef.Input.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	ok, err = ef.Output.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	// Physical creation
@@ -24,12 +27,15 @@ func TestExchangeFolder(t *testing.T) {
 	assert.Nil(t, err)
 
 	ok, err = ef.Location.Exixts()
+	assert.Nil(t, err)
 	assert.True(t, ok)
 
 	ok, err = ef.Input.Exixts()
+	assert.Nil(t, err)
 	assert.True(t, ok)
 
 	ok, err = ef.Output.Exixts()
+	assert.Nil(t, err)
 	assert.True(t, ok)
 
 	// Deletion
@@ -37,12 +43,15 @@ func TestExchangeFolder(t *testing.T) {
 	assert.Nil(t, err)
 
 	ok, err = ef.Location.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	ok, err = ef.Input.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	ok, err = ef.Output.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 }
 
@@ -65,12 +74,15 @@ func TestChildren(t *testing.T) {
 	assert.True(t, ok)
 
 	ok, err = child.Location.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	ok, err = child.Input.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	ok, err = child.Output.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	// Physical creation of the parent
@@ -79,12 +91,15 @@ func TestChildren(t *testing.T) {
 	assert.Nil(t, err)
 
 	ok, err = child.Location.Exixts()
+	assert.Nil(t, err)
 	assert.True(t, ok)
 
 	ok, err = child.Input.Exixts()
+	assert.Nil(t, err)
 	assert.True(t, ok)
 
 	ok, err = child.Output.Exixts()
+	assert.Nil(t, err)
 	assert.True(t, ok)
 
 	// Deletion of the child only
@@ -92,24 +107,30 @@ func TestChildren(t *testing.T) {
 	assert.Nil(t, err)
 
 	ok, err = child.Location.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	ok, err = child.Input.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	ok, err = child.Output.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	// we just recreate the child
 	err = ef.Create()
 
 	ok, err = child.Location.Exixts()
+	assert.Nil(t, err)
 	assert.True(t, ok)
 
 	ok, err = child.Input.Exixts()
+	assert.Nil(t, err)
 	assert.True(t, ok)
 
 	ok, err = child.Output.Exixts()
+	assert.Nil(t, err)
 	assert.True(t, ok)
 
 	// Physical creation of the parent
@@ -118,12 +139,15 @@ func TestChildren(t *testing.T) {
 	assert.Nil(t, err)
 
 	ok, err = child.Location.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	ok, err = child.Input.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 	ok, err = child.Output.Exixts()
+	assert.Nil(t, err)
 	assert.False(t, ok)
 
 }

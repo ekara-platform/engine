@@ -17,6 +17,7 @@ func TestTemplate(t *testing.T) {
 	assert.NotNil(t, params)
 
 	url, err := url.Parse("./testdata/template/descriptor.yaml")
+	assert.Nil(t, err)
 
 	locationUrl, err := model.NormalizeUrl(url)
 	assert.Nil(t, err)
@@ -45,6 +46,7 @@ func TestTemplateNoDot(t *testing.T) {
 	assert.NotNil(t, params)
 
 	url, err := url.Parse("./testdata/template/descriptor_no_dot.yaml")
+	assert.Nil(t, err)
 
 	locationUrl, err := model.NormalizeUrl(url)
 	assert.Nil(t, err)

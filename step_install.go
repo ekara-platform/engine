@@ -16,7 +16,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 
 		p, err := n.Provider.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured resolving the provider"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -42,7 +42,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		bp := BuildBaseParam(lC, n.Name, p.Name)
 		op, err := n.Orchestrator.OrchestratorParams()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occured getting the orchestrator parameters"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the orchestrator parameters"), nil)
 			sCs.Add(sc)
 			continue
 		}
