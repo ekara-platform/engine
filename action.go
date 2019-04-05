@@ -42,6 +42,8 @@ const (
 	ActionDeleteId
 	// Nil action Id, used to indicate that an action depends  on nothing
 	ActionNilId
+	// Register an environment through the api once it has been create
+	ActionRegisterId
 )
 
 // String returns the string representation of the action id
