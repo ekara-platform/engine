@@ -120,6 +120,7 @@ func TestChildren(t *testing.T) {
 
 	// we just recreate the child
 	err = ef.Create()
+	assert.Nil(t, err)
 
 	ok, err = child.Location.Exixts()
 	assert.Nil(t, err)

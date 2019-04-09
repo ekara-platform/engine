@@ -6,7 +6,7 @@ import (
 	"github.com/ekara-platform/engine/util"
 )
 
-// Buffer contains the extra vars to be passed to a playbook
+//ExtraVars extra vars, received into the buffer, to be passed to a playbook
 type ExtraVars struct {
 	// Indicates if the struct has content or not
 	Bool bool
@@ -22,6 +22,7 @@ func (ev ExtraVars) String() string {
 	return r
 }
 
+//BuildExtraVars builds the extra var to pass to a playbook
 func BuildExtraVars(extraVars string, inputFolder util.FolderPath, outputFolder util.FolderPath, b Buffer) ExtraVars {
 	r := ExtraVars{}
 	r.Vals = make([]string, 0)
