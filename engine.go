@@ -12,9 +12,9 @@ import (
 	"github.com/ekara-platform/engine/util"
 
 	"github.com/ekara-platform/model"
-	_ "gopkg.in/yaml.v2"
 )
 
+//Engine  represents the Ekara engine in charge of dealing with the environment
 type Engine interface {
 	Init(repo string, ref string, descriptor string) error
 	Logger() *log.Logger
@@ -122,9 +122,9 @@ func BuildDescriptorUrl(url url.URL, fileName string) url.URL {
 //CheckProxy returns the proxy setting from environment variables
 //
 // See:
-//		engine.HttpProxyEnvVariableKey
-//		engine.HttpsProxyEnvVariableKey
-//		engine.NoProxyEnvVariableKey
+//		github.com/ekara-platform/engine/util.HttpProxyEnvVariableKey
+//		github.com/ekara-platform/engine/util.HttpsProxyEnvVariableKey
+//		github.com/ekara-platform/engine/util.NoProxyEnvVariableKey
 func CheckProxy() (httpProxy string, httpsProxy string, noProxy string) {
 	httpProxy = os.Getenv(util.HttpProxyEnvVariableKey)
 	httpsProxy = os.Getenv(util.HttpsProxyEnvVariableKey)

@@ -115,7 +115,7 @@ func fconsumesetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults
 		sc := InitCodeStepResult("Consuming the orchestrator setup phase", n, NoCleanUpRequired)
 		lC.Log().Printf("Consume orchestrator setup for node %s", n.Name)
 		setupOrcherstratorEf := lC.Ef().Input.Children["setup_orchestrator_"+n.Name].Output
-		err, buffer := ansible.GetBuffer(setupOrcherstratorEf, lC.Log(), "node:"+n.Name)
+		buffer, err := ansible.GetBuffer(setupOrcherstratorEf, lC.Log(), "node:"+n.Name)
 		// Keep a reference on the buffer based on the output folder
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the buffer"), nil)

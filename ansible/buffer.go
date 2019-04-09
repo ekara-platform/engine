@@ -22,8 +22,8 @@ type Buffer struct {
 }
 
 // Params returns the yaml content of the buffer
-func (bu Buffer) Params() (b []byte, e error) {
-	b, e = yaml.Marshal(bu.Param)
+func (b Buffer) Params() (by []byte, e error) {
+	by, e = yaml.Marshal(b.Param)
 	return
 }
 
@@ -58,7 +58,7 @@ func CreateBuffer() Buffer {
 //  InventoryYamlFileName
 //  ParamYamlFileName
 //
-func GetBuffer(f *util.FolderPath, logger *log.Logger, location string) (err error, buffer Buffer) {
+func GetBuffer(f *util.FolderPath, logger *log.Logger, location string) (buffer Buffer, err error) {
 	buffer = CreateBuffer()
 
 	var ok bool

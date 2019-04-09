@@ -95,7 +95,7 @@ func fconsumesetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		sc := InitCodeStepResult("Consuming the setup phase", p, NoCleanUpRequired)
 		lC.Log().Printf("Consume setup for provider %s", p.Name)
 		setupProviderEfOut := lC.Ef().Input.Children["setup_provider_"+p.Name].Output
-		err, buffer := ansible.GetBuffer(setupProviderEfOut, lC.Log(), "provider:"+p.Name)
+		buffer, err := ansible.GetBuffer(setupProviderEfOut, lC.Log(), "provider:"+p.Name)
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the buffer"), nil)
 			sCs.Add(sc)
@@ -233,7 +233,7 @@ func fconsumecreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		sc := InitCodeStepResult("Consuming the create phase", n, NoCleanUpRequired)
 		lC.Log().Printf("Consume create for node %s", n.Name)
 		nodeCreateEf := lC.Ef().Input.Children["create_"+n.Name].Output
-		err, buffer := ansible.GetBuffer(nodeCreateEf, lC.Log(), "node:"+n.Name)
+		buffer, err := ansible.GetBuffer(nodeCreateEf, lC.Log(), "node:"+n.Name)
 		// Keep a reference on the buffer based on the output folder
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the buffer"), nil)

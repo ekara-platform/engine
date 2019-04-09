@@ -8,18 +8,19 @@ import (
 )
 
 type (
-	// Type used to identify final status of the step
+	//stepResultStatus is the type used to identify final status of the step
 	stepResultStatus string
-	// Type used to identify the step context, or if you prefer what the step was doing
+	//stepResultContext is the type used to identify the step context,
+	// or if you prefer what the step was doing
 	stepResultContext string
 
-	// stepResults represents a chain of steps execution results
+	//StepResults represents a chain of steps execution results
 	StepResults struct {
 		Results            []StepResult
 		TotalExecutionTime time.Duration
 	}
 
-	// stepResult represents the execution result of a single step with its context
+	//StepResult represents the execution result of a single step with its context
 	StepResult struct {
 		StepName        string
 		AppliedToType   string `json:",omitempty"`
@@ -92,15 +93,15 @@ func initResult(o stepResultContext) func(stepName string, appliedTo model.Descr
 }
 
 // Array() initializes an array with the step result
-func (sc StepResult) Array() StepResults {
-	sc.ExecutionTime = time.Since(sc.startedAt)
-	i := int64(sc.ExecutionTime / time.Millisecond)
+func (sr StepResult) Array() StepResults {
+	sr.ExecutionTime = time.Since(sr.startedAt)
+	i := int64(sr.ExecutionTime / time.Millisecond)
 	if i == 0 {
-		sc.ExecutionTime, _ = time.ParseDuration("1ms")
+		sr.ExecutionTime, _ = time.ParseDuration("1ms")
 	}
 	r := StepResults{
-		Results:            []StepResult{sc},
-		TotalExecutionTime: sc.ExecutionTime,
+		Results:            []StepResult{sr},
+		TotalExecutionTime: sr.ExecutionTime,
 	}
 
 	return r
@@ -108,14 +109,14 @@ func (sc StepResult) Array() StepResults {
 }
 
 // Add adds the given stepResult to the results
-func (sc *StepResults) Add(c StepResult) {
+func (sr *StepResults) Add(c StepResult) {
 	c.ExecutionTime = time.Since(c.startedAt)
 	i := int64(c.ExecutionTime / time.Millisecond)
 	if i == 0 {
 		c.ExecutionTime, _ = time.ParseDuration("1ms")
 	}
-	sc.Results = append(sc.Results, c)
-	sc.TotalExecutionTime = sc.TotalExecutionTime + c.ExecutionTime
+	sr.Results = append(sr.Results, c)
+	sr.TotalExecutionTime = sr.TotalExecutionTime + c.ExecutionTime
 }
 
 // InitStepResults initializes an empty stepResults
