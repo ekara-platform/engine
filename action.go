@@ -22,27 +22,29 @@ type (
 )
 
 const (
-	// Mark a StepResults with an error in case of validation error into the descriptor
+	// ActionFailId identifies the action of marking a StepResults
+	//with an error in case of validation error into the descriptor
 	ActionFailId ActionId = iota
-	// Read an existing execution report
+	//ActionReportId identifies the action of reading an existing execution report
 	ActionReportId
-	// Creation of an environment's machines
+	//ActionCreateId identifies the action of creation environment's machines
 	ActionCreateId
-	// Installation of the environment orchestrator
+	//ActionInstallId identifies the action of installing the environment orchestrator
 	ActionInstallId
-	// Deployment of the environment stacks
+	//ActionDeployId identifies the action of deveploying the environment stacks
 	ActionDeployId
-	// Validation of the environment descriptor
+	//ActionCheckId identifies the action of validating the environment descriptor
 	ActionCheckId
-	// Dump of the environment descriptor
+	//ActionDumpId identifies the acion of dumping the environment descriptor content
 	ActionDumpId
-	// Update of an environment
+	//ActionUpdateId identifies the action of updating of an environment
 	ActionUpdateId
-	// Deletion of an environment
+	//ActionDeleteId identifies the action of deleting an environment
 	ActionDeleteId
-	// Nil action Id, used to indicate that an action depends  on nothing
+	//ActionNilId identifies no action, used to indicate that an action depends on nothing
 	ActionNilId
-	// Register an environment through the api once it has been create
+	//ActionRegisterId identifies the action of registering an environment
+	// through the api once it has been create
 	ActionRegisterId
 )
 
