@@ -1,8 +1,8 @@
 #!/bin/bash
 
-mkdir -p `dirname $0`/testdata
+mkdir -p `dirname $0`/component/testdata
 (
-    cd `dirname $0`/testdata
+    cd `dirname $0`/component/testdata
 
     mkdir -p components/ekara-platform/distribution
     (

@@ -1,6 +1,6 @@
 package engine
 
-// Ceanup represents a cleanup method to rollback what has been done by a step
+// Cleanup represents a cleanup method to rollback what has been done by a step
 type Cleanup func(lC LaunchContext) error
 
 func NoCleanUpRequired(lC LaunchContext) error {

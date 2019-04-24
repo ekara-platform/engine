@@ -14,6 +14,10 @@ type (
 	// or if you prefer what the step was doing
 	stepResultContext string
 
+	StepResultsNotime struct {
+		Results []StepResultNoTime
+	}
+
 	//StepResults represents a chain of steps execution results
 	StepResults struct {
 		Results            []StepResult
@@ -21,6 +25,18 @@ type (
 	}
 
 	//StepResult represents the execution result of a single step with its context
+	StepResultNoTime struct {
+		StepName        string
+		AppliedToType   string `json:",omitempty"`
+		AppliedToName   string `json:",omitempty"`
+		Status          stepResultStatus
+		Context         stepResultContext
+		FailureCause    failureCause `json:",omitempty"`
+		ErrorMessage    string       `json:",omitempty"`
+		ReadableMessage string       `json:",omitempty"`
+		RawContent      interface{}  `json:",omitempty"`
+	}
+
 	StepResult struct {
 		StepName        string
 		AppliedToType   string `json:",omitempty"`
@@ -47,14 +63,13 @@ const (
 	STEP_STATUS_FAILURE stepResultStatus = "Failure"
 	// Step execution failed
 	STEP_STATUS_SUCCESS stepResultStatus = "Success"
-
 	// The step belongs internally to Ekara
 	STEP_CONTEXT_CODE stepResultContext = "Ekara execution"
 	// The step deals with the environment descriptor
 	STEP_CONTEXT_DESCRIPTOR stepResultContext = "Environment descriptor content"
-	// The step deals with the parameter file used to fill descriptor variables
+	//The step deals with the parameter file used to fill descriptor variables
 	STEP_CONTEXT_PARAMETER_FILE stepResultContext = "Environment parameter file"
-	// The step purpose is to launch an ansible playbook
+	//The step purpose is to launch an ansible playbook
 	STEP_CONTEXT_PLABOOK stepResultContext = "Playbook execution"
 	// The step purpose is to launch a hook through an ansible playbook
 	STEP_CONTEXT_HOOK_PLABOOK stepResultContext = "Hook execution"
@@ -165,4 +180,18 @@ func (sr *StepResult) MarshalJSON() (b []byte, e error) {
 	}
 	b, e = json.MarshalIndent(&temp, "", "    ")
 	return
+}
+
+func (srnt StepResultNoTime) ToStepResult() StepResult {
+	return StepResult{
+		StepName:        srnt.StepName,
+		AppliedToType:   srnt.AppliedToType,
+		AppliedToName:   srnt.AppliedToName,
+		Status:          srnt.Status,
+		Context:         srnt.Context,
+		FailureCause:    srnt.FailureCause,
+		ErrorMessage:    srnt.ErrorMessage,
+		ReadableMessage: srnt.ReadableMessage,
+		RawContent:      srnt.RawContent,
+	}
 }

@@ -21,13 +21,13 @@ func flogCheck(lC LaunchContext, rC *runtimeContext) StepResults {
 			lC.Log().Printf("%s\n", ve.Error())
 			b, e := vErrs.JSonContent()
 			if e != nil {
-				FailsOnDescriptor(&sc, e, fmt.Sprintf(ERROR_GENERIC, e), nil)
+				FailsOnCode(&sc, e, fmt.Sprintf(ERROR_GENERIC, e), nil)
 			}
 			// print both errors and warnings into the report file
 			path, err := util.SaveFile(lC.Log(), *lC.Ef().Output, VALIDATION_OUTPUT_FILE, b)
 			if err != nil {
 				// in case of error writing the report file
-				FailsOnDescriptor(&sc, err, fmt.Sprintf(ERROR_CREATING_REPORT_FILE, path), nil)
+				FailsOnCode(&sc, err, fmt.Sprintf(ERROR_CREATING_REPORT_FILE, path), nil)
 			}
 
 			if vErrs.HasErrors() {

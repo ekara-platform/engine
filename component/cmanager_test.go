@@ -1,44 +1,59 @@
 package component
 
 import (
-	"github.com/ekara-platform/engine/util"
-	"github.com/ekara-platform/model"
-	"github.com/stretchr/testify/assert"
 	"log"
-	"net/url"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/ekara-platform/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestComponentManager_DirectoriesMatching(t *testing.T) {
-	manager := buildComponentManager(t)
-	e := manager.Ensure()
-	assert.Nil(t, e)
-	moduleDirs := manager.MatchingDirectories("modules")
-	assert.Contains(t, moduleDirs, "testdata/work/components/c1/modules")
-	assert.Contains(t, moduleDirs, "testdata/work/components/c3/modules")
-	inventoryDirs := manager.MatchingDirectories("inventory")
-	assert.Contains(t, inventoryDirs, "testdata/work/components/c2/inventory")
-	assert.Contains(t, inventoryDirs, "testdata/work/components/c3/inventory")
-}
 
-func buildComponentManager(t *testing.T) ComponentManager {
-	os.RemoveAll("testdata/work")
-	manager := CreateComponentManager(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), map[string]interface{}{}, "testdata/work")
 	wd, e := os.Getwd()
 	assert.Nil(t, e)
-	base, e := url.Parse("file:///" + filepath.Join(wd, "testdata", "components") + "/")
+	rawManager := filepath.Join(wd, "testdata")
+	rawManagerWork := filepath.Join(rawManager, "work")
+
+	manager := buildComponentManager(t, rawManager, rawManagerWork)
+	e = manager.Ensure()
 	assert.Nil(t, e)
-	registerComponent(t, manager, base, "c1")
-	registerComponent(t, manager, base, "c2")
-	registerComponent(t, manager, base, "c3")
-	registerComponent(t, manager, base, "c4")
+	moduleDirs := manager.MatchingDirectories("modules")
+	if assert.Equal(t, len(moduleDirs), 2) {
+		assert.Contains(t, moduleDirs, filepath.Join(rawManagerWork, "components", "c1", "modules"))
+		assert.Contains(t, moduleDirs, filepath.Join(rawManagerWork, "components", "c3", "modules"))
+	}
+	inventoryDirs := manager.MatchingDirectories("inventory")
+	if assert.Equal(t, len(inventoryDirs), 2) {
+		assert.Contains(t, inventoryDirs, filepath.Join(rawManagerWork, "components", "c2", "inventory"))
+		assert.Contains(t, inventoryDirs, filepath.Join(rawManagerWork, "components", "c3", "inventory"))
+	}
+}
+
+func buildComponentManager(t *testing.T, rawManager, rawManagerWork string) ComponentManager {
+
+	os.RemoveAll(rawManagerWork)
+
+	manager := CreateComponentManager(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), map[string]interface{}{}, rawManagerWork)
+	registerComponent(t, manager, rawManager, "c1")
+	registerComponent(t, manager, rawManager, "c2")
+	registerComponent(t, manager, rawManager, "c3")
+	registerComponent(t, manager, rawManager, "c4")
 	return manager
 }
 
-func registerComponent(t *testing.T, manager ComponentManager, base *url.URL, id string) {
-	component, e := model.CreateComponent(base, id, "ekara-platform/"+id, "v1.0.0")
+func registerComponent(t *testing.T, manager ComponentManager, rawManagerWork string, id string) {
+	rawbase := filepath.Join(rawManagerWork, "components")
+	b, e := model.CreateBase(rawbase)
 	assert.Nil(t, e)
-	manager.RegisterComponent(component, util.DescriptorFileName)
+	assert.Equal(t, b.Url.UpperScheme(), model.SchemeFile)
+	assert.True(t, len(b.Url.AsFilePath()) > 0)
+	r, e := model.CreateRepository(b, "ekara-platform/"+id, "v1.0.0", "")
+	assert.Nil(t, e)
+	assert.Equal(t, r.Url.UpperScheme(), model.SchemeFile)
+	assert.True(t, len(r.Url.AsFilePath()) > 0)
+	component := model.CreateComponent(id, r)
+	manager.RegisterComponent(component)
 }

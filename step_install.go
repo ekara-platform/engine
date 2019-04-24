@@ -38,8 +38,15 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 			continue
 		}
 
+		pRef, err := p.Component.Resolve()
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
+			sCs.Add(sc)
+			continue
+		}
+
 		// Prepare parameters
-		bp := BuildBaseParam(lC, n.Name, p.Name)
+		bp := BuildBaseParam(lC, n.Name, pRef.Id)
 		op, err := n.Orchestrator.OrchestratorParams()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the orchestrator parameters"), nil)
@@ -86,6 +93,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 			sCs.Add(sc)
 			continue
 		}
+
 		err, code := lC.Ekara().AnsibleManager().Execute(r, "setup.yml", exv, env, inventory)
 		if err != nil {
 			r, err := p.Component.Resolve()
@@ -94,6 +102,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 				sCs.Add(sc)
 				continue
 			}
+
 			pfd := playBookFailureDetail{
 				Playbook:  "setup.yml",
 				Compoment: r.Id,
@@ -157,8 +166,15 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 			continue
 		}
 
+		pRef, err := p.Component.Resolve()
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
+			sCs.Add(sc)
+			continue
+		}
+
 		// Prepare parameters
-		bp := BuildBaseParam(lC, n.Name, p.Name)
+		bp := BuildBaseParam(lC, n.Name, pRef.Id)
 		bp.AddInterface("labels", n.Labels)
 		op, err := n.Orchestrator.OrchestratorParams()
 		if err != nil {
@@ -210,6 +226,7 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 			sCs.Add(sc)
 			continue
 		}
+
 		err, code := lC.Ekara().AnsibleManager().Execute(r, "install.yml", exv, env, inventory)
 		if err != nil {
 			r, err := p.Component.Resolve()
@@ -218,6 +235,7 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 				sCs.Add(sc)
 				continue
 			}
+
 			pfd := playBookFailureDetail{
 				Playbook:  "install.yml",
 				Compoment: r.Id,

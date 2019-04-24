@@ -51,7 +51,8 @@ func Create(logger *log.Logger, workDir string, data map[string]interface{}) (En
 
 	ctx := context{
 		logger:    logger,
-		directory: absWorkDir}
+		directory: absWorkDir,
+	}
 
 	ctx.componentManager = component.CreateComponentManager(ctx.logger, data, absWorkDir)
 	ctx.ansibleManager = ansible.CreateAnsibleManager(ctx.logger, ctx.componentManager)
@@ -59,37 +60,26 @@ func Create(logger *log.Logger, workDir string, data map[string]interface{}) (En
 	return &ctx, nil
 }
 
-func (ctx *context) Init(repo string, ref string, descriptor string) error {
-	wdUrl, err := getCurrentDirectoryURL(ctx)
+func (ctx *context) Init(repo string, ref string, descriptor string) (err error) {
+	wdUrl, err := model.GetCurrentDirectoryURL(ctx.logger)
 	if err != nil {
-		return err
-	}
-	wdUrl, err = model.NormalizeUrl(wdUrl)
-	if err != nil {
-		return err
+		return
 	}
 
 	// Register main component
-	mainComponent, err := model.CreateComponent(wdUrl, "__main__", repo, ref)
+	mainRep, err := model.CreateRepository(model.Base{Url: wdUrl}, repo, ref, descriptor)
 	if err != nil {
-		return err
+		return
 	}
-	if descriptor == "" {
-		ctx.componentManager.RegisterComponent(mainComponent)
-	} else {
-		ctx.componentManager.RegisterComponent(mainComponent, descriptor)
-	}
-	if err != nil {
-		return err
-	}
+	mainComponent := model.CreateComponent("__main__", mainRep)
+	ctx.componentManager.RegisterComponent(mainComponent)
 
 	// Ensure the main component is present
 	err = ctx.componentManager.Ensure()
 	if err != nil {
-		return err
+		return
 	}
-
-	return nil
+	return
 }
 
 func (ctx *context) Logger() *log.Logger {

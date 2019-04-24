@@ -56,7 +56,7 @@ type CMMock struct {
 	env model.Environment
 }
 
-func (m CMMock) RegisterComponent(c model.Component, s ...string) {
+func (m CMMock) RegisterComponent(c model.Component) {
 	return
 }
 

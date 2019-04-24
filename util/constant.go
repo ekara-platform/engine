@@ -1,9 +1,6 @@
 package util
 
 const (
-	// The name of the environment file descriptor
-	DescriptorFileName string = "ekara.yaml"
-
 	// The environment variable used to pass the environment descriptor
 	// location between several Ekara components.
 	StarterEnvVariableKey string = "EKARA_ENV_DESCR"

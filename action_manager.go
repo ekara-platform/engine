@@ -48,7 +48,7 @@ func (am actionManager) Run(id ActionId, lC LaunchContext) {
 	rC.buffer = make(map[string]ansible.Buffer)
 
 	lC.Log().Printf(LOG_LAUNCHING_ACTION, a.name)
-	e, report := a.run(am, lC, rC)
+	report, e := a.run(am, lC, rC)
 	if e != nil {
 		// Do something with the error here
 		panic(e)

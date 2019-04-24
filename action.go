@@ -67,7 +67,7 @@ func InitActions() []action {
 }
 
 // run runs an action for the given action manager and contexts
-func (a action) run(m actionManager, lC LaunchContext, rC *runtimeContext) (error, *ExecutionReport) {
+func (a action) run(m actionManager, lC LaunchContext, rC *runtimeContext) (*ExecutionReport, error) {
 	r := &ExecutionReport{
 		Context: lC,
 	}
@@ -75,16 +75,16 @@ func (a action) run(m actionManager, lC LaunchContext, rC *runtimeContext) (erro
 	if a.dependsOn != ActionNilId {
 		d, e := m.get(a.dependsOn)
 		if e != nil {
-			return e, r
+			return r, e
 		}
 		// Run the dependent action
-		e, rep := d.run(m, lC, rC)
+		rep, e := d.run(m, lC, rC)
 		if e != nil {
-			return e, r
+			return r, e
 		}
 		r.aggregate(*rep)
 		if rep.Error != nil {
-			return nil, r
+			return r, nil
 		}
 
 	}
@@ -94,5 +94,5 @@ func (a action) run(m actionManager, lC LaunchContext, rC *runtimeContext) (erro
 	// Run the actions steps
 	rep := launch(a.steps, lC, rC)
 	r.aggregate(rep)
-	return nil, r
+	return r, nil
 }

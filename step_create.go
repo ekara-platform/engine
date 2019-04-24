@@ -27,8 +27,14 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		setupProviderEfIn := setupProviderEf.Input
 		setupProviderEfOut := setupProviderEf.Output
 
+		pRef, err := p.Component.Resolve()
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
+			sCs.Add(sc)
+			continue
+		}
 		// Prepare parameters
-		bp := BuildBaseParam(lC, "", p.Name)
+		bp := BuildBaseParam(lC, "", pRef.Id)
 		bp.AddNamedMap("params", p.Parameters)
 
 		if ko := saveBaseParams(bp, lC, setupProviderEfIn, &sc); ko {
@@ -116,8 +122,17 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		lC.Log().Printf(LOG_PROCESSING_NODE, n.Name)
 
 		p, err := n.Provider.Resolve()
+
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
+			sCs.Add(sc)
+			continue
+		}
+
+		pRef, err := p.Component.Resolve()
+
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -128,7 +143,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		buffer := rC.getBuffer(setupProviderEf.Output)
 
 		// Prepare parameters
-		bp := BuildBaseParam(lC, n.Name, p.Name)
+		bp := BuildBaseParam(lC, n.Name, pRef.Id)
 		bp.AddInt("instances", n.Instances)
 		bp.AddInterface("labels", n.Labels)
 		bp.AddNamedMap("params", p.Parameters)
@@ -193,6 +208,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 			sCs.Add(sc)
 			continue
 		}
+
 		err, code := lC.Ekara().AnsibleManager().Execute(r, "create.yml", exv, env, inventory)
 		if err != nil {
 			pfd := playBookFailureDetail{

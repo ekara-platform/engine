@@ -6,7 +6,10 @@ imports:
   - app.yaml
 
 ekara:
-  base: testdata/components
+  base: component/testdata/components
+  distribution:
+    repository: https://github.com/ekara-platform/distribution
+    ref: master
   components:
     aws:
       repository: ekara-platform/aws-provider

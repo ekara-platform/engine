@@ -22,6 +22,7 @@ func fstack(lC LaunchContext, rC *runtimeContext) StepResults {
 			sCs.Add(sc)
 			continue
 		}
+
 		sCs.Add(sc)
 		if ok := lC.Ekara().AnsibleManager().Contains(r, "install.yml"); ok {
 			fstackPlabook(lC, rC, s, sCs)
@@ -73,7 +74,14 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 		// We use an empty buffer because no one is coming from the previous step
 		buffer := ansible.CreateBuffer()
 
-		bp := BuildBaseParam(lC, "", p.Name)
+		pRef, err := p.Component.Resolve()
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
+			sCs.Add(sc)
+			continue
+		}
+
+		bp := BuildBaseParam(lC, "", pRef.Id)
 		bp.AddNamedMap("params", s.Parameters)
 
 		if ko := saveBaseParams(bp, lC, stackEf.Input, &sc); ko {
@@ -126,6 +134,7 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 			sCs.Add(sc)
 			continue
 		}
+
 		err, code := lC.Ekara().AnsibleManager().Execute(r, "install.yml", exv, env, inventory)
 		if err != nil {
 			pfd := playBookFailureDetail{
@@ -164,7 +173,8 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 	}
 }
 
-func fstackCompose(lC LaunchContext, rC *runtimeContext, coreStack model.Component, s model.Stack, sCs *StepResults) {
+// TODO currently only the distribution is able to deploy a compose...
+func fstackCompose(lC LaunchContext, rC *runtimeContext, coreStack model.Distribution, s model.Stack, sCs *StepResults) {
 
 	// Map to keep trace on the processed providers
 	ps := make(map[string]model.Provider, len(lC.Ekara().ComponentManager().Environment().NodeSets))
@@ -206,7 +216,14 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, coreStack model.Compone
 		// We use an empty buffer because no one is coming from the previous step
 		buffer := ansible.CreateBuffer()
 
-		bp := BuildBaseParam(lC, "", p.Name)
+		pRef, err := p.Component.Resolve()
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
+			sCs.Add(sc)
+			continue
+		}
+
+		bp := BuildBaseParam(lC, "", pRef.Id)
 		bp.AddNamedMap("params", s.Parameters)
 
 		if ko := saveBaseParams(bp, lC, stackEf.Input, &sc); ko {
@@ -260,7 +277,7 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, coreStack model.Compone
 		// Prepare extra vars
 		exv := ansible.BuildExtraVars("compose_path="+lC.Ekara().ComponentManager().ComponentPath(r.Id), *stackEf.Input, *stackEf.Output, buffer)
 
-		err, code := lC.Ekara().AnsibleManager().Execute(coreStack, "install.yml", exv, env, inventory)
+		err, code := lC.Ekara().AnsibleManager().Execute(model.Component(coreStack), "install.yml", exv, env, inventory)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "install.yml",

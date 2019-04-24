@@ -9,18 +9,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-/*
-func TestEngineRemoteNoTag(t *testing.T) {
-	os.RemoveAll("testdata/work")
-	engine1, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "https://github.com/ekara-platform/demomode/l", "")
-	assertOnlyWarnings(t, e)
-	assert.NotNil(t, engine1)
-
-	engine2, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", "https://github.com/ekara-platform/demomodel/", "")
-	assertOnlyWarnings(t, e)
-	assert.NotNil(t, engine2)
-}
-*/
 func TestEngineLocalWithTagRef(t *testing.T) {
 	engine := createTestEngine()
 	e := engine.Init("testdata/sample", "v1.0.0", "")

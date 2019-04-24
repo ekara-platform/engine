@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"net/url"
 	"testing"
 
 	"github.com/ekara-platform/engine/ansible"
@@ -16,14 +15,11 @@ func TestTemplate(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, params)
 
-	url, err := url.Parse("./testdata/template/descriptor.yaml")
-	assert.Nil(t, err)
-
-	locationUrl, err := model.NormalizeUrl(url)
+	url, err := model.CreateUrl("./testdata/template/descriptor.yaml")
 	assert.Nil(t, err)
 
 	// Parsing the descriptor
-	env, err := model.CreateEnvironment(locationUrl, params)
+	env, err := model.CreateEnvironment(url, params)
 	assert.Nil(t, err)
 	assert.NotNil(t, env)
 	assert.Equal(t, 2, len(env.Tasks))
@@ -45,13 +41,11 @@ func TestTemplateNoDot(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, params)
 
-	url, err := url.Parse("./testdata/template/descriptor_no_dot.yaml")
+	url, err := model.CreateUrl("./testdata/template/descriptor_no_dot.yaml")
 	assert.Nil(t, err)
 
-	locationUrl, err := model.NormalizeUrl(url)
-	assert.Nil(t, err)
 	// Parsing the descriptor
-	_, err = model.CreateEnvironment(locationUrl, params)
+	_, err = model.CreateEnvironment(url, params)
 	assert.NotNil(t, err)
 
 }

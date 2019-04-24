@@ -18,6 +18,10 @@ type (
 		Results []StepResult
 	}
 
+	ReportFileContentNoTime struct {
+		Results []StepResultNoTime
+	}
+
 	ReportFailures struct {
 		playBookFailures []StepResult
 		otherFailures    []StepResult

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/url"
 	"strings"
 
 	"gopkg.in/src-d/go-git.v4/plumbing/transport"
@@ -23,7 +22,7 @@ type GitScmHandler struct {
 	logger *log.Logger
 }
 
-func (gitScm GitScmHandler) Matches(source *url.URL, path string) bool {
+func (gitScm GitScmHandler) Matches(repository model.Repository, path string) bool {
 	repo, err := git.PlainOpen(path)
 	if err != nil {
 		return false
@@ -35,7 +34,7 @@ func (gitScm GitScmHandler) Matches(source *url.URL, path string) bool {
 	}
 
 	for _, remoteConfig := range config.Remotes {
-		if len(remoteConfig.URLs) > 0 && remoteConfig.URLs[0] == source.String() {
+		if len(remoteConfig.URLs) > 0 && remoteConfig.URLs[0] == repository.Url.String() {
 			return true
 		}
 	}
@@ -43,24 +42,25 @@ func (gitScm GitScmHandler) Matches(source *url.URL, path string) bool {
 	return false
 }
 
-func (gitScm GitScmHandler) Fetch(source *url.URL, path string, auth model.Parameters) error {
+func (gitScm GitScmHandler) Fetch(repository model.Repository, path string, auth model.Parameters) error {
+	source := repository.Url.String()
 	options := git.CloneOptions{
 		RemoteName:   defaultGitRemoteName,
-		URL:          source.String(),
+		URL:          source,
 		SingleBranch: false,
 		Tags:         git.AllTags}
 	authMethod, e := buildAuthMethod(auth)
 	if e != nil {
-		return errors.New("error cloning git repository " + source.String() + ": " + e.Error())
+		return errors.New("error cloning git repository " + source + ": " + e.Error())
 	} else {
 		if authMethod != nil {
 			options.Auth = authMethod
 		}
 	}
-	gitScm.logger.Println("cloning GIT repository " + source.String())
+	gitScm.logger.Println("cloning GIT repository " + source)
 	_, err := git.PlainClone(path, false, &options)
 	if err != nil {
-		return errors.New("unable to clone git repository " + source.String() + ": " + err.Error())
+		return errors.New("unable to clone git repository " + source + ": " + err.Error())
 	}
 	return nil
 }
@@ -118,9 +118,8 @@ func (gitScm GitScmHandler) Switch(path string, ref string) error {
 	}
 	if err != nil {
 		return errors.New("unable to checkout " + ref + " in git repository " + path + ": " + err.Error())
-	} else {
-		return nil
 	}
+	return nil
 }
 
 func checkout(tree *git.Worktree, ref string) error {

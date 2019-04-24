@@ -12,7 +12,7 @@ var reportSteps = []step{freport}
 
 // freport reads the content of the eventually existing report file
 func freport(lC LaunchContext, rC *runtimeContext) StepResults {
-	sc := InitCodeStepResult("Validating the environment content", nil, NoCleanUpRequired)
+	sc := InitCodeStepResult("Reporting the execution details", nil, NoCleanUpRequired)
 	ok := lC.Ef().Output.Contains(REPORT_OUTPUT_FILE)
 	if ok {
 		lC.Log().Println("A report file from a previous execution has been located")
@@ -21,15 +21,20 @@ func freport(lC LaunchContext, rC *runtimeContext) StepResults {
 			FailsOnCode(&sc, err, fmt.Sprintf(ERROR_READING_REPORT, REPORT_OUTPUT_FILE, err.Error()), nil)
 			goto MoveOut
 		}
+		reportNoTime := ReportFileContentNoTime{}
 
-		report := ReportFileContent{}
-
-		err = json.Unmarshal(b, &report)
+		err = json.Unmarshal(b, &reportNoTime)
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf(ERROR_UNMARSHALLING_REPORT, REPORT_OUTPUT_FILE, err.Error()), nil)
 			goto MoveOut
 		}
+		report := ReportFileContent{}
+		report.Results = make([]StepResult, 0)
+		for _, v := range reportNoTime.Results {
+			report.Results = append(report.Results, v.ToStepResult())
+		}
 		rC.report = report
+
 	} else {
 		lC.Log().Println("Unable to locate a report file from a previous execution")
 	}
