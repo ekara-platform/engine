@@ -10,22 +10,22 @@ import (
 
 var reportSteps = []step{freport}
 
-// freport reads the content of the eventually existing report file
+//freport reads the content of the eventually existing report file
 func freport(lC LaunchContext, rC *runtimeContext) StepResults {
 	sc := InitCodeStepResult("Reporting the execution details", nil, NoCleanUpRequired)
-	ok := lC.Ef().Output.Contains(REPORT_OUTPUT_FILE)
+	ok := lC.Ef().Output.Contains(ReportOutputFile)
 	if ok {
 		lC.Log().Println("A report file from a previous execution has been located")
-		b, err := ioutil.ReadFile(util.JoinPaths(lC.Ef().Output.Path(), REPORT_OUTPUT_FILE))
+		b, err := ioutil.ReadFile(util.JoinPaths(lC.Ef().Output.Path(), ReportOutputFile))
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf(ERROR_READING_REPORT, REPORT_OUTPUT_FILE, err.Error()), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf(ErrorReadingReport, ReportOutputFile, err.Error()), nil)
 			goto MoveOut
 		}
 		reportNoTime := ReportFileContentNoTime{}
 
 		err = json.Unmarshal(b, &reportNoTime)
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf(ERROR_UNMARSHALLING_REPORT, REPORT_OUTPUT_FILE, err.Error()), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf(ErrorUnmarshallingReport, ReportOutputFile, err.Error()), nil)
 			goto MoveOut
 		}
 		report := ReportFileContent{}

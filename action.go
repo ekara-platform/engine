@@ -5,15 +5,15 @@ import (
 )
 
 type (
-	// ActionId represents the id of an action available on an environment
-	ActionId int
+	// ActionID represents the id of an action available on an environment
+	ActionID int
 
-	// action represents an action available on an environment
-	action struct {
+	//Action represents an action available on an environment
+	Action struct {
 		// The action id
-		id ActionId
+		id ActionID
 		// The action id  on which this action depends
-		dependsOn ActionId
+		dependsOn ActionID
 		// The name of the action
 		name string
 		// The action steps
@@ -22,57 +22,57 @@ type (
 )
 
 const (
-	// ActionFailId identifies the action of marking a StepResults
+	// ActionFailID identifies the action of marking a StepResults
 	//with an error in case of validation error into the descriptor
-	ActionFailId ActionId = iota
-	//ActionReportId identifies the action of reading an existing execution report
-	ActionReportId
-	//ActionCreateId identifies the action of creation environment's machines
-	ActionCreateId
-	//ActionInstallId identifies the action of installing the environment orchestrator
-	ActionInstallId
-	//ActionDeployId identifies the action of deveploying the environment stacks
-	ActionDeployId
-	//ActionCheckId identifies the action of validating the environment descriptor
-	ActionCheckId
-	//ActionDumpId identifies the acion of dumping the environment descriptor content
-	ActionDumpId
-	//ActionUpdateId identifies the action of updating of an environment
-	ActionUpdateId
-	//ActionDeleteId identifies the action of deleting an environment
-	ActionDeleteId
-	//ActionNilId identifies no action, used to indicate that an action depends on nothing
-	ActionNilId
-	//ActionRegisterId identifies the action of registering an environment
+	ActionFailID ActionID = iota
+	//ActionReportID identifies the action of reading an existing execution report
+	ActionReportID
+	//ActionCreateID identifies the action of creation environment's machines
+	ActionCreateID
+	//ActionInstallID identifies the action of installing the environment orchestrator
+	ActionInstallID
+	//ActionDeployID identifies the action of deveploying the environment stacks
+	ActionDeployID
+	//ActionCheckID identifies the action of validating the environment descriptor
+	ActionCheckID
+	//ActionDumpID identifies the acion of dumping the environment descriptor content
+	ActionDumpID
+	//ActionUpdateID identifies the action of updating of an environment
+	ActionUpdateID
+	//ActionDeleteID identifies the action of deleting an environment
+	ActionDeleteID
+	//ActionNilID identifies no action, used to indicate that an action depends on nothing
+	ActionNilID
+	//ActionRegisterID identifies the action of registering an environment
 	// through the api once it has been create
-	ActionRegisterId
+	ActionRegisterID
 )
 
 // String returns the string representation of the action id
-func (a ActionId) String() string {
+func (a ActionID) String() string {
 	return strconv.Itoa(int(a))
 }
 
 //InitActions initializes all actions available into the engien
-func InitActions() []action {
-	r := make([]action, 0)
-	r = append(r, action{ActionFailId, ActionNilId, "FailOnError", failOnEkaraErrorSteps})
-	r = append(r, action{ActionReportId, ActionFailId, "Report", reportSteps})
-	r = append(r, action{ActionCreateId, ActionReportId, "Create", createSteps})
-	r = append(r, action{ActionInstallId, ActionCreateId, "Install", installSteps})
-	r = append(r, action{ActionDeployId, ActionInstallId, "Deploy", deploySteps})
-	r = append(r, action{ActionCheckId, ActionNilId, "Check", checkSteps})
-	r = append(r, action{ActionDumpId, ActionCheckId, "Dump", dumpSteps})
+func InitActions() []Action {
+	r := make([]Action, 0)
+	r = append(r, Action{ActionFailID, ActionNilID, "FailOnError", failOnEkaraErrorSteps})
+	r = append(r, Action{ActionReportID, ActionFailID, "Report", reportSteps})
+	r = append(r, Action{ActionCreateID, ActionReportID, "Create", createSteps})
+	r = append(r, Action{ActionInstallID, ActionCreateID, "Install", installSteps})
+	r = append(r, Action{ActionDeployID, ActionInstallID, "Deploy", deploySteps})
+	r = append(r, Action{ActionCheckID, ActionNilID, "Check", checkSteps})
+	r = append(r, Action{ActionDumpID, ActionCheckID, "Dump", dumpSteps})
 	return r
 }
 
 // run runs an action for the given action manager and contexts
-func (a action) run(m actionManager, lC LaunchContext, rC *runtimeContext) (*ExecutionReport, error) {
+func (a Action) run(m ActionManager, lC LaunchContext, rC *runtimeContext) (*ExecutionReport, error) {
 	r := &ExecutionReport{
 		Context: lC,
 	}
 
-	if a.dependsOn != ActionNilId {
+	if a.dependsOn != ActionNilID {
 		d, e := m.get(a.dependsOn)
 		if e != nil {
 			return r, e
@@ -89,7 +89,7 @@ func (a action) run(m actionManager, lC LaunchContext, rC *runtimeContext) (*Exe
 
 	}
 
-	lC.Log().Printf(LOG_RUNNING_ACTION, a.name)
+	lC.Log().Printf(LogRunningAction, a.name)
 
 	// Run the actions steps
 	rep := launch(a.steps, lC, rC)

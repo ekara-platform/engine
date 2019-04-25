@@ -2,23 +2,40 @@ package engine
 
 const (
 
-	// Error messages
-	ERROR_PARSING_DESCRIPTOR       string = "Error parsing the descriptor %s, run the \"cli check\" command to get the details"
-	ERROR_PARSING_ENVIRONMENT      string = "Error parsing the environment: %s"
-	ERROR_CREATING_REPORT_FILE     string = "Error creating the report file  %s"
-	ERROR_ADDING_EXCHANGE_FOLDER   string = "An error occurred adding the exchange folder %s: %s"
-	ERROR_CREATING_EXCHANGE_FOLDER string = "An error occurred creating the exchange folder %s: %s"
-	ERROR_READING_REPORT           string = "error reading the report file \"%s\", error \"%s\""
-	ERROR_UNMARSHALLING_REPORT     string = "error Unmarshalling the report file \"%s\", error \"%s\""
-	ERROR_GENERIC                  string = "An error occurred  %s:"
+	//ErrorParsingDescriptor indicates than an error occured parsing the environment descriptor
+	ErrorParsingDescriptor string = "Error parsing the descriptor %s, run the \"cli check\" command to get the details"
+	//ErrorParsingEnvironment indicates than an error occured parsing the environment
+	ErrorParsingEnvironment string = "Error parsing the environment: %s"
+	//ErrorCreatingReportFile indicates than an error occured creating the execution report file
+	ErrorCreatingReportFile string = "Error creating the report file  %s"
+	//ErrorCreatingDumpFile indicates than an error occured creating the environment dump file
+	ErrorCreatingDumpFile string = "Error creating the dump file  %s"
 
-	// Log messages
-	LOG_VALIDATION_SUCCESSFUL     string = "The envinronment descriptor validation is successful!"
-	LOG_PROCESSING_NODE           string = "Processing node: %s\n"
-	LOG_RUNNING_SETUP_FOR         string = "Running setup for provider %s"
-	LOG_LAUNCHING_ACTION          string = "Engine, launching action %s\n"
-	LOG_RUNNING_ACTION            string = "Engine, running action %s\n"
-	LOG_PROCESSING_STACK_PLAYBOOK string = "Processing playbook for stack: %s on node: %s"
-	LOG_PROCESSING_STACK_COMPOSE  string = "Processing Docker Compose for stack: %s on node: %s"
-	LOG_REPORT_WRITTEN            string = "The execution report file has been written in %s\n"
+	//ErrorAddingExchangeFolder indicates than an error occured adding an exchange folder
+	ErrorAddingExchangeFolder string = "An error occurred adding the exchange folder %s: %s"
+	//ErrorCreatingExchangeFolder indicates than an error occured creating an exchange folder
+	ErrorCreatingExchangeFolder string = "An error occurred creating the exchange folder %s: %s"
+	//ErrorReadingReport indicates than an error occured reading the execution report file
+	ErrorReadingReport string = "error reading the report file \"%s\", error \"%s\""
+	//ErrorUnmarshallingReport indicates than an error occured unmarshalling the execution report file
+	ErrorUnmarshallingReport string = "error Unmarshalling the report file \"%s\", error \"%s\""
+	//ErrorGeneric  indicates than an error occured
+	ErrorGeneric string = "An error occurred  %s:"
+
+	//LogValidationSuccessful indicates that the descriptor validation was sucessful
+	LogValidationSuccessful string = "The envinronment descriptor validation is successful!"
+	//LogProcessingNode  indicates that a node is being processed
+	LogProcessingNode string = "Processing node: %s\n"
+	//LogRunningSetupFor  indicates that a setup step is being processes
+	LogRunningSetupFor string = "Running setup for provider %s"
+	//LogLaunchingAction  indicates that an action is being launched
+	LogLaunchingAction string = "Engine, launching action %s\n"
+	//LogRunningAction  indicates that an action is running
+	LogRunningAction string = "Engine, running action %s\n"
+	//LogProcessingStackPlaybook  indicates that a stack is being deploy using a playbook
+	LogProcessingStackPlaybook string = "Processing playbook for stack: %s on node: %s"
+	//LogProcessingStackCompose  indicates that a stack is being deploy using a docker compose file
+	LogProcessingStackCompose string = "Processing Docker Compose for stack: %s on node: %s"
+	//LogReportWritten   indicates where the execution report file has been written
+	LogReportWritten string = "The execution report file has been written in %s\n"
 )

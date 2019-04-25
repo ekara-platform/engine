@@ -2,10 +2,8 @@ package engine
 
 import (
 	"log"
-	"net/url"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
@@ -31,7 +29,7 @@ type context struct {
 	// Subsystems
 	componentManager component.ComponentManager
 	ansibleManager   ansible.AnsibleManager
-	actionManager    actionManager
+	actionManager    ActionManager
 }
 
 // Create creates an environment descriptor based on the provided location.
@@ -61,13 +59,13 @@ func Create(logger *log.Logger, workDir string, data map[string]interface{}) (En
 }
 
 func (ctx *context) Init(repo string, ref string, descriptor string) (err error) {
-	wdUrl, err := model.GetCurrentDirectoryURL(ctx.logger)
+	wdURL, err := model.GetCurrentDirectoryURL(ctx.logger)
 	if err != nil {
 		return
 	}
 
 	// Register main component
-	mainRep, err := model.CreateRepository(model.Base{Url: wdUrl}, repo, ref, descriptor)
+	mainRep, err := model.CreateRepository(model.Base{Url: wdURL}, repo, ref, descriptor)
 	if err != nil {
 		return
 	}
@@ -96,17 +94,6 @@ func (ctx *context) ComponentManager() component.ComponentManager {
 
 func (ctx *context) AnsibleManager() ansible.AnsibleManager {
 	return ctx.ansibleManager
-}
-
-// BuildDescriptorUrl builds the url of environment descriptor based on the
-// url received has parameter
-func BuildDescriptorUrl(url url.URL, fileName string) url.URL {
-	if strings.HasSuffix(url.Path, "/") {
-		url.Path = url.Path + fileName
-	} else {
-		url.Path = url.Path + "/" + fileName
-	}
-	return url
 }
 
 //CheckProxy returns the proxy setting from environment variables

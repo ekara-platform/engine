@@ -18,10 +18,10 @@ func fdump(lC LaunchContext, rC *runtimeContext) StepResults {
 		FailsOnDescriptor(&sc, err, fmt.Sprintf("Error marshalling the environment Yaml content: %s", err.Error()), nil)
 	}
 
-	path, err := util.SaveFile(lC.Log(), *lC.Ef().Output, DUMP_YAML_OUTPUT_FILE, environmentYaml)
+	path, err := util.SaveFile(lC.Log(), *lC.Ef().Output, DumpYamlOutputFile, environmentYaml)
 	if err != nil {
 		// in case of error writing the yaml dump
-		FailsOnDescriptor(&sc, err, fmt.Sprintf(ERROR_CREATING_REPORT_FILE, path), nil)
+		FailsOnDescriptor(&sc, err, fmt.Sprintf(ErrorCreatingDumpFile, path), nil)
 	}
 
 	environmentYaml, err = yaml.Marshal(lC.Ekara().ComponentManager().Environment().OriginalEnv)
@@ -29,11 +29,10 @@ func fdump(lC LaunchContext, rC *runtimeContext) StepResults {
 		FailsOnDescriptor(&sc, err, fmt.Sprintf("Error marshalling the environment source Yaml content:%s", err.Error()), nil)
 	}
 
-	path, err = util.SaveFile(lC.Log(), *lC.Ef().Output, DUMP_SOURCE_YAML_OUTPUT_FILE, environmentYaml)
+	path, err = util.SaveFile(lC.Log(), *lC.Ef().Output, DumpSourceYamlOutputFile, environmentYaml)
 	if err != nil {
 		// in case of error writing the yaml dump
-		FailsOnDescriptor(&sc, err, fmt.Sprintf(ERROR_CREATING_REPORT_FILE, path), nil)
+		FailsOnDescriptor(&sc, err, fmt.Sprintf(ErrorCreatingDumpFile, path), nil)
 	}
-
 	return sc.Array()
 }

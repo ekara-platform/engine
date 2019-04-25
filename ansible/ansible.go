@@ -27,7 +27,7 @@ type (
 		//		envars: the environment variables set before launching the playbook
 		//		inventories: the inventory where to run the playbook
 		//
-		Execute(component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (error, int)
+		Execute(component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (int, error)
 		// Contains indicates if the given component holds the playbook
 		Contains(component model.Component, playbook string) bool
 	}
@@ -38,6 +38,8 @@ type (
 	}
 )
 
+//CreateAnsibleManager returns a new AnsibleManager, able to launch playbook
+//holded by the given component manager
 func CreateAnsibleManager(logger *log.Logger, componentManager component.ComponentManager) AnsibleManager {
 	return &context{
 		logger:           logger,
@@ -53,20 +55,19 @@ func (ctx context) Contains(component model.Component, file string) bool {
 	return false
 }
 
-func (ctx context) Execute(component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (error, int) {
+func (ctx context) Execute(component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (int, error) {
 	// Path of the component where the playbook is supposed to be located
 	path := ctx.componentManager.ComponentPath(component.Id)
 
 	playBookPath := filepath.Join(path, playbook)
 	if _, err := os.Stat(playBookPath); os.IsNotExist(err) {
-		return err, 0
-	} else {
-		ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
-		ctx.logger.Println("* * * * * A N S I B L E - - P L A Y B O O K  * * * * ")
-		ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
-		ctx.logger.Printf(util.LOG_STARTING_PLAYBOOK, playBookPath)
-		ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
+		return 0, err
 	}
+	ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
+	ctx.logger.Println("* * * * * A N S I B L E - - P L A Y B O O K  * * * * ")
+	ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
+	ctx.logger.Printf(util.LOG_STARTING_PLAYBOOK, playBookPath)
+	ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
 	ctx.logger.Printf(util.LOG_LAUNCHING_PLAYBOOK, playBookPath)
 
 	var args = []string{playbook}
@@ -108,19 +109,19 @@ func (ctx context) Execute(component model.Component, playbook string, extraVars
 
 	errReader, err := cmd.StderrPipe()
 	if err != nil {
-		return err, 0
+		return 0, err
 	}
 	logPipe(errReader, ctx.logger)
 
 	outReader, err := cmd.StdoutPipe()
 	if err != nil {
-		return err, 0
+		return 0, err
 	}
 	logPipe(outReader, ctx.logger)
 
 	err = cmd.Start()
 	if err != nil {
-		return err, 0
+		return 0, err
 	}
 
 	err = cmd.Wait()
@@ -130,12 +131,12 @@ func (ctx context) Execute(component model.Component, playbook string, extraVars
 			s := e.Sys().(syscall.WaitStatus)
 			code := s.ExitStatus()
 			ctx.logger.Printf("Ansible returned error code : %v\n", ReturnedError(code))
-			return err, code
-		} else {
-			return err, 0
+			return code, err
 		}
+		return 0, err
+
 	}
-	return nil, 0
+	return 0, nil
 }
 
 // logPipe logs the given pipe, reader/closer on the given logger

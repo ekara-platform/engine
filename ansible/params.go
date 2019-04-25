@@ -13,7 +13,7 @@ type ParamContent map[string]interface{}
 
 type ParamValues map[string]string
 
-type KeyValue struct {
+type keyValue struct {
 	key   string
 	value string
 }
@@ -154,7 +154,7 @@ func ParseParamValues(path string) (ParamValues, error) {
 	if err != nil {
 		return r, err
 	}
-	cKv := make(chan KeyValue)
+	cKv := make(chan keyValue)
 	exit := make(chan bool)
 	env := make(map[interface{}]interface{})
 	err = yaml.Unmarshal(b, &env)
@@ -173,7 +173,7 @@ func ParseParamValues(path string) (ParamValues, error) {
 	}
 }
 
-func readMap(cKv chan KeyValue, exit chan bool, location string, m map[interface{}]interface{}) {
+func readMap(cKv chan keyValue, exit chan bool, location string, m map[interface{}]interface{}) {
 	if location != "" {
 		location += "."
 	}
@@ -187,7 +187,7 @@ func readMap(cKv chan KeyValue, exit chan bool, location string, m map[interface
 			if v != nil {
 				vs := fmt.Sprintf("%v", v)
 				// The located leaf is returned...
-				cKv <- KeyValue{
+				cKv <- keyValue{
 					key:   location + ks,
 					value: vs,
 				}

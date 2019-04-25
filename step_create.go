@@ -12,7 +12,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 	for _, p := range lC.Ekara().ComponentManager().Environment().Providers {
 		sc := InitPlaybookStepResult("Running the setup phase", p, NoCleanUpRequired)
-		lC.Log().Printf(LOG_RUNNING_SETUP_FOR, p.Name)
+		lC.Log().Printf(LogRunningSetupFor, p.Name)
 
 		// TEST FAILURE FOR THE --limit addition
 		//hf, _ := c.report.hasFailure()
@@ -72,7 +72,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 			sCs.Add(sc)
 			continue
 		}
-		err, code := lC.Ekara().AnsibleManager().Execute(r, "setup.yml", exv, env, "")
+		code, err := lC.Ekara().AnsibleManager().Execute(r, "setup.yml", exv, env, "")
 
 		if err != nil {
 			r, err := p.Component.Resolve()
@@ -119,7 +119,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
 
 		sc := InitPlaybookStepResult("Running the create phase", n, NoCleanUpRequired)
-		lC.Log().Printf(LOG_PROCESSING_NODE, n.Name)
+		lC.Log().Printf(LogProcessingNode, n.Name)
 
 		p, err := n.Provider.Resolve()
 
@@ -209,7 +209,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 			continue
 		}
 
-		err, code := lC.Ekara().AnsibleManager().Execute(r, "create.yml", exv, env, inventory)
+		code, err := lC.Ekara().AnsibleManager().Execute(r, "create.yml", exv, env, inventory)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "create.yml",
