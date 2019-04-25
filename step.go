@@ -14,17 +14,19 @@ type (
 	// or if you prefer what the step was doing
 	stepResultContext string
 
+	//StepResultsNotime is a lighter representation of a  chain of steps execution results
+	//It is used to unmarchal step results
 	StepResultsNotime struct {
 		Results []StepResultNoTime
 	}
 
 	//StepResults represents a chain of steps execution results
+	//It is used to marchal step results
 	StepResults struct {
 		Results            []StepResult
 		TotalExecutionTime time.Duration
 	}
 
-	//StepResult represents the execution result of a single step with its context
 	StepResultNoTime struct {
 		StepName        string
 		AppliedToType   string `json:",omitempty"`

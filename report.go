@@ -8,20 +8,27 @@ import (
 )
 
 type (
+	//ExecutionReport contains all the execution details of what has been executed by the engine.
 	ExecutionReport struct {
-		Error   error
-		Steps   StepResults
+		//Error contains the error which stopped the engine execution or nil if everything was fine
+		Error error
+		//Steps represent the details of each step executed by the engine
+		Steps StepResults
+		//Context is the context at the origon of the engine execution
 		Context LaunchContext
 	}
 
+	//ReportFileContent is used to marchal the execution report
 	ReportFileContent struct {
 		Results []StepResult
 	}
 
+	//ReportFileContentNoTime is used to unmarshal the execution report
 	ReportFileContentNoTime struct {
 		Results []StepResultNoTime
 	}
 
+	//ReportFailures contains the steps who failed during the engine execution
 	ReportFailures struct {
 		playBookFailures []StepResult
 		otherFailures    []StepResult
@@ -33,7 +40,7 @@ func writeReport(rep ExecutionReport) error {
 	if e != nil {
 		return e
 	}
-	rep.Context.Log().Printf(LOG_REPORT_WRITTEN, loc)
+	rep.Context.Log().Printf(LogReportWritten, loc)
 	if rep.Error != nil {
 		return rep.Error
 	}
@@ -87,7 +94,7 @@ func (er ExecutionReport) generate() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return util.SaveFile(er.Context.Log(), *er.Context.Ef().Output, REPORT_OUTPUT_FILE, b)
+	return util.SaveFile(er.Context.Log(), *er.Context.Ef().Output, ReportOutputFile, b)
 }
 
 func (rfc ReportFileContent) hasFailure() (bool, ReportFailures) {
@@ -97,11 +104,11 @@ func (rfc ReportFileContent) hasFailure() (bool, ReportFailures) {
 		if v.Status == STEP_STATUS_FAILURE {
 
 			switch v.FailureCause {
-			case CODE_FAILURE, DESCRIPTOR_FAILURE:
+			case codeFailure, descriptorFailure:
 				r.otherFailures = append(r.otherFailures, v)
 				break
 
-			case PLAYBOOK_FAILURE:
+			case playBookFailure:
 				r.playBookFailures = append(r.playBookFailures, v)
 				break
 

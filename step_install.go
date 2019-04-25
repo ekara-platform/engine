@@ -12,7 +12,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
 		sc := InitPlaybookStepResult("Running the orchestrator setup phase", n, NoCleanUpRequired)
-		lC.Log().Printf(LOG_PROCESSING_NODE, n.Name)
+		lC.Log().Printf(LogProcessingNode, n.Name)
 
 		p, err := n.Provider.Resolve()
 		if err != nil {
@@ -94,7 +94,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 			continue
 		}
 
-		err, code := lC.Ekara().AnsibleManager().Execute(r, "setup.yml", exv, env, inventory)
+		code, err := lC.Ekara().AnsibleManager().Execute(r, "setup.yml", exv, env, inventory)
 		if err != nil {
 			r, err := p.Component.Resolve()
 			if err != nil {
@@ -141,7 +141,7 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
 		sc := InitPlaybookStepResult("Running the orchestrator installation phase", n, NoCleanUpRequired)
-		lC.Log().Printf(LOG_PROCESSING_NODE, n.Name)
+		lC.Log().Printf(LogProcessingNode, n.Name)
 
 		p, err := n.Provider.Resolve()
 		if err != nil {
@@ -227,7 +227,7 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 			continue
 		}
 
-		err, code := lC.Ekara().AnsibleManager().Execute(r, "install.yml", exv, env, inventory)
+		code, err := lC.Ekara().AnsibleManager().Execute(r, "install.yml", exv, env, inventory)
 		if err != nil {
 			r, err := p.Component.Resolve()
 			if err != nil {

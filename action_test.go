@@ -16,40 +16,40 @@ func TestManagerInitialGrossContent(t *testing.T) {
 	assert.False(t, am.empty())
 	assert.Equal(t, len(am.actions), 7)
 
-	v, err := am.get(ActionFailId)
+	v, err := am.get(ActionFailID)
 	assert.Nil(t, err)
-	check(t, v, ActionFailId, ActionNilId, "FailOnError")
+	check(t, v, ActionFailID, ActionNilID, "FailOnError")
 
-	v, err = am.get(ActionReportId)
+	v, err = am.get(ActionReportID)
 	assert.Nil(t, err)
-	check(t, v, ActionReportId, ActionFailId, "Report")
+	check(t, v, ActionReportID, ActionFailID, "Report")
 
-	v, err = am.get(ActionCreateId)
+	v, err = am.get(ActionCreateID)
 	assert.Nil(t, err)
-	check(t, v, ActionCreateId, ActionReportId, "Create")
+	check(t, v, ActionCreateID, ActionReportID, "Create")
 
-	v, err = am.get(ActionInstallId)
+	v, err = am.get(ActionInstallID)
 	assert.Nil(t, err)
-	check(t, v, ActionInstallId, ActionCreateId, "Install")
+	check(t, v, ActionInstallID, ActionCreateID, "Install")
 
-	v, err = am.get(ActionDeployId)
+	v, err = am.get(ActionDeployID)
 	assert.Nil(t, err)
-	check(t, v, ActionDeployId, ActionInstallId, "Deploy")
+	check(t, v, ActionDeployID, ActionInstallID, "Deploy")
 
-	v, err = am.get(ActionCheckId)
+	v, err = am.get(ActionCheckID)
 	assert.Nil(t, err)
-	check(t, v, ActionCheckId, ActionNilId, "Check")
+	check(t, v, ActionCheckID, ActionNilID, "Check")
 
-	v, err = am.get(ActionDumpId)
+	v, err = am.get(ActionDumpID)
 	assert.Nil(t, err)
-	check(t, v, ActionDumpId, ActionCheckId, "Dump")
+	check(t, v, ActionDumpID, ActionCheckID, "Dump")
 
 	// The nil action shouldn't be strored into the manager
-	_, err = am.get(ActionNilId)
+	_, err = am.get(ActionNilID)
 	assert.NotNil(t, err)
 }
 
-func check(t *testing.T, a action, id ActionId, depends ActionId, name string) {
+func check(t *testing.T, a Action, id ActionID, depends ActionID, name string) {
 	assert.Equal(t, a.id, id)
 	assert.Equal(t, a.dependsOn, depends)
 	assert.Equal(t, a.name, name)

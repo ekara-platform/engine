@@ -62,7 +62,7 @@ func TestChildExchangeFolderKo(t *testing.T) {
 	assert.Equal(t, sc.AppliedToName, "")
 	assert.Equal(t, sc.Status, STEP_STATUS_FAILURE)
 	assert.Equal(t, sc.Context, STEP_CONTEXT_CODE)
-	assert.Equal(t, sc.FailureCause, CODE_FAILURE)
+	assert.Equal(t, sc.FailureCause, codeFailure)
 	assert.NotNil(t, sc.error)
 	assert.Nil(t, sc.RawContent)
 

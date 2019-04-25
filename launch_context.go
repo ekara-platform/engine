@@ -8,6 +8,7 @@ import (
 )
 
 type (
+	//LaunchContext Represents the informations required to run the engine
 	LaunchContext interface {
 		Name() string
 		Log() *log.Logger
@@ -25,6 +26,7 @@ type (
 	}
 )
 
+//BuildBaseParam Returns the base squelaton of the parameters for a node set
 func BuildBaseParam(c LaunchContext, nodeSetName string, provider string) ansible.BaseParam {
 	return ansible.BuildBaseParam(c.Ekara().ComponentManager().Environment(), nodeSetName, provider, c.SshPublicKey(), c.SshPrivateKey())
 }

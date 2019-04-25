@@ -24,48 +24,18 @@ type (
 	}
 )
 
+//RunHookBefore Runs the hooks defined to be executed before a task.
 func RunHookBefore(lC LaunchContext, rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
-	//previousBuffer := ansible.Buffer{}
-	for i, hook := range h.Before {
-		repName := fmt.Sprintf("%s_%s_hook_%s_%s_%s_%d", ctx.action, ctx.target.DescName(), ctx.hookOnwer, ctx.hookName, hook.HookLocation, i)
-		sc := InitHookStepResult(folderAsMessage(repName), ctx.target, cl)
-		ef, ko := createChildExchangeFolder(lC.Ef().Input, repName, &sc, lC.Log())
-		if ko {
-			r.Add(sc)
-			continue
-		}
-
-		t, err := hook.Resolve()
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the task"), nil)
-			r.Add(sc)
-			continue
-		}
-
-		bp := ctx.baseParam.Copy()
-		bp.AddNamedMap("hook_param", t.Parameters)
-
-		if ko := saveBaseParams(bp, lC, ef.Input, &sc); ko {
-			r.Add(sc)
-			continue
-		}
-
-		// Prepare components map
-		if ko := saveComponentMap(lC, ef.Input, &sc); ko {
-			r.Add(sc)
-			continue
-		}
-
-		exv := ansible.BuildExtraVars("", *ef.Input, *ef.Output, ctx.buffer)
-
-		runTask(lC, rC, t, ctx.target, sc, r, ef, exv, ctx.envVar, ctx.inventory)
-		// TODO Consume hook buffer here
-	}
+	runHooks(h.Before, lC, rC, r, ctx, cl)
 }
 
+//RunHookAfter Runs the hooks defined to be executed after a task.
 func RunHookAfter(lC LaunchContext, rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
-	//previousBuffer := ansible.Buffer{}
-	for i, hook := range h.After {
+	runHooks(h.After, lC, rC, r, ctx, cl)
+}
+
+func runHooks(hooks []model.TaskRef, lC LaunchContext, rC *runtimeContext, r *StepResults, ctx hookContext, cl Cleanup) {
+	for i, hook := range hooks {
 		repName := fmt.Sprintf("%s_%s_hook_%s_%s_%s_%d", ctx.action, ctx.target.DescName(), ctx.hookOnwer, ctx.hookName, hook.HookLocation, i)
 		sc := InitHookStepResult(folderAsMessage(repName), ctx.target, cl)
 		ef, ko := createChildExchangeFolder(lC.Ef().Input, repName, &sc, lC.Log())
@@ -111,7 +81,7 @@ func runTask(lC LaunchContext, rC *runtimeContext, task model.Task, target model
 		return
 	}
 
-	err, code := lC.Ekara().AnsibleManager().Execute(comp, task.Playbook, exv, env, inventory)
+	code, err := lC.Ekara().AnsibleManager().Execute(comp, task.Playbook, exv, env, inventory)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  task.Playbook,

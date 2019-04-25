@@ -16,11 +16,11 @@ func ffailOnEkaraError(lC LaunchContext, rC *runtimeContext) StepResults {
 			if vErrs.HasErrors() {
 				// in case of validation error we stop
 				lC.Log().Println(rC.ekaraError)
-				FailsOnDescriptor(&sc, rC.ekaraError, fmt.Sprintf(ERROR_PARSING_DESCRIPTOR, rC.ekaraError.Error()), nil)
+				FailsOnDescriptor(&sc, rC.ekaraError, fmt.Sprintf(ErrorParsingDescriptor, rC.ekaraError.Error()), nil)
 				goto MoveOut
 			}
 		} else {
-			FailsOnDescriptor(&sc, rC.ekaraError, fmt.Sprintf(ERROR_PARSING_DESCRIPTOR, rC.ekaraError.Error()), nil)
+			FailsOnDescriptor(&sc, rC.ekaraError, fmt.Sprintf(ErrorParsingDescriptor, rC.ekaraError.Error()), nil)
 			goto MoveOut
 		}
 	}

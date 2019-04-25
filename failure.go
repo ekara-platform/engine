@@ -20,21 +20,28 @@ type (
 )
 
 const (
-	// Failure due to an Ekara code execution error
-	NOT_IMPLEMENTED_FAILURE failureCause = "NotImplemented"
-
-	// Failure due to an Ekara code execution error
-	CODE_FAILURE failureCause = "Code"
-	// Failure due to a invalid environment descriptor content
-	DESCRIPTOR_FAILURE failureCause = "Descriptor"
-	// Failure due to a playbook execution error
-	PLAYBOOK_FAILURE failureCause = "PlayBook"
+	notImplementedFailure failureCause = "NotImplemented"
+	codeFailure           failureCause = "Code"
+	descriptorFailure     failureCause = "Descriptor"
+	playBookFailure       failureCause = "PlayBook"
 )
 
-var FailsOnNotImplemented = failOn(NOT_IMPLEMENTED_FAILURE)
-var FailsOnCode = failOn(CODE_FAILURE)
-var FailsOnDescriptor = failOn(DESCRIPTOR_FAILURE)
-var FailsOnPlaybook = failOn(PLAYBOOK_FAILURE)
+// FailsOnNotImplemented allows to create a failure on an execution step
+// because of a missing implementation
+var FailsOnNotImplemented = failOn(notImplementedFailure)
+
+// FailsOnCode allows to create a failure on an execution step
+// because of an error returned by ekara, other than errors generated
+// by the processing of the descriptor of by a playbook execution
+var FailsOnCode = failOn(codeFailure)
+
+// FailsOnDescriptor allows to create a failure on an execution step
+// because of an invalid descriptor
+var FailsOnDescriptor = failOn(descriptorFailure)
+
+// FailsOnPlaybook allows to create a failure on an execution step
+// because of an error return by a playbook execution
+var FailsOnPlaybook = failOn(playBookFailure)
 
 func failOn(fc failureCause) func(sr *StepResult, err error, detail string, content interface{}) {
 	return func(sr *StepResult, err error, detail string, content interface{}) {

@@ -131,7 +131,7 @@ func TestReadReport(t *testing.T) {
 
 	rC := &runtimeContext{}
 
-	ok := ef.Output.Contains(REPORT_OUTPUT_FILE)
+	ok := ef.Output.Contains(ReportOutputFile)
 	assert.True(t, ok)
 
 	stepC := freport(c, rC)
