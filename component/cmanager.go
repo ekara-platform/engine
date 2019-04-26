@@ -1,7 +1,6 @@
 package component
 
 import (
-	"errors"
 	"fmt"
 	"log"
 
@@ -15,17 +14,11 @@ import (
 
 const maxFetchIterations = 9
 
-type ScmHandler interface {
-	Matches(repository model.Repository, path string) bool
-	Fetch(repository model.Repository, path string, auth model.Parameters) error
-	Update(path string, auth model.Parameters) error
-	Switch(path string, ref string) error
-}
-
+//ComponentManager represents the common definition of all Component Manager
 type ComponentManager interface {
 	RegisterComponent(c model.Component)
 	MatchingDirectories(dirName string) []string
-	ComponentPath(cId string) string
+	ComponentPath(cID string) string
 	ComponentsPaths() map[string]string
 	SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error
 	Ensure() error
@@ -113,8 +106,8 @@ func (cm *context) SaveComponentsPaths(log *log.Logger, dest util.FolderPath) er
 func (cm *context) Ensure() error {
 	for i := 0; i < maxFetchIterations && cm.isFetchNeeded(); i++ {
 		// Fetch all known components
-		for cId, c := range cm.components {
-			if cm.isComponentFetchNeeded(cId) {
+		for cID, c := range cm.components {
+			if cm.isComponentFetchNeeded(cID) {
 				err := fetchComponent(cm, c.component)
 				if err != nil {
 					return err
@@ -151,7 +144,7 @@ func (cm *context) Ensure() error {
 		}
 	}
 	if cm.isFetchNeeded() {
-		return errors.New(fmt.Sprintf("not all components have been fetched after %d iterations, check for import loops in descriptors", maxFetchIterations))
+		return fmt.Errorf("not all components have been fetched after %d iterations, check for import loops in descriptors", maxFetchIterations)
 	} else {
 		return nil
 	}
@@ -199,7 +192,6 @@ func (cm *context) parseComponentDescriptor(fComp FetchedComponent) error {
 		if err != nil {
 			return err
 		}
-
 		// Merge the resulting environment into the global one
 		if cm.environment == nil {
 			cm.environment = &cEnv

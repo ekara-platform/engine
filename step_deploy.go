@@ -277,7 +277,7 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, coreStack model.Distrib
 		// Prepare extra vars
 		exv := ansible.BuildExtraVars("compose_path="+lC.Ekara().ComponentManager().ComponentPath(r.Id), *stackEf.Input, *stackEf.Output, buffer)
 
-		code, err := lC.Ekara().AnsibleManager().Execute(model.Component(coreStack), "install.yml", exv, env, inventory)
+		code, err := lC.Ekara().AnsibleManager().Execute(model.Component(coreStack), "deploy_compose.yaml", exv, env, inventory)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "install.yml",
