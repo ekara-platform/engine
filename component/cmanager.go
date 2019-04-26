@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/ekara-platform/engine/component/scm"
 	"github.com/ekara-platform/engine/util"
 	"github.com/ekara-platform/model"
 	"gopkg.in/yaml.v2"
@@ -16,6 +17,12 @@ const maxFetchIterations = 9
 
 //ComponentManager represents the common definition of all Component Manager
 type ComponentManager interface {
+	//RegisterComponent register a new compoment.
+	//
+	//The registration key of a component is its id.
+	//
+	//If the component has already been registered it will remain unaffected
+	// by a potential registration of a new version of the component.
 	RegisterComponent(c model.Component)
 	MatchingDirectories(dirName string) []string
 	ComponentPath(cID string) string
@@ -151,8 +158,13 @@ func (cm *context) Ensure() error {
 }
 
 func fetchComponent(cm *context, c model.Component) error {
+
+	h, err := scm.GetHandler(cm.logger, cm.directory, c)
+	if err != nil {
+		return err
+	}
 	cm.logger.Printf("fetching component %s ", c.Id)
-	fComp, err := fetchThroughSccm(cm, c)
+	fComp, err := h()
 	if err != nil {
 		return err
 	}
@@ -161,9 +173,9 @@ func fetchComponent(cm *context, c model.Component) error {
 	if err != nil {
 		return err
 	}
-	cm.logger.Printf("component %s is available in %s", c.Id, fComp.localPath)
+	cm.logger.Printf("component %s is available in %s", c.Id, fComp.LocalPath)
 	// TODO Change cm.paths to a map[string]FetchedComponent
-	cm.paths[c.Id] = fComp.localPath
+	cm.paths[c.Id] = fComp.LocalPath
 	return nil
 }
 
@@ -185,10 +197,10 @@ func (cm *context) isComponentFetchNeeded(id string) bool {
 	return !present
 }
 
-func (cm *context) parseComponentDescriptor(fComp FetchedComponent) error {
-	if fComp.hasDescriptor() {
+func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) error {
+	if fComp.HasDescriptor() {
 		// Parsing the descriptor
-		cEnv, err := model.CreateEnvironment(fComp.descriptorUrl, cm.data)
+		cEnv, err := model.CreateEnvironment(fComp.DescriptorUrl, cm.data)
 		if err != nil {
 			return err
 		}
