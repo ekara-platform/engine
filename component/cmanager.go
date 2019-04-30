@@ -206,7 +206,7 @@ func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) error {
 		}
 		// Merge the resulting environment into the global one
 		if cm.environment == nil {
-			cm.environment = &cEnv
+			cm.environment = cEnv
 		} else {
 			err = cm.environment.Merge(cEnv)
 			if err != nil {
