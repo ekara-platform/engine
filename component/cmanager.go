@@ -139,14 +139,14 @@ func (cm *context) Ensure() error {
 		}
 
 		// Register additionally discovered and used components
-		if cm.environment != nil && cm.environment.Ekara != nil && len(cm.environment.Ekara.UsedComponents) > 0 {
+		if cm.environment != nil && cm.environment.Ekara != nil {
 			cm.logger.Printf("registering used components")
-			for _, c := range cm.environment.Ekara.UsedComponents {
-				cr, err := c.Resolve()
-				if err != nil {
-					return err
-				}
-				cm.RegisterComponent(cr)
+			uc, err := cm.environment.Ekara.UsedComponents()
+			if err != nil {
+				return err
+			}
+			for _, c := range uc {
+				cm.RegisterComponent(c)
 			}
 		}
 	}

@@ -16,7 +16,7 @@ func fstack(lC LaunchContext, rC *runtimeContext) StepResults {
 		sc := InitCodeStepResult("Starting a stack setup phase", s, NoCleanUpRequired)
 		lC.Log().Printf("Checking how to install %s", s.Name)
 		// Check if the stacks holds an "install.yml" playbook
-		r, err := s.Component.Resolve()
+		r, err := s.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the stack"), nil)
 			sCs.Add(sc)
@@ -74,7 +74,7 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 		// We use an empty buffer because no one is coming from the previous step
 		buffer := ansible.CreateBuffer()
 
-		pRef, err := p.Component.Resolve()
+		pRef, err := p.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
 			sCs.Add(sc)
@@ -128,7 +128,7 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 		exv := ansible.BuildExtraVars("", *stackEf.Input, *stackEf.Output, buffer)
 
 		// We launch the playbook
-		r, err := s.Component.Resolve()
+		r, err := s.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the stack"), nil)
 			sCs.Add(sc)
@@ -216,7 +216,7 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, coreStack model.Distrib
 		// We use an empty buffer because no one is coming from the previous step
 		buffer := ansible.CreateBuffer()
 
-		pRef, err := p.Component.Resolve()
+		pRef, err := p.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
 			sCs.Add(sc)
@@ -267,7 +267,7 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, coreStack model.Distrib
 		)
 
 		// We launch the playbook
-		r, err := s.Component.Resolve()
+		r, err := s.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the stack"), nil)
 			sCs.Add(sc)

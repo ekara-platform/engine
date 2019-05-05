@@ -38,7 +38,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 			continue
 		}
 
-		pRef, err := p.Component.Resolve()
+		pRef, err := p.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
 			sCs.Add(sc)
@@ -87,7 +87,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 
 		// We launch the playbook
 		//TODO move this resolve outside of the for loop
-		r, err := lC.Ekara().ComponentManager().Environment().Orchestrator.Component.Resolve()
+		r, err := lC.Ekara().ComponentManager().Environment().Orchestrator.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the orchestrator"), nil)
 			sCs.Add(sc)
@@ -96,7 +96,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 
 		code, err := lC.Ekara().AnsibleManager().Execute(r, "setup.yml", exv, env, inventory)
 		if err != nil {
-			r, err := p.Component.Resolve()
+			r, err := p.Component.ResolveComponent()
 			if err != nil {
 				FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 				sCs.Add(sc)
@@ -166,7 +166,7 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 			continue
 		}
 
-		pRef, err := p.Component.Resolve()
+		pRef, err := p.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
 			sCs.Add(sc)
@@ -220,7 +220,7 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 
 		// We launch the playbook
 		//TODO move this resolve outside of the for loop
-		r, err := lC.Ekara().ComponentManager().Environment().Orchestrator.Component.Resolve()
+		r, err := lC.Ekara().ComponentManager().Environment().Orchestrator.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the orchestrator"), nil)
 			sCs.Add(sc)
@@ -229,7 +229,7 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 
 		code, err := lC.Ekara().AnsibleManager().Execute(r, "install.yml", exv, env, inventory)
 		if err != nil {
-			r, err := p.Component.Resolve()
+			r, err := p.Component.ResolveComponent()
 			if err != nil {
 				FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 				sCs.Add(sc)

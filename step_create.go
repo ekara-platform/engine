@@ -27,7 +27,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		setupProviderEfIn := setupProviderEf.Input
 		setupProviderEfOut := setupProviderEf.Output
 
-		pRef, err := p.Component.Resolve()
+		pRef, err := p.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
 			sCs.Add(sc)
@@ -66,7 +66,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		}
 
 		// We launch the playbook
-		r, err := p.Component.Resolve()
+		r, err := p.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
@@ -75,7 +75,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		code, err := lC.Ekara().AnsibleManager().Execute(r, "setup.yml", exv, env, "")
 
 		if err != nil {
-			r, err := p.Component.Resolve()
+			r, err := p.Component.ResolveComponent()
 			if err != nil {
 				FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 				sCs.Add(sc)
@@ -129,7 +129,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 			continue
 		}
 
-		pRef, err := p.Component.Resolve()
+		pRef, err := p.Component.ResolveComponent()
 
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
@@ -202,7 +202,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		exv := ansible.BuildExtraVars("", *nodeCreateEf.Input, *nodeCreateEf.Output, buffer)
 
 		// We launch the playbook
-		r, err := p.Component.Resolve()
+		r, err := p.Component.ResolveComponent()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
