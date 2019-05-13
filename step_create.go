@@ -27,14 +27,8 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		setupProviderEfIn := setupProviderEf.Input
 		setupProviderEfOut := setupProviderEf.Output
 
-		pRef, err := p.Component.ResolveComponent()
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
-			sCs.Add(sc)
-			continue
-		}
 		// Prepare parameters
-		bp := BuildBaseParam(lC, "", pRef.Id)
+		bp := BuildBaseParam(lC, "", p.Name) // TODO : review if provider name is ok
 		bp.AddNamedMap("params", p.Parameters)
 
 		if ko := saveBaseParams(bp, lC, setupProviderEfIn, &sc); ko {
@@ -66,24 +60,11 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		}
 
 		// We launch the playbook
-		r, err := p.Component.ResolveComponent()
+		code, err := lC.Ekara().AnsibleManager().Execute(p, "setup.yml", exv, env, "")
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
-			sCs.Add(sc)
-			continue
-		}
-		code, err := lC.Ekara().AnsibleManager().Execute(r, "setup.yml", exv, env, "")
-
-		if err != nil {
-			r, err := p.Component.ResolveComponent()
-			if err != nil {
-				FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
-				sCs.Add(sc)
-				continue
-			}
 			pfd := playBookFailureDetail{
 				Playbook:  "setup.yml",
-				Compoment: r.Id,
+				Component: p.ComponentName(),
 				Code:      code,
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -117,22 +98,13 @@ func fconsumesetup(lC LaunchContext, rC *runtimeContext) StepResults {
 func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
-
 		sc := InitPlaybookStepResult("Running the create phase", n, NoCleanUpRequired)
 		lC.Log().Printf(LogProcessingNode, n.Name)
 
+		// Resolve provider
 		p, err := n.Provider.Resolve()
-
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
-			sCs.Add(sc)
-			continue
-		}
-
-		pRef, err := p.Component.ResolveComponent()
-
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -143,7 +115,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		buffer := rC.getBuffer(setupProviderEf.Output)
 
 		// Prepare parameters
-		bp := BuildBaseParam(lC, n.Name, pRef.Id)
+		bp := BuildBaseParam(lC, n.Name, p.Name) // TODO : review if provider name is ok
 		bp.AddInt("instances", n.Instances)
 		bp.AddInterface("labels", n.Labels)
 		bp.AddNamedMap("params", p.Parameters)
@@ -202,18 +174,11 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		exv := ansible.BuildExtraVars("", *nodeCreateEf.Input, *nodeCreateEf.Output, buffer)
 
 		// We launch the playbook
-		r, err := p.Component.ResolveComponent()
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
-			sCs.Add(sc)
-			continue
-		}
-
-		code, err := lC.Ekara().AnsibleManager().Execute(r, "create.yml", exv, env, inventory)
+		code, err := lC.Ekara().AnsibleManager().Execute(p, "create.yml", exv, env, inventory)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "create.yml",
-				Compoment: r.Id,
+				Component: p.ComponentName(),
 				Code:      code,
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)

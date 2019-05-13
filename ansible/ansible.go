@@ -27,9 +27,9 @@ type (
 		//		envars: the environment variables set before launching the playbook
 		//		inventories: the inventory where to run the playbook
 		//
-		Execute(component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (int, error)
+		Execute(cr model.ComponentReferencer, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (int, error)
 		// Contains indicates if the given component holds the playbook
-		Contains(component model.Component, playbook string) bool
+		Contains(cr model.ComponentReferencer, playbook string) bool
 	}
 
 	context struct {
@@ -46,8 +46,12 @@ func CreateAnsibleManager(logger *log.Logger, componentManager component.Compone
 		componentManager: componentManager}
 }
 
-func (ctx context) Contains(component model.Component, file string) bool {
-	path := ctx.componentManager.ComponentPath(component.Id)
+func (ctx context) Contains(cr model.ComponentReferencer, file string) bool {
+	c, err := cr.Component()
+	if err != nil {
+		return false
+	}
+	path := ctx.componentManager.ComponentPath(c.Id)
 	playbookPath := util.JoinPaths(path, file)
 	if _, err := os.Stat(playbookPath); !os.IsNotExist(err) {
 		return true
@@ -55,9 +59,9 @@ func (ctx context) Contains(component model.Component, file string) bool {
 	return false
 }
 
-func (ctx context) Execute(component model.Component, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (int, error) {
+func (ctx context) Execute(cr model.ComponentReferencer, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (int, error) {
 	// Path of the component where the playbook is supposed to be located
-	path := ctx.componentManager.ComponentPath(component.Id)
+	path := ctx.componentManager.ComponentPath(cr.ComponentName())
 
 	playBookPath := filepath.Join(path, playbook)
 	if _, err := os.Stat(playBookPath); os.IsNotExist(err) {

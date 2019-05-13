@@ -53,12 +53,12 @@ type AMMock struct {
 }
 
 //Execute simulates the corresponding method in the AnsibleManager for testing purposes
-func (m AMMock) Execute(component model.Component, playbook string, extraVars ansible.ExtraVars, envars ansible.EnvVars, inventories string) (int, error) {
+func (m AMMock) Execute(cr model.ComponentReferencer, playbook string, extraVars ansible.ExtraVars, envars ansible.EnvVars, inventories string) (int, error) {
 	return 0, nil
 }
 
 //Contains simulates the corresponding method in the AnsibleManager for testing purposes
-func (m AMMock) Contains(component model.Component, playbook string) bool {
+func (m AMMock) Contains(cr model.ComponentReferencer, playbook string) bool {
 	return true
 }
 

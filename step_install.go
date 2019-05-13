@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+	"github.com/ekara-platform/model"
 
 	"github.com/ekara-platform/engine/ansible"
 )
@@ -14,9 +15,18 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		sc := InitPlaybookStepResult("Running the orchestrator setup phase", n, NoCleanUpRequired)
 		lC.Log().Printf(LogProcessingNode, n.Name)
 
+		// Resolve provider
 		p, err := n.Provider.Resolve()
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
+			sCs.Add(sc)
+			continue
+		}
+
+		// Resolve orchestrator
+		o, err := n.Orchestrator.Resolve()
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the orchestrator parameters"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -32,37 +42,24 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		buffer := rC.getBuffer(nodeCreationEf.Output)
 
 		// Orchestrator setup exchange folder
-		setupOrcherstratorEf, ko := createChildExchangeFolder(lC.Ef().Input, "setup_orchestrator_"+n.Name, &sc, lC.Log())
+		setupOrchestratorEf, ko := createChildExchangeFolder(lC.Ef().Input, "setup_orchestrator_"+n.Name, &sc, lC.Log())
 		if ko {
 			sCs.Add(sc)
 			continue
 		}
 
-		pRef, err := p.Component.ResolveComponent()
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
-			sCs.Add(sc)
-			continue
-		}
-
 		// Prepare parameters
-		bp := BuildBaseParam(lC, n.Name, pRef.Id)
-		op, err := n.Orchestrator.OrchestratorParams()
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the orchestrator parameters"), nil)
-			sCs.Add(sc)
-			continue
-		}
-		bp.AddNamedMap("orchestrator", op)
+		bp := BuildBaseParam(lC, n.Name, p.Name) // TODO : review if provider name is ok
+		bp.AddNamedMap("orchestrator", buildOrchestratorParams(o))
 		bp.AddBuffer(buffer)
 
-		if ko := saveBaseParams(bp, lC, setupOrcherstratorEf.Input, &sc); ko {
+		if ko := saveBaseParams(bp, lC, setupOrchestratorEf.Input, &sc); ko {
 			sCs.Add(sc)
 			continue
 		}
 
 		// Prepare components map
-		if ko := saveComponentMap(lC, setupOrcherstratorEf.Input, &sc); ko {
+		if ko := saveComponentMap(lC, setupOrchestratorEf.Input, &sc); ko {
 			sCs.Add(sc)
 			continue
 		}
@@ -78,7 +75,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		env.AddBuffer(bufferPro)
 
 		// Prepare extra vars
-		exv := ansible.BuildExtraVars("", *setupOrcherstratorEf.Input, *setupOrcherstratorEf.Output, buffer)
+		exv := ansible.BuildExtraVars("", *setupOrchestratorEf.Input, *setupOrchestratorEf.Output, buffer)
 
 		inventory := ""
 		if len(bufferPro.Inventories) > 0 {
@@ -86,26 +83,11 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		}
 
 		// We launch the playbook
-		//TODO move this resolve outside of the for loop
-		r, err := lC.Ekara().ComponentManager().Environment().Orchestrator.Component.ResolveComponent()
+		code, err := lC.Ekara().AnsibleManager().Execute(o, "setup.yml", exv, env, inventory)
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the orchestrator"), nil)
-			sCs.Add(sc)
-			continue
-		}
-
-		code, err := lC.Ekara().AnsibleManager().Execute(r, "setup.yml", exv, env, inventory)
-		if err != nil {
-			r, err := p.Component.ResolveComponent()
-			if err != nil {
-				FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
-				sCs.Add(sc)
-				continue
-			}
-
 			pfd := playBookFailureDetail{
 				Playbook:  "setup.yml",
-				Compoment: r.Id,
+				Component: o.ComponentName(),
 				Code:      code,
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -143,9 +125,18 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		sc := InitPlaybookStepResult("Running the orchestrator installation phase", n, NoCleanUpRequired)
 		lC.Log().Printf(LogProcessingNode, n.Name)
 
+		// Resolve the provider
 		p, err := n.Provider.Resolve()
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the nodeset"), nil)
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
+			sCs.Add(sc)
+			continue
+		}
+
+		// Resolve the orchestrator
+		o, err := n.Orchestrator.Resolve()
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the orchestrator reference"), nil)
 			sCs.Add(sc)
 			continue
 		}
@@ -156,46 +147,34 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		bufferPro := rC.getBuffer(setupProviderEf.Output)
 
 		// Orchestrator setup exchange folder
-		setupOrcherstratorEf := lC.Ef().Input.Children["setup_orchestrator_"+n.Name]
+		setupOrchestratorEf := lC.Ef().Input.Children["setup_orchestrator_"+n.Name]
 		// We check if we have a buffer corresponding to the orchestrator setup
-		buffer := rC.getBuffer(setupOrcherstratorEf.Output)
+		buffer := rC.getBuffer(setupOrchestratorEf.Output)
 
-		installOrcherstratorEf, ko := createChildExchangeFolder(lC.Ef().Input, "install_orchestrator_"+n.Name, &sc, lC.Log())
+		// Orchestrator install exchange folder
+		installOrchestratorEf, ko := createChildExchangeFolder(lC.Ef().Input, "install_orchestrator_"+n.Name, &sc, lC.Log())
 		if ko {
 			sCs.Add(sc)
 			continue
 		}
 
-		pRef, err := p.Component.ResolveComponent()
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
-			sCs.Add(sc)
-			continue
-		}
-
 		// Prepare parameters
-		bp := BuildBaseParam(lC, n.Name, pRef.Id)
+		bp := BuildBaseParam(lC, n.Name, p.Name) // TODO : review if provider name is ok
 		bp.AddInterface("labels", n.Labels)
-		op, err := n.Orchestrator.OrchestratorParams()
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the orchestrator parameters"), nil)
-			sCs.Add(sc)
-			continue
-		}
-		bp.AddNamedMap("orchestrator", op)
+		bp.AddNamedMap("orchestrator", buildOrchestratorParams(o))
 
 		// TODO check how to clean all proxies
 		pr := lC.Ekara().ComponentManager().Environment().Providers[p.Name].Proxy
 		bp.AddInterface("proxy", pr)
 		bp.AddBuffer(buffer)
 
-		if ko := saveBaseParams(bp, lC, installOrcherstratorEf.Input, &sc); ko {
+		if ko := saveBaseParams(bp, lC, installOrchestratorEf.Input, &sc); ko {
 			sCs.Add(sc)
 			continue
 		}
 
 		// Prepare components map
-		if ko := saveComponentMap(lC, installOrcherstratorEf.Input, &sc); ko {
+		if ko := saveComponentMap(lC, installOrchestratorEf.Input, &sc); ko {
 			sCs.Add(sc)
 			continue
 		}
@@ -211,7 +190,7 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		env.AddBuffer(bufferPro)
 
 		// Prepare extra vars
-		exv := ansible.BuildExtraVars("", *installOrcherstratorEf.Input, *installOrcherstratorEf.Output, buffer)
+		exv := ansible.BuildExtraVars("", *installOrchestratorEf.Input, *installOrchestratorEf.Output, buffer)
 
 		inventory := ""
 		if len(bufferPro.Inventories) > 0 {
@@ -219,26 +198,11 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		}
 
 		// We launch the playbook
-		//TODO move this resolve outside of the for loop
-		r, err := lC.Ekara().ComponentManager().Environment().Orchestrator.Component.ResolveComponent()
+		code, err := lC.Ekara().AnsibleManager().Execute(o, "install.yml", exv, env, inventory)
 		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the orchestrator"), nil)
-			sCs.Add(sc)
-			continue
-		}
-
-		code, err := lC.Ekara().AnsibleManager().Execute(r, "install.yml", exv, env, inventory)
-		if err != nil {
-			r, err := p.Component.ResolveComponent()
-			if err != nil {
-				FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
-				sCs.Add(sc)
-				continue
-			}
-
 			pfd := playBookFailureDetail{
 				Playbook:  "install.yml",
-				Compoment: r.Id,
+				Component: o.ComponentName(),
 				Code:      code,
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -248,4 +212,11 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		sCs.Add(sc)
 	}
 	return *sCs
+}
+
+func buildOrchestratorParams(o model.Orchestrator) map[string]interface{} {
+	op := make(map[string]interface{})
+	op["docker"] = o.Docker
+	op["params"] = o.Parameters
+	return op
 }

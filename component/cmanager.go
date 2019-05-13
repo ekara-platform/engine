@@ -131,8 +131,6 @@ func (cm *context) Ensure() error {
 							return err
 						}
 						continue
-					} else {
-						cm.logger.Printf("a distribution has already been registered")
 					}
 				}
 			}
