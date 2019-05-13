@@ -12,8 +12,8 @@ type (
 	playBookFailureDetail struct {
 		// The name of the playbook
 		Playbook string
-		// The compoment holding the playbook
-		Compoment string
+		// The component holding the playbook
+		Component string
 		// The ansible return code
 		Code int
 	}

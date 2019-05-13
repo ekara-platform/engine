@@ -73,19 +73,11 @@ func runHooks(hooks []model.TaskRef, lC LaunchContext, rC *runtimeContext, r *St
 }
 
 func runTask(lC LaunchContext, rC *runtimeContext, task model.Task, target model.Describable, sc StepResult, r *StepResults, ef *util.ExchangeFolder, exv ansible.ExtraVars, env ansible.EnvVars, inventory string) {
-
-	comp, err := task.Component.Resolve()
-	if err != nil {
-		FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the task's component"), nil)
-		r.Add(sc)
-		return
-	}
-
-	code, err := lC.Ekara().AnsibleManager().Execute(comp, task.Playbook, exv, env, inventory)
+	code, err := lC.Ekara().AnsibleManager().Execute(task, task.Playbook, exv, env, inventory)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  task.Playbook,
-			Compoment: comp.Id,
+			Component: task.ComponentName(),
 			Code:      code,
 		}
 		FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
