@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/ekara-platform/model"
   packages = ["."]
-  revision = "7fb1e74df17ce950c4c5aa952f1d1549515a47f4"
+  revision = "57c845bda62a483d06e93acbd460c5cda74bc0b6"
 
 [[projects]]
   name = "github.com/emirpasic/gods"
