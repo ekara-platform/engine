@@ -27,6 +27,21 @@
   version = "v1.12.0"
 
 [[projects]]
+  name = "github.com/gobwas/glob"
+  packages = [
+    ".",
+    "compiler",
+    "match",
+    "syntax",
+    "syntax/ast",
+    "syntax/lexer",
+    "util/runes",
+    "util/strings"
+  ]
+  revision = "5ccd90ef52e1e632236f7326478d4faa74f99438"
+  version = "v0.2.3"
+
+[[projects]]
   branch = "master"
   name = "github.com/jbenet/go-context"
   packages = ["io"]
@@ -207,6 +222,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b963246d291f3f8eed67be27bdf6391fd9aefa0a4d60d9b5f33b9d81364d4bd0"
+  inputs-digest = "e084e39ac7c87fdd510d6271406cfe2eef4b0284b7244027802aa05ccb431d57"
   solver-name = "gps-cdcl"
   solver-version = 1
