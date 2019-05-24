@@ -17,7 +17,7 @@ type EkaraMock struct {
 }
 
 //Init simulates the corresponding method in Ekara for testing purposes
-func (e EkaraMock) Init(repo string, ref string, descriptor string) error {
+func (e EkaraMock) Init(c LaunchContext) error {
 	return nil
 }
 

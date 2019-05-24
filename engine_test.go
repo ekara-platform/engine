@@ -11,25 +11,29 @@ import (
 
 func TestEngineLocalWithTagRef(t *testing.T) {
 	engine := createTestEngine()
-	e := engine.Init("testdata/sample", "v1.0.0", "")
+	c := MockLaunchContext{locationContent: "testdata/sample@v1.0.0"}
+	e := engine.Init(c)
 	assertOnlyWarnings(t, e)
 }
 
 func TestEngineLocalNoRef(t *testing.T) {
 	engine := createTestEngine()
-	e := engine.Init("testdata/sample", "", "")
+	c := MockLaunchContext{locationContent: "testdata/sample"}
+	e := engine.Init(c)
 	assertOnlyWarnings(t, e)
 }
 
 func TestEngineLocalWithRawRef(t *testing.T) {
 	engine := createTestEngine()
-	e := engine.Init("testdata/sample", "refs/remotes/origin/test", "")
+	c := MockLaunchContext{locationContent: "testdata/sample@refs/remotes/origin/test"}
+	e := engine.Init(c)
 	assertOnlyWarnings(t, e)
 }
 
 func TestEngineLocalWithBranchRef(t *testing.T) {
 	engine := createTestEngine()
-	e := engine.Init("testdata/sample", "test", "")
+	c := MockLaunchContext{locationContent: "testdata/sample@test"}
+	e := engine.Init(c)
 	assertOnlyWarnings(t, e)
 }
 
