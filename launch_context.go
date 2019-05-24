@@ -12,6 +12,10 @@ type (
 	LaunchContext interface {
 		//Name The environment descriptor name to process
 		Name() string
+		//User The user to log into the descriptor repository
+		User() string
+		//Password The user to log into the descriptor repository
+		Password() string
 		//Location specifies where to look for the environment descriptor
 		Location() string
 		//Log the looger to used during the ekara execution

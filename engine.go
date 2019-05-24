@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
@@ -14,7 +15,7 @@ import (
 
 //Engine  represents the Ekara engine in charge of dealing with the environment
 type Engine interface {
-	Init(repo string, ref string, descriptor string) error
+	Init(c LaunchContext) error
 	Logger() *log.Logger
 	BaseDir() string
 	ComponentManager() component.ComponentManager
@@ -58,17 +59,38 @@ func Create(logger *log.Logger, workDir string, data map[string]interface{}) (En
 	return &ctx, nil
 }
 
-func (ctx *context) Init(repo string, ref string, descriptor string) (err error) {
+//repositoryFlavor returns the repository flavor, branchn tag ..., based on the
+// presence of '@' into the given url
+func repositoryFlavor(url string) (string, string) {
+
+	if strings.Contains(url, "@") {
+		s := strings.Split(url, "@")
+		return s[0], s[1]
+	}
+	return url, ""
+}
+
+func (ctx *context) Init(c LaunchContext) (err error) {
+	repo, ref := repositoryFlavor(c.Location())
 	wdURL, err := model.GetCurrentDirectoryURL(ctx.logger)
 	if err != nil {
 		return
 	}
 
 	// Register main component
-	mainRep, err := model.CreateRepository(model.Base{Url: wdURL}, repo, ref, descriptor)
+	mainRep, err := model.CreateRepository(model.Base{Url: wdURL}, repo, ref, c.Name())
 	if err != nil {
 		return
 	}
+	u := c.User()
+	if u != "" {
+		auth := make(map[string]interface{})
+		auth["method"] = "basic"
+		auth["user"] = u
+		auth["password"] = c.Password()
+		mainRep.Authentication = auth
+	}
+
 	mainComponent := model.CreateComponent("__main__", mainRep)
 	ctx.componentManager.RegisterComponent(mainComponent)
 

@@ -18,6 +18,8 @@ type (
 		sshPrivateKeyContent string
 		engine               Engine
 		name                 string
+		user                 string
+		password             string
 		cliparams            ansible.ParamContent
 		ekaraError           error
 	}
@@ -26,6 +28,16 @@ type (
 //Name simulates the corresponding method in LaunchContext for testing purposes
 func (lC MockLaunchContext) Name() string {
 	return lC.name
+}
+
+//User simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) User() string {
+	return lC.user
+}
+
+//Password simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) Password() string {
+	return lC.password
 }
 
 //Log simulates the corresponding method in LaunchContext for testing purposes

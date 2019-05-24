@@ -11,6 +11,12 @@ const (
 	// name between several Ekara components.
 	StarterEnvNameVariableKey string = "EKARA_ENV_DESCR_NAME"
 
+	// The environment variable used to pass the environment descriptor user
+	StarterEnvLoginVariableKey string = "EKARA_ENV_DESCR_LOGIN"
+
+	// The environment variable used to pass the environment descriptor password
+	StarterEnvPasswordVariableKey string = "EKARA_ENV_DESCR_PASSWORD"
+
 	// The Name of the SSH Public key file
 	SSHPuplicKeyFileName string = "ssh.pub"
 
