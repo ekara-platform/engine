@@ -7,7 +7,23 @@ import (
 	"github.com/ekara-platform/model"
 )
 
-var deploySteps = []step{fstack}
+var deploySteps = []step{ftemplate, fstack}
+
+func ftemplate(lC LaunchContext, rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+	cpMan := lC.Ekara().ComponentManager()
+	for _, s := range cpMan.Environment().Stacks {
+		sc := InitCodeStepResult("Starting a stack template phase", s, NoCleanUpRequired)
+		if len(s.Templates.Content) > 0 {
+			lC.Log().Printf("The stack %s has templates to process ", s.Name)
+			runTemplate(lC, sCs, &sc, s.Templates, s)
+		} else {
+			lC.Log().Printf("The stack %s has no templates to process ", s.Name)
+		}
+		sCs.Add(sc)
+	}
+	return *sCs
+}
 
 func fstack(lC LaunchContext, rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
