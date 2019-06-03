@@ -86,7 +86,7 @@ func (m CMMock) MatchingDirectories(dirName string) []string {
 }
 
 //ComponentPath simulates the corresponding method in the ComponentManager for testing purposes
-func (m CMMock) ComponentPath(cId string) string {
+func (m CMMock) ComponentPath(cID string) string {
 	return ""
 }
 
