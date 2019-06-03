@@ -39,7 +39,7 @@ func TestEngineLocalWithBranchRef(t *testing.T) {
 
 func createTestEngine() Engine {
 	os.RemoveAll("testdata/work")
-	ekara, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", map[string]interface{}{})
+	ekara, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/work", &model.TemplateContext{})
 	if e != nil {
 		panic(e)
 	}

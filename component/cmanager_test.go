@@ -36,7 +36,7 @@ func buildComponentManager(t *testing.T, rawManager, rawManagerWork string) Comp
 
 	os.RemoveAll(rawManagerWork)
 
-	manager := CreateComponentManager(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), map[string]interface{}{}, rawManagerWork)
+	manager := CreateComponentManager(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), &model.TemplateContext{}, rawManagerWork)
 	registerComponent(t, manager, rawManager, "c1")
 	registerComponent(t, manager, rawManager, "c2")
 	registerComponent(t, manager, rawManager, "c3")

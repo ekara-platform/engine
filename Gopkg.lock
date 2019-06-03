@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/ekara-platform/model"
   packages = ["."]
-  revision = "a0f4cd3a7cc99e510fc907c00ff0281940a5921a"
+  revision = "3981f15e10af22196c0cff7b6e73e1d8812c63e0"
 
 [[projects]]
   name = "github.com/emirpasic/gods"
@@ -222,6 +222,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e084e39ac7c87fdd510d6271406cfe2eef4b0284b7244027802aa05ccb431d57"
+  inputs-digest = "3279da7bccbf4527da724a54b9e805a16d61282925a4f428781bdd296dedd83e"
   solver-name = "gps-cdcl"
   solver-version = 1

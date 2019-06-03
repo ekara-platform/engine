@@ -90,7 +90,7 @@ func (m CMMock) ComponentPath(cId string) string {
 	return ""
 }
 
-//ComponentPaths  simulates the corresponding method in the ComponentManager for testing purposes
+//ComponentsPaths  simulates the corresponding method in the ComponentManager for testing purposes
 func (m CMMock) ComponentsPaths() map[string]string {
 	return make(map[string]string)
 }

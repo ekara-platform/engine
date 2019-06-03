@@ -39,7 +39,7 @@ type componentDef struct {
 type context struct {
 	// Common to all environments
 	logger *log.Logger
-	data   map[string]interface{}
+	data   *model.TemplateContext
 
 	// Local to one environment (in the case multiple environments will be supported)
 	directory   string
@@ -53,7 +53,7 @@ type fileMap struct {
 	File map[string]string `yaml:"component_path"`
 }
 
-func CreateComponentManager(logger *log.Logger, data map[string]interface{}, baseDir string) ComponentManager {
+func CreateComponentManager(logger *log.Logger, data *model.TemplateContext, baseDir string) ComponentManager {
 	return &context{
 		logger:      logger,
 		environment: nil,
@@ -202,6 +202,7 @@ func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) error {
 		if err != nil {
 			return err
 		}
+
 		// Merge the resulting environment into the global one
 		if cm.environment == nil {
 			cm.environment = cEnv

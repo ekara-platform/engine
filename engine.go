@@ -42,7 +42,7 @@ type context struct {
 //		baseDir: the directory where the environment will take place among its
 //				 inclusions and related components
 //		data: the user data for templating the environment descriptor
-func Create(logger *log.Logger, workDir string, data map[string]interface{}) (Engine, error) {
+func Create(logger *log.Logger, workDir string, data *model.TemplateContext) (Engine, error) {
 	absWorkDir, err := filepath.Abs(workDir)
 	if err != nil {
 		return nil, err

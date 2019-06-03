@@ -14,12 +14,13 @@ func TestTemplate(t *testing.T) {
 	params, err := ansible.ParseParams(path)
 	assert.Nil(t, err)
 	assert.NotNil(t, params)
+	vars := model.CreateContext(params)
 
 	url, err := model.CreateUrl("./testdata/template/descriptor.yaml")
 	assert.Nil(t, err)
 
 	// Parsing the descriptor
-	env, err := model.CreateEnvironment(url, params)
+	env, err := model.CreateEnvironment(url, vars)
 	assert.Nil(t, err)
 	assert.NotNil(t, env)
 	assert.Equal(t, 2, len(env.Tasks))
@@ -31,7 +32,6 @@ func TestTemplate(t *testing.T) {
 	val, ok = ta.Parameters["param2"]
 	assert.True(t, ok)
 	assert.Equal(t, "key4_value", val)
-
 }
 
 func TestTemplateNoDot(t *testing.T) {
@@ -40,12 +40,13 @@ func TestTemplateNoDot(t *testing.T) {
 	params, err := ansible.ParseParams(path)
 	assert.Nil(t, err)
 	assert.NotNil(t, params)
+	vars := model.CreateContext(params)
 
 	url, err := model.CreateUrl("./testdata/template/descriptor_no_dot.yaml")
 	assert.Nil(t, err)
 
 	// Parsing the descriptor
-	_, err = model.CreateEnvironment(url, params)
+	_, err = model.CreateEnvironment(url, vars)
 	assert.NotNil(t, err)
 
 }

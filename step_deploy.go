@@ -97,8 +97,8 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
-		env.Add("http_proxy", lC.HttpProxy())
-		env.Add("https_proxy", lC.HttpsProxy())
+		env.Add("http_proxy", lC.HTTPProxy())
+		env.Add("https_proxy", lC.HTTPSProxy())
 		env.Add("no_proxy", lC.NoProxy())
 
 		// Adding the environment variables from the stack
@@ -224,8 +224,8 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
-		env.Add("http_proxy", lC.HttpProxy())
-		env.Add("https_proxy", lC.HttpsProxy())
+		env.Add("http_proxy", lC.HTTPProxy())
+		env.Add("https_proxy", lC.HTTPSProxy())
 		env.Add("no_proxy", lC.NoProxy())
 
 		// Adding the environment variables from the stack

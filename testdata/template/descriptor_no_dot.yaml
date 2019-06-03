@@ -22,8 +22,8 @@ ekara:
      ref: reflex-addon    
      auth:
        method: basic
-       user: {{ .git.user }}
-       password: {{ .git.password }}
+       user: {{ .Vars.git.user }}
+       password: {{ .Vars.git.password }}
     
 tasks:
   testhook_pre:
@@ -34,8 +34,8 @@ tasks:
     component: distrib
     playbook: post-create.yml
     params:
-      param1: "{{ key1.key2 }}-{{.key1.key3.key4}}"
-      param2: {{.key1.key3.key4}}
+      param1: "{{ Vars.key1.key2 }}-{{.Vars.key1.key3.key4}}"
+      param2: {{.Vars.key1.key3.key4}}
 
 orchestrator:
   component: swarm

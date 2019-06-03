@@ -1,3 +1,7 @@
+git:
+  user: "git user"
+  password: "git password"
+
 key1:
   key2: "key2_value"
   key3:

@@ -2,6 +2,7 @@ package engine
 
 import (
 	"fmt"
+
 	"github.com/ekara-platform/model"
 
 	"github.com/ekara-platform/engine/ansible"
@@ -66,8 +67,8 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
-		env.Add("http_proxy", lC.HttpProxy())
-		env.Add("https_proxy", lC.HttpsProxy())
+		env.Add("http_proxy", lC.HTTPProxy())
+		env.Add("https_proxy", lC.HTTPSProxy())
 		env.Add("no_proxy", lC.NoProxy())
 		env.AddBuffer(buffer)
 
@@ -181,8 +182,8 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
-		env.Add("http_proxy", lC.HttpProxy())
-		env.Add("https_proxy", lC.HttpsProxy())
+		env.Add("http_proxy", lC.HTTPProxy())
+		env.Add("https_proxy", lC.HTTPSProxy())
 		env.Add("no_proxy", lC.NoProxy())
 		env.AddBuffer(buffer)
 

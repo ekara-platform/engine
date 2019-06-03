@@ -58,6 +58,7 @@ func runTemplate(lC LaunchContext, sCs *StepResults, sc *StepResult, patterns mo
 				sCs.Add(*sc)
 				continue
 			}
+
 			no := f + ".origin"
 			err = os.Rename(f, no)
 			if err != nil {
@@ -66,7 +67,7 @@ func runTemplate(lC LaunchContext, sCs *StepResults, sc *StepResult, patterns mo
 				continue
 			}
 
-			tmpl, err := template.New("").Parse(string(dat))
+			tmpl := template.Must(template.New("").Option("missingkey=error").Parse(string(dat)))
 			if err != nil {
 				FailsOnCode(sc, err, fmt.Sprintf("An error occurred parsing the template content : %s", no), nil)
 				sCs.Add(*sc)
@@ -81,7 +82,7 @@ func runTemplate(lC LaunchContext, sCs *StepResults, sc *StepResult, patterns mo
 			defer fi.Close()
 			w := bufio.NewWriter(fi)
 
-			err = tmpl.Execute(w, lC.Cliparams())
+			err = tmpl.Execute(w, lC.TemplateContext())
 			if err != nil {
 				FailsOnCode(sc, err, fmt.Sprintf("An error occurred writting the templated target : %s", f), nil)
 				sCs.Add(*sc)

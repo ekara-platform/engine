@@ -3,8 +3,8 @@ package engine
 import (
 	"log"
 
-	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/util"
+	"github.com/ekara-platform/model"
 )
 
 type (
@@ -20,7 +20,7 @@ type (
 		name                 string
 		user                 string
 		password             string
-		cliparams            ansible.ParamContent
+		templateContext      *model.TemplateContext
 		ekaraError           error
 	}
 )
@@ -65,13 +65,13 @@ func (lC MockLaunchContext) Location() string {
 	return lC.locationContent
 }
 
-//HttpProxy simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) HttpProxy() string {
+//HTTPProxy simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) HTTPProxy() string {
 	return ""
 }
 
-//HttpsProxy simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) HttpsProxy() string {
+//HTTPSProxy simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) HTTPSProxy() string {
 	return ""
 }
 
@@ -80,19 +80,19 @@ func (lC MockLaunchContext) NoProxy() string {
 	return ""
 }
 
-//SshPublicKey simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) SshPublicKey() string {
+//SSHPublicKey simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) SSHPublicKey() string {
 	return lC.sshPublicKeyContent
 }
 
-//SshPrivateKey simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) SshPrivateKey() string {
+//SSHPrivateKey simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) SSHPrivateKey() string {
 	return lC.sshPrivateKeyContent
 }
 
-//Cliparams simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) Cliparams() ansible.ParamContent {
-	return lC.cliparams
+//TemplateContext simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) TemplateContext() *model.TemplateContext {
+	return lC.templateContext
 }
 
 //Error simulates the corresponding method in LaunchContext for testing purposes

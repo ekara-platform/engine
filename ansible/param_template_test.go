@@ -3,6 +3,7 @@ package ansible
 import (
 	"testing"
 
+	"github.com/ekara-platform/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -38,7 +39,7 @@ func TestParseParamSpaces(t *testing.T) {
 	checkContent(t, pt, "  value1  ")
 }
 
-func checkContent(t *testing.T, pt ParamContent, wanted string) {
+func checkContent(t *testing.T, pt model.Parameters, wanted string) {
 	assert.Equal(t, 1, len(pt))
 
 	val, ok := pt["key1"]
