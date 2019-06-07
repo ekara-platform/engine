@@ -203,6 +203,18 @@ func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) error {
 		if cm.environment == nil {
 			cm.environment = cEnv
 		} else {
+			if len(cEnv.Templates.Content) > 0 {
+				comp := cm.components[fComp.ID].component
+				comp.Templates = cEnv.Templates
+				cm.components[fComp.ID] = componentDef{comp}
+
+				comp = cm.environment.Ekara.Components[fComp.ID]
+				comp.Templates = cEnv.Templates
+				cm.environment.Ekara.Components[fComp.ID] = comp
+
+				cEnv.Templates = model.Patterns{}
+			}
+
 			err = cm.environment.Merge(cEnv)
 			if err != nil {
 				return err
@@ -258,12 +270,13 @@ func (cm *context) contains(isFolder bool, name string, in ...model.ComponentRef
 }
 
 func (cm *context) Use(cr model.ComponentReferencer) UsableComponent {
-	if ok, patterns := cr.Templatable(); ok {
+	c := cm.components[cr.ComponentName()].component
+	if ok, patterns := c.Templatable(); ok {
 		path, err := runTemplate(*cm.data, cm.paths[cr.ComponentName()], patterns, cr)
 		if err != nil {
 			log.Printf("--> GBE Use err %s", err.Error())
 		}
-		// No error no path then its has not been templated
+		// No error no path then it has not been templated
 		if err == nil && path == "" {
 			goto TemplateFalse
 		}

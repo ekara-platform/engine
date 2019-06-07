@@ -12,6 +12,11 @@ import (
 )
 
 var (
+	usableComp1Content = `
+templates:
+  - "{{ .Vars.templateDef }}"
+`
+
 	usableDistContent = `
 ekara:
   components:
@@ -29,8 +34,6 @@ ekara:
 # Following content just to force the download of comp1 and comp2
 orchestrator:
   component: comp1
-  templates:
-    - "{{ .Vars.templateDef }}"
 providers:
   p1:
     component: comp1
@@ -61,8 +64,9 @@ func TestUsableTemplateOneMatch(t *testing.T) {
 
 	cptComp := 3
 	env, cm := checkUsableCommon(t, c, tester, cptComp)
-
-	ok, _ := env.Orchestrator.Templatable()
+	oComp, err := env.Orchestrator.Component()
+	assert.Nil(t, err)
+	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
 		usableComp := cm.Use(env.Orchestrator)
 		assert.True(t, usableComp.Templated())
@@ -101,7 +105,9 @@ func TestUsableTemplateMatch2Usable(t *testing.T) {
 	cptComp := 3
 	env, cm := checkUsableCommon(t, c, tester, cptComp)
 
-	ok, _ := env.Orchestrator.Templatable()
+	oComp, err := env.Orchestrator.Component()
+	assert.Nil(t, err)
+	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
 		usableComp1 := cm.Use(env.Orchestrator)
 		assert.True(t, usableComp1.Templated())
@@ -147,7 +153,9 @@ func TestUsableTemplateDoubleMatch(t *testing.T) {
 	cptComp := 3
 	env, cm := checkUsableCommon(t, c, tester, cptComp)
 
-	ok, _ := env.Orchestrator.Templatable()
+	oComp, err := env.Orchestrator.Component()
+	assert.Nil(t, err)
+	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
 		usableComp := cm.Use(env.Orchestrator)
 		assert.True(t, usableComp.Templated())
@@ -184,7 +192,9 @@ func TestUsableTemplateNoMatch(t *testing.T) {
 	cptComp := 3
 	env, cm := checkUsableCommon(t, c, tester, cptComp)
 
-	ok, _ := env.Orchestrator.Templatable()
+	oComp, err := env.Orchestrator.Component()
+	assert.Nil(t, err)
+	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
 		usableComp := cm.Use(env.Orchestrator)
 		assert.False(t, usableComp.Templated())
@@ -206,10 +216,12 @@ func writecheckUsableCommon(t *testing.T, tester *tester, d string) {
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repDesc := tester.createRep(d)
 
+	repComp1.writeCommit(t, "ekara.yaml", usableComp1Content)
 	repComp1.writeCommit(t, "templateTarget1.yaml", `{{ .Vars.templateContent }}`)
 	repComp1.writeCommit(t, "templateTarget2.yaml", `{{ .Vars.templateContent }}`)
 	repDist.writeCommit(t, "ekara.yaml", usableDistContent)
 	repDesc.writeCommit(t, "ekara.yaml", usableDescContent)
+
 }
 
 func checkUsableCommon(t *testing.T, c *MockLaunchContext, tester *tester, initialComp int) (model.Environment, component.ComponentManager) {
@@ -217,7 +229,7 @@ func checkUsableCommon(t *testing.T, c *MockLaunchContext, tester *tester, initi
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
-	// comp1 and comp2 should be downloaded because they are used into the descriptor
+	// comp1 should be downloaded because it is used into the descriptor
 	tester.assertComponentsContains("__main__", "__ekara__", "comp1")
 
 	cm := c.Ekara().ComponentManager()
