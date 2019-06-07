@@ -229,7 +229,7 @@ func checkUsableCommon(t *testing.T, c *MockLaunchContext, tester *tester, initi
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
-	// comp1 should be downloaded because it is used into the descriptor
+
 	tester.assertComponentsContains("__main__", "__ekara__", "comp1")
 
 	cm := c.Ekara().ComponentManager()

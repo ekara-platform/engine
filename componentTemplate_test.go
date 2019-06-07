@@ -71,7 +71,7 @@ nodes:
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
-	// comp1 and comp2 should be downloaded because they are used into the descriptor
+
 	tester.assertComponentsContains("__main__", "__ekara__", "comp1", "comp2")
 
 	cm := c.Ekara().ComponentManager()

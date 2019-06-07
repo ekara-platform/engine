@@ -38,10 +38,6 @@ type (
 		ContainsDirectory(name string, in ...model.ComponentReferencer) MatchingPaths
 	}
 
-	componentDef struct {
-		component model.Component
-	}
-
 	context struct {
 		// Common to all environments
 		logger *log.Logger
@@ -49,12 +45,12 @@ type (
 
 		// Local to one environment (in the case multiple environments will be supported)
 		directory   string
-		components  map[string]componentDef
+		components  map[string]model.Component
 		paths       map[string]string
 		environment *model.Environment
 	}
 
-	compNoTemplate struct {
+	localRef struct {
 		component model.Component
 	}
 
@@ -69,7 +65,7 @@ func CreateComponentManager(logger *log.Logger, data *model.TemplateContext, bas
 		logger:      logger,
 		environment: nil,
 		directory:   filepath.Join(baseDir, "components"),
-		components:  map[string]componentDef{},
+		components:  map[string]model.Component{},
 		paths:       map[string]string{},
 		data:        data,
 	}
@@ -78,9 +74,7 @@ func CreateComponentManager(logger *log.Logger, data *model.TemplateContext, bas
 func (cm *context) RegisterComponent(c model.Component) {
 	if _, ok := cm.components[c.Id]; !ok {
 		cm.logger.Println("registering component " + c.Repository.Url.String() + "@" + c.Repository.Ref)
-		cm.components[c.Id] = componentDef{
-			component: c,
-		}
+		cm.components[c.Id] = c
 	}
 }
 
@@ -111,7 +105,7 @@ func (cm *context) Ensure() error {
 		// Fetch all known components
 		for cID, c := range cm.components {
 			if cm.isComponentFetchNeeded(cID) {
-				err := fetchComponent(cm, c.component)
+				err := fetchComponent(cm, c)
 				if err != nil {
 					return err
 				}
@@ -204,9 +198,9 @@ func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) error {
 			cm.environment = cEnv
 		} else {
 			if len(cEnv.Templates.Content) > 0 {
-				comp := cm.components[fComp.ID].component
+				comp := cm.components[fComp.ID]
 				comp.Templates = cEnv.Templates
-				cm.components[fComp.ID] = componentDef{comp}
+				cm.components[fComp.ID] = comp
 
 				comp = cm.environment.Ekara.Components[fComp.ID]
 				comp.Templates = cEnv.Templates
@@ -242,27 +236,35 @@ func (cm *context) contains(isFolder bool, name string, in ...model.ComponentRef
 			if isFolder {
 				if ok, match := uv.ContainsDirectory(name); ok {
 					res.Paths = append(res.Paths, match)
+				} else {
+					uv.Release()
 				}
 			} else {
 				if ok, match := uv.ContainsFile(name); ok {
 					res.Paths = append(res.Paths, match)
+				} else {
+					uv.Release()
 				}
 			}
-			// TODO add realese if no match
 		}
 	} else {
-		for id, path := range cm.paths {
-			dir := filepath.Join(path, name)
-			if info, err := os.Stat(dir); err == nil && (isFolder == info.IsDir()) {
-				m := mPath{
-					comp: cm.Use(
-						compNoTemplate{
-							cm.components[id].component,
-						},
-					),
-					relativePath: name,
+		for _, comp := range cm.components {
+			lRef := localRef{
+				component: comp,
+			}
+			uv := cm.Use(lRef)
+			if isFolder {
+				if ok, match := uv.ContainsDirectory(name); ok {
+					res.Paths = append(res.Paths, match)
+				} else {
+					uv.Release()
 				}
-				res.Paths = append(res.Paths, m)
+			} else {
+				if ok, match := uv.ContainsFile(name); ok {
+					res.Paths = append(res.Paths, match)
+				} else {
+					uv.Release()
+				}
 			}
 		}
 	}
@@ -270,11 +272,11 @@ func (cm *context) contains(isFolder bool, name string, in ...model.ComponentRef
 }
 
 func (cm *context) Use(cr model.ComponentReferencer) UsableComponent {
-	c := cm.components[cr.ComponentName()].component
+	c := cm.components[cr.ComponentName()]
 	if ok, patterns := c.Templatable(); ok {
 		path, err := runTemplate(*cm.data, cm.paths[cr.ComponentName()], patterns, cr)
 		if err != nil {
-			log.Printf("--> GBE Use err %s", err.Error())
+			//TODO Return the error here !!!
 		}
 		// No error no path then it has not been templated
 		if err == nil && path == "" {
@@ -305,16 +307,11 @@ func cleanup(path string) func() {
 }
 
 //Component returns the referenced component
-func (r compNoTemplate) Component() (model.Component, error) {
+func (r localRef) Component() (model.Component, error) {
 	return r.component, nil
 }
 
 //ComponentName returns the referenced component name
-func (r compNoTemplate) ComponentName() string {
+func (r localRef) ComponentName() string {
 	return r.component.Id
-}
-
-//Templatable indicates if the component has templates
-func (r compNoTemplate) Templatable() (bool, model.Patterns) {
-	return false, model.Patterns{}
 }

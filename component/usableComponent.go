@@ -3,6 +3,8 @@ package component
 import (
 	"os"
 	"path/filepath"
+
+	"github.com/ekara-platform/model"
 )
 
 type (
@@ -18,14 +20,14 @@ type (
 	usable struct {
 		release   func()
 		path      string
-		component componentDef
+		component model.Component
 		cm        *context
 		templated bool
 	}
 )
 
 func (u usable) Name() string {
-	return u.component.component.Id
+	return u.component.Id
 }
 
 func (u usable) Release() {
