@@ -24,7 +24,7 @@ func TestDownloadDefaultDistribution(t *testing.T) {
 	})
 	mainPath := "./testdata/gittest/descriptor"
 	tc := model.CreateContext(p)
-	c := MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
 	tester := gitTester(t, c)
 	defer tester.clean()
 
@@ -57,7 +57,7 @@ func TestDownloadCustomDistribution(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	c := MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
 	tester := gitTester(t, c)
 	defer tester.clean()
 
@@ -116,7 +116,7 @@ func TestDownloadOnlyUsedComponents(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	c := MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
 	tester := gitTester(t, c)
 	defer tester.clean()
 
@@ -160,7 +160,7 @@ ekara:
 func TestDonwloadComplex(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
-	c := MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
 	tester := gitTester(t, c)
 	defer tester.clean()
 
@@ -225,7 +225,7 @@ func TestDownloadFirstDistribution(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	c := MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
 	tester := gitTester(t, c)
 	defer tester.clean()
 

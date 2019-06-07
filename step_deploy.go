@@ -4,11 +4,13 @@ import (
 	"fmt"
 
 	"github.com/ekara-platform/engine/ansible"
+	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/model"
 )
 
-var deploySteps = []step{ftemplate, fstack}
+var deploySteps = []step{/*ftemplate, */fstack}
 
+/*
 func ftemplate(lC LaunchContext, rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 	cpMan := lC.Ekara().ComponentManager()
@@ -24,28 +26,32 @@ func ftemplate(lC LaunchContext, rC *runtimeContext) StepResults {
 	}
 	return *sCs
 }
+*/
 
 func fstack(lC LaunchContext, rC *runtimeContext) StepResults {
+	cm := lC.Ekara().ComponentManager()
 	sCs := InitStepResults()
-	for _, s := range lC.Ekara().ComponentManager().Environment().Stacks {
-		sc := InitCodeStepResult("Starting a stack setup phase", s, NoCleanUpRequired)
-		lC.Log().Printf("Checking how to install %s", s.Name)
+	for _, st := range cm.Environment().Stacks {
+		sc := InitCodeStepResult("Starting a stack setup phase", st, NoCleanUpRequired)
+		lC.Log().Printf("Checking how to install %s", st.Name)
 		sCs.Add(sc)
-		if ok := lC.Ekara().AnsibleManager().Contains(s, "install.yml"); ok {
-			fstackPlabook(lC, rC, s, sCs)
+		ust := cm.Use(st)
+		if ok, _ := ust.ContainsFile("install.yml"); ok {
+			fstackPlabook(lC, rC, st, ust, sCs)
 		} else {
-			fstackCompose(lC, rC, lC.Ekara().ComponentManager().Environment().Ekara.Distribution, s, sCs)
+			fstackCompose(lC, rC, lC.Ekara().ComponentManager().Environment().Ekara.Distribution, st, sCs)
 		}
 	}
 	return *sCs
 }
 
-func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *StepResults) {
+func fstackPlabook(lC LaunchContext, rC *runtimeContext, st model.Stack, ust component.UsableComponent, sCs *StepResults) {
 	// Map to keep trace on the processed providers
-	ps := make(map[string]model.Provider, len(lC.Ekara().ComponentManager().Environment().NodeSets))
-	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
+	cm := lC.Ekara().ComponentManager()
+	ps := make(map[string]model.Provider, len(cm.Environment().NodeSets))
+	for _, n := range cm.Environment().NodeSets {
 
-		sc := InitPlaybookStepResult("Running the stack playbook installation phase", model.ChainDescribable(s, n), NoCleanUpRequired)
+		sc := InitPlaybookStepResult("Running the stack playbook installation phase", model.ChainDescribable(st, n), NoCleanUpRequired)
 
 		p, err := n.Provider.Resolve()
 		if err != nil {
@@ -60,29 +66,24 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 		ps[p.Name] = p
 
 		// Provider setup exchange folder
-		setupProviderEf := lC.Ef().Input.Children["setup_provider_"+p.Name]
+		//setupProviderEf := lC.Ef().Input.Children["setup_provider_"+p.Name]
 		// We check if we have a buffer corresponding to the provider setup
-		bufferPro := rC.getBuffer(setupProviderEf.Output)
+		//bufferPro := rC.getBuffer(setupProviderEf.Output)
 
 		// Stack install exchange folder for the given provider
-		fName := fmt.Sprintf("install_stack_%s_for_%s", s.Name, p.Name)
+		fName := fmt.Sprintf("install_stack_%s_for_%s", st.Name, p.Name)
 
 		stackEf, ko := createChildExchangeFolder(lC.Ef().Input, fName, &sc, lC.Log())
 		if ko {
 			sCs.Add(sc)
 			continue
 		}
-		// We use the provider inventory
-		inventory := ""
-		if len(bufferPro.Inventories) > 0 {
-			inventory = bufferPro.Inventories["inventory_path"]
-		}
 
 		// We use an empty buffer because no one is coming from the previous step
 		buffer := ansible.CreateBuffer()
 
 		bp := BuildBaseParam(lC, "", p.Name)
-		bp.AddNamedMap("params", s.Parameters)
+		bp.AddNamedMap("params", st.Parameters)
 
 		if ko := saveBaseParams(bp, lC, stackEf.Input, &sc); ko {
 			sCs.Add(sc)
@@ -102,36 +103,38 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 		env.Add("no_proxy", lC.NoProxy())
 
 		// Adding the environment variables from the stack
-		for envK, envV := range s.EnvVars {
+		for envK, envV := range st.EnvVars {
 			env.Add(envK, envV)
 		}
 
 		// Process hook : environment - deploy - before
-		RunHookBefore(lC,
+		RunHookBefore(cm,
+			lC,
 			rC,
 			sCs,
-			lC.Ekara().ComponentManager().Environment().Hooks.Deploy,
-			hookContext{"install", s, "environment", "deploy", bp, env, buffer, inventory},
+			cm.Environment().Hooks.Deploy,
+			hookContext{"install", st, "environment", "deploy", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 
 		// Process hook : stack - deploy - before
-		RunHookBefore(lC,
+		RunHookBefore(cm,
+			lC,
 			rC,
 			sCs,
-			s.Hooks.Deploy,
-			hookContext{"install", s, "stack", "deploy", bp, env, buffer, inventory},
+			st.Hooks.Deploy,
+			hookContext{"install", st, "stack", "deploy", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 
 		// Prepare extra vars
 		exv := ansible.BuildExtraVars("", *stackEf.Input, *stackEf.Output, buffer)
 
-		code, err := lC.Ekara().AnsibleManager().Execute(s, "install.yml", exv, env, inventory)
+		code, err := lC.Ekara().AnsibleManager().Execute(ust, "install.yml", exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "install.yml",
-				Component: s.ComponentName(),
+				Component: st.ComponentName(),
 				Code:      code,
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -146,31 +149,35 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, s model.Stack, sCs *Ste
 		sCs.Add(sc)
 
 		// Process hook : stack - deploy - after
-		RunHookAfter(lC,
+		RunHookAfter(cm,
+			lC,
 			rC,
 			sCs,
-			s.Hooks.Deploy,
-			hookContext{"install", s, "stack", "deploy", bp, env, buffer, inventory},
+			st.Hooks.Deploy,
+			hookContext{"install", st, "stack", "deploy", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 
 		// Process hook : environment - deploy - after
-		RunHookAfter(lC,
+		RunHookAfter(cm,
+			lC,
 			rC,
 			sCs,
-			lC.Ekara().ComponentManager().Environment().Hooks.Deploy,
-			hookContext{"install", s, "environment", "deploy", bp, env, buffer, inventory},
+			cm.Environment().Hooks.Deploy,
+			hookContext{"install", st, "environment", "deploy", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 	}
 }
 
 // TODO currently only the distribution is able to deploy a compose...
+// TODO refactor this method in order to run the docker stack deploy only once for the whole cluster,
+// regardless of the number of providers...
 func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Distribution, s model.Stack, sCs *StepResults) {
-
+	cm := lC.Ekara().ComponentManager()
 	// Map to keep trace on the processed providers
-	ps := make(map[string]model.Provider, len(lC.Ekara().ComponentManager().Environment().NodeSets))
-	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
+	ps := make(map[string]model.Provider, len(cm.Environment().NodeSets))
+	for _, n := range cm.Environment().NodeSets {
 
 		sc := InitPlaybookStepResult("Running the stack compose installation phase", model.ChainDescribable(s, n), NoCleanUpRequired)
 
@@ -187,9 +194,9 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 		ps[p.Name] = p
 
 		// Provider setup exchange folder
-		setupProviderEf := lC.Ef().Input.Children["setup_provider_"+p.Name]
+		//setupProviderEf := lC.Ef().Input.Children["setup_provider_"+p.Name]
 		// We check if we have a buffer corresponding to the provider setup
-		bufferPro := rC.getBuffer(setupProviderEf.Output)
+		//bufferPro := rC.getBuffer(setupProviderEf.Output)
 
 		// Stack install exchange folder for the given provider
 		fName := fmt.Sprintf("install_stack_%s_for_%s", s.Name, p.Name)
@@ -198,11 +205,6 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 		if ko {
 			sCs.Add(sc)
 			continue
-		}
-		// We use the provider inventory
-		inventory := ""
-		if len(bufferPro.Inventories) > 0 {
-			inventory = bufferPro.Inventories["inventory_path"]
 		}
 
 		// We use an empty buffer because no one is coming from the previous step
@@ -234,30 +236,42 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 		}
 
 		// Process hook : environment - deploy - before
-		RunHookBefore(lC,
+		RunHookBefore(cm,
+			lC,
 			rC,
 			sCs,
-			lC.Ekara().ComponentManager().Environment().Hooks.Deploy,
-			hookContext{"install", s, "environment", "deploy", bp, env, buffer, inventory},
+			cm.Environment().Hooks.Deploy,
+			hookContext{"install", s, "environment", "deploy", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 
 		// Process hook : stack - deploy - before
-		RunHookBefore(lC,
+		RunHookBefore(cm,
+			lC,
 			rC,
 			sCs,
 			s.Hooks.Deploy,
-			hookContext{"install", s, "stack", "deploy", bp, env, buffer, inventory},
+			hookContext{"install", s, "stack", "deploy", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 
 		// Prepare extra vars
-		exv := ansible.BuildExtraVars("compose_path="+lC.Ekara().ComponentManager().ComponentPath(s.ComponentName()), *stackEf.Input, *stackEf.Output, buffer)
+		var exv ansible.ExtraVars
 
-		code, err := lC.Ekara().AnsibleManager().Execute(distribution, "deploy_compose.yaml", exv, env, inventory)
+		d := cm.Use(distribution)
+		defer d.Release()
+		su := cm.Use(s)
+		defer su.Release()
+		if ok, match := su.ContainsFile("docker-compose.yml"); ok {
+			exv = ansible.BuildExtraVars("compose_path="+match.RelativePath(), *stackEf.Input, *stackEf.Output, buffer)
+		} else {
+			exv = ansible.BuildExtraVars("", *stackEf.Input, *stackEf.Output, buffer)
+		}
+
+		code, err := lC.Ekara().AnsibleManager().Execute(d, "deploy_compose.yaml", exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
-				Playbook:  "install.yml",
+				Playbook:  "deploy_compose.yaml",
 				Component: distribution.ComponentName(),
 				Code:      code,
 			}
@@ -273,20 +287,22 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 		sCs.Add(sc)
 
 		// Process hook : stack - deploy - after
-		RunHookAfter(lC,
+		RunHookAfter(cm,
+			lC,
 			rC,
 			sCs,
 			s.Hooks.Deploy,
-			hookContext{"install", s, "stack", "deploy", bp, env, buffer, inventory},
+			hookContext{"install", s, "stack", "deploy", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 
 		// Process hook : environment - deploy - after
-		RunHookAfter(lC,
+		RunHookAfter(cm,
+			lC,
 			rC,
 			sCs,
-			lC.Ekara().ComponentManager().Environment().Hooks.Deploy,
-			hookContext{"install", s, "environment", "deploy", bp, env, buffer, inventory},
+			cm.Environment().Hooks.Deploy,
+			hookContext{"install", s, "environment", "deploy", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 	}

@@ -19,7 +19,7 @@ func TestVarsAccumulation(t *testing.T) {
 	})
 	mainPath := "./testdata/gittest/descriptor"
 	tc := model.CreateContext(p)
-	c := MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
 	tester := gitTester(t, c)
 	defer tester.clean()
 

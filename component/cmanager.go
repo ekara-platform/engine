@@ -3,8 +3,8 @@ package component
 import (
 	"fmt"
 	"log"
-
 	"os"
+
 	"path/filepath"
 
 	"github.com/ekara-platform/engine/component/scm"
@@ -15,43 +15,54 @@ import (
 
 const maxFetchIterations = 9
 
+var releaseNothing = func() {
+	// Doing nothing and it's fine
+}
+
 //ComponentManager represents the common definition of all Component Manager
-type ComponentManager interface {
-	//RegisterComponent register a new compoment.
-	//
-	//The registration key of a component is its id.
-	//
-	//If the component has already been registered it will remain unaffected
-	// by a potential registration of a new version of the component.
-	RegisterComponent(c model.Component)
-	MatchingDirectories(dirName string) []string
-	ComponentPath(cID string) string
-	ComponentsPaths() map[string]string
-	SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error
-	Ensure() error
-	Environment() model.Environment
-}
+type (
+	ComponentManager interface {
+		//RegisterComponent register a new compoment.
+		//
+		//The registration key of a component is its id.
+		//
+		//If the component has already been registered it will remain unaffected
+		// by a potential registration of a new version of the component.
+		RegisterComponent(c model.Component)
+		ComponentsPaths() map[string]string
+		SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error
+		Ensure() error
+		Use(cr model.ComponentReferencer) UsableComponent
+		Environment() model.Environment
+		ContainsFile(name string, in ...model.ComponentReferencer) MatchingPaths
+		ContainsDirectory(name string, in ...model.ComponentReferencer) MatchingPaths
+	}
 
-type componentDef struct {
-	component model.Component
-}
+	componentDef struct {
+		component model.Component
+	}
 
-type context struct {
-	// Common to all environments
-	logger *log.Logger
-	data   *model.TemplateContext
+	context struct {
+		// Common to all environments
+		logger *log.Logger
+		data   *model.TemplateContext
 
-	// Local to one environment (in the case multiple environments will be supported)
-	directory   string
-	components  map[string]componentDef
-	paths       map[string]string
-	environment *model.Environment
-}
+		// Local to one environment (in the case multiple environments will be supported)
+		directory   string
+		components  map[string]componentDef
+		paths       map[string]string
+		environment *model.Environment
+	}
 
-// FileMap is used to Marshal the map of downloaded components
-type fileMap struct {
-	File map[string]string `yaml:"component_path"`
-}
+	compNoTemplate struct {
+		component model.Component
+	}
+
+	// FileMap is used to Marshal the map of downloaded components
+	fileMap struct {
+		File map[string]string `yaml:"component_path"`
+	}
+)
 
 func CreateComponentManager(logger *log.Logger, data *model.TemplateContext, baseDir string) ComponentManager {
 	return &context{
@@ -73,23 +84,8 @@ func (cm *context) RegisterComponent(c model.Component) {
 	}
 }
 
-func (cm *context) ComponentPath(id string) string {
-	return filepath.Join(cm.directory, id)
-}
-
 func (cm *context) ComponentsPaths() map[string]string {
 	return cm.paths
-}
-
-func (cm *context) MatchingDirectories(dirName string) []string {
-	result := make([]string, 0, 10)
-	for cPath := range cm.paths {
-		subDir := filepath.Join(cm.directory, cPath, dirName)
-		if _, err := os.Stat(subDir); err == nil {
-			result = append(result, subDir)
-		}
-	}
-	return result
 }
 
 func (cm *context) SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error {
@@ -214,4 +210,98 @@ func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) error {
 		}
 	}
 	return nil
+}
+
+func (cm *context) ContainsFile(name string, in ...model.ComponentReferencer) MatchingPaths {
+	return cm.contains(false, name, in...)
+}
+
+func (cm *context) ContainsDirectory(name string, in ...model.ComponentReferencer) MatchingPaths {
+	return cm.contains(true, name, in...)
+}
+
+func (cm *context) contains(isFolder bool, name string, in ...model.ComponentReferencer) MatchingPaths {
+	res := MatchingPaths{
+		Paths: make([]MatchingPath, 0, 0),
+	}
+	if len(in) > 0 {
+		for _, v := range in {
+			uv := cm.Use(v)
+			if isFolder {
+				if ok, match := uv.ContainsDirectory(name); ok {
+					res.Paths = append(res.Paths, match)
+				}
+			} else {
+				if ok, match := uv.ContainsFile(name); ok {
+					res.Paths = append(res.Paths, match)
+				}
+			}
+			// TODO add realese if no match
+		}
+	} else {
+		for id, path := range cm.paths {
+			dir := filepath.Join(path, name)
+			if info, err := os.Stat(dir); err == nil && (isFolder == info.IsDir()) {
+				m := mPath{
+					comp: cm.Use(
+						compNoTemplate{
+							cm.components[id].component,
+						},
+					),
+					relativePath: name,
+				}
+				res.Paths = append(res.Paths, m)
+			}
+		}
+	}
+	return res
+}
+
+func (cm *context) Use(cr model.ComponentReferencer) UsableComponent {
+	if ok, patterns := cr.Templatable(); ok {
+		path, err := runTemplate(*cm.data, cm.paths[cr.ComponentName()], patterns, cr)
+		if err != nil {
+			log.Printf("--> GBE Use err %s", err.Error())
+		}
+		// No error no path then its has not been templated
+		if err == nil && path == "" {
+			goto TemplateFalse
+		}
+		return usable{
+			cm:        cm,
+			path:      path,
+			release:   cleanup(path),
+			component: cm.components[cr.ComponentName()],
+			templated: true,
+		}
+	}
+TemplateFalse:
+	return usable{
+		cm:        cm,
+		release:   releaseNothing,
+		path:      filepath.Join(cm.directory, cr.ComponentName()),
+		component: cm.components[cr.ComponentName()],
+		templated: false,
+	}
+}
+
+func cleanup(path string) func() {
+	return func() {
+		os.RemoveAll(path)
+	}
+}
+
+//Component returns the referenced component
+func (r compNoTemplate) Component() (model.Component, error) {
+	return r.component, nil
+}
+
+//ComponentName returns the referenced component name
+func (r compNoTemplate) ComponentName() string {
+	return r.component.Id
+}
+
+//Templatable indicates if the component has templates
+func (r compNoTemplate) Templatable() (bool, model.Patterns) {
+	return false, model.Patterns{}
 }

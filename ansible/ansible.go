@@ -2,17 +2,15 @@ package ansible
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"log"
 	"os"
 	"os/exec"
-	"path/filepath"
-	"strings"
 	"syscall"
 
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
-	"github.com/ekara-platform/model"
 )
 
 type (
@@ -21,15 +19,12 @@ type (
 		// Execute runs a playbook within a component
 		//
 		// Parameters:
-		//		component: the component holding the playbook to launch
+		//		cr: the component holding the playbook to launch
 		//		playbook: the name of the playbook to launch
 		//		extraVars: the extra vars passed to the playbook
 		//		envars: the environment variables set before launching the playbook
-		//		inventories: the inventory where to run the playbook
 		//
-		Execute(cr model.ComponentReferencer, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (int, error)
-		// Contains indicates if the given component holds the playbook
-		Contains(cr model.ComponentReferencer, playbook string) bool
+		Execute(cr component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars) (int, error)
 	}
 
 	context struct {
@@ -46,27 +41,14 @@ func CreateAnsibleManager(logger *log.Logger, componentManager component.Compone
 		componentManager: componentManager}
 }
 
-func (ctx context) Contains(cr model.ComponentReferencer, file string) bool {
-	c, err := cr.Component()
-	if err != nil {
-		return false
-	}
-	path := ctx.componentManager.ComponentPath(c.Id)
-	playbookPath := util.JoinPaths(path, file)
-	if _, err := os.Stat(playbookPath); !os.IsNotExist(err) {
-		return true
-	}
-	return false
-}
+func (ctx context) Execute(uc component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars) (int, error) {
 
-func (ctx context) Execute(cr model.ComponentReferencer, playbook string, extraVars ExtraVars, envars EnvVars, inventories string) (int, error) {
-	// Path of the component where the playbook is supposed to be located
-	path := ctx.componentManager.ComponentPath(cr.ComponentName())
+	ok, playBookPath := uc.ContainsFile(playbook)
 
-	playBookPath := filepath.Join(path, playbook)
-	if _, err := os.Stat(playBookPath); os.IsNotExist(err) {
-		return 0, err
+	if !ok {
+		return 0, fmt.Errorf("The component \"%s\" does not contains the playbook : %s", uc.Name(), playbook)
 	}
+
 	ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
 	ctx.logger.Println("* * * * * A N S I B L E - - P L A Y B O O K  * * * * ")
 	ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
@@ -75,26 +57,24 @@ func (ctx context) Execute(cr model.ComponentReferencer, playbook string, extraV
 	ctx.logger.Printf(util.LOG_LAUNCHING_PLAYBOOK, playBookPath)
 
 	var args = []string{playbook}
-	moduleDirectories := ctx.componentManager.MatchingDirectories(util.ComponentModuleFolder)
-	if len(moduleDirectories) > 0 {
-		ctx.logger.Printf("Detected %d modules directories for launch: %s", len(moduleDirectories), moduleDirectories)
-		args = append(args, "--module-path", strings.Join(moduleDirectories, ":"))
+	modulePaths := ctx.componentManager.ContainsDirectory(util.ComponentModuleFolder)
+	defer modulePaths.Release()
+	if modulePaths.Count() > 0 {
+		pathsStrings := modulePaths.JoinAbsolutePaths(":")
+		ctx.logger.Printf("Detected %d modules directories for launch: %s", modulePaths.Count(), pathsStrings)
+		args = append(args, "--module-path", pathsStrings)
 	} else {
 		ctx.logger.Printf("No module directory detected for launch")
 	}
 
-	inventoryDirectories := ctx.componentManager.MatchingDirectories(util.InventoryModuleFolder)
-	if len(inventoryDirectories) > 0 {
-		ctx.logger.Printf("Detected %d inventory directories for launch: %s", len(moduleDirectories), moduleDirectories)
-		args = append(args, "--inventory", strings.Join(inventoryDirectories, ":"))
+	inventoryPaths := ctx.componentManager.ContainsDirectory(util.InventoryModuleFolder)
+	defer inventoryPaths.Release()
+	if inventoryPaths.Count() > 0 {
+		pathsStrings := inventoryPaths.JoinAbsolutePaths(":")
+		ctx.logger.Printf("Detected %d inventory directories for launch: %s", inventoryPaths.Count(), pathsStrings)
+		args = append(args, "--inventory", pathsStrings)
 	} else {
 		ctx.logger.Printf("No inventory directory detected for launch")
-	}
-	if inventories != "" {
-		ctx.logger.Printf("launched with inventories :%s", inventories)
-		for _, v := range strings.Split(inventories, " ") {
-			args = append(args, v)
-		}
 	}
 
 	if extraVars.Bool {
@@ -105,7 +85,7 @@ func (ctx context) Execute(cr model.ComponentReferencer, playbook string, extraV
 	}
 
 	cmd := exec.Command("ansible-playbook", args...)
-	cmd.Dir = path
+	cmd.Dir = uc.RootPath()
 	cmd.Env = os.Environ()
 	for k, v := range envars.Content {
 		cmd.Env = append(cmd.Env, k+"="+v)

@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/ekara-platform/model"
   packages = ["."]
-  revision = "3981f15e10af22196c0cff7b6e73e1d8812c63e0"
+  revision = "c75b47df29645e5a5b61e4ae71d2105e32d1fa29"
 
 [[projects]]
   name = "github.com/emirpasic/gods"
@@ -58,6 +58,12 @@
   packages = ["."]
   revision = "ae18d6b8b3205b561c79e8e5f69bff09736185f4"
   version = "v1.0.0"
+
+[[projects]]
+  name = "github.com/oklog/ulid"
+  packages = ["."]
+  revision = "be3bccf06dda9a40aa6800c4736ac77f2fef987f"
+  version = "v2.0.2"
 
 [[projects]]
   name = "github.com/pelletier/go-buffruneio"
@@ -222,6 +228,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3279da7bccbf4527da724a54b9e805a16d61282925a4f428781bdd296dedd83e"
+  inputs-digest = "6c5d9c8d36fcf6ec45108c4b17daad8eb35a3e1cce76124db38187f43f23ebdb"
   solver-name = "gps-cdcl"
   solver-version = 1

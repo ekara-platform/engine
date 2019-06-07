@@ -11,8 +11,9 @@ import (
 var installSteps = []step{fsetuporchestrator, fconsumesetuporchestrator, forchestrator}
 
 func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
+	cm := lC.Ekara().ComponentManager()
 	sCs := InitStepResults()
-	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
+	for _, n := range cm.Environment().NodeSets {
 		sc := InitPlaybookStepResult("Running the orchestrator setup phase", n, NoCleanUpRequired)
 		lC.Log().Printf(LogProcessingNode, n.Name)
 
@@ -78,13 +79,8 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		// Prepare extra vars
 		exv := ansible.BuildExtraVars("", *setupOrchestratorEf.Input, *setupOrchestratorEf.Output, buffer)
 
-		inventory := ""
-		if len(bufferPro.Inventories) > 0 {
-			inventory = bufferPro.Inventories["inventory_path"]
-		}
-
 		// We launch the playbook
-		code, err := lC.Ekara().AnsibleManager().Execute(o, "setup.yml", exv, env, inventory)
+		code, err := lC.Ekara().AnsibleManager().Execute(cm.Use(o), "setup.yml", exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "setup.yml",
@@ -122,7 +118,8 @@ func fconsumesetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults
 
 func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
-	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
+	cm := lC.Ekara().ComponentManager()
+	for _, n := range cm.Environment().NodeSets {
 		sc := InitPlaybookStepResult("Running the orchestrator installation phase", n, NoCleanUpRequired)
 		lC.Log().Printf(LogProcessingNode, n.Name)
 
@@ -193,13 +190,8 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		// Prepare extra vars
 		exv := ansible.BuildExtraVars("", *installOrchestratorEf.Input, *installOrchestratorEf.Output, buffer)
 
-		inventory := ""
-		if len(bufferPro.Inventories) > 0 {
-			inventory = bufferPro.Inventories["inventory_path"]
-		}
-
 		// We launch the playbook
-		code, err := lC.Ekara().AnsibleManager().Execute(o, "install.yml", exv, env, inventory)
+		code, err := lC.Ekara().AnsibleManager().Execute(cm.Use(o), "install.yml", exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "install.yml",

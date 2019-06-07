@@ -1,8 +1,8 @@
 package engine
 
 import (
+	"io/ioutil"
 	"log"
-	"os"
 	"testing"
 
 	"github.com/ekara-platform/engine/util"
@@ -11,31 +11,53 @@ import (
 )
 
 func TestSaveBaseParamOk(t *testing.T) {
+	p, _ := model.CreateParameters(map[string]interface{}{
+		"ek": map[interface{}]interface{}{
+			"aws": map[interface{}]interface{}{
+				"region": "dummy",
+				"accessKey": map[interface{}]interface{}{
+					"id":     "dummy",
+					"secret": "dummy",
+				},
+			},
+		},
+	})
+	mainPath := "./testdata/gittest/descriptor"
+	tc := model.CreateContext(p)
 
 	ef, e := util.CreateExchangeFolder("./", "testFolder")
 	assert.Nil(t, e)
 	assert.NotNil(t, ef)
 	defer ef.Delete()
 
-	assert.Nil(t, e)
-
-	sc := InitCodeStepResult("DummyStep", nil, NoCleanUpRequired)
-
-	c := MockLaunchContext{
+	c := &MockLaunchContext{
+		locationContent:      mainPath,
+		templateContext:      tc,
 		efolder:              ef,
-		logger:               log.New(os.Stdout, "Test", log.Ldate|log.Ltime|log.Lmicroseconds),
+		logger:               log.New(ioutil.Discard, "Test", log.Ldate|log.Ltime|log.Lmicroseconds),
 		sshPublicKeyContent:  "sshPublicKey_content",
 		sshPrivateKeyContent: "sshPrivateKey_content",
-		engine: EkaraMock{
-			Env: model.Environment{
-				Name:      "NameContent",
-				Qualifier: "QualifierContent",
-			},
-		},
 	}
-	bp := BuildBaseParam(c, "nodeId", "providerName")
+	tester := gitTester(t, c)
+	defer tester.clean()
 
-	ko := saveBaseParams(bp, &c, ef.Input, &sc)
+	repDesc := tester.createRep(mainPath)
+
+	descContent := `
+name: NameContent
+qualifier: QualifierContent
+
+`
+	repDesc.writeCommit(t, "ekara.yaml", descContent)
+
+	err := tester.initEngine()
+	assert.Nil(t, err)
+	env := tester.env()
+	assert.NotNil(t, env)
+
+	sc := InitCodeStepResult("DummyStep", nil, NoCleanUpRequired)
+	bp := BuildBaseParam(c, "nodeId", "providerName")
+	ko := saveBaseParams(bp, c, ef.Input, &sc)
 	assert.False(t, ko)
 
 	assert.Nil(t, sc.error)
@@ -46,4 +68,5 @@ func TestSaveBaseParamOk(t *testing.T) {
 	ok, _, err := ef.Input.ContainsParamYaml()
 	assert.True(t, ok)
 	assert.Nil(t, err)
+
 }

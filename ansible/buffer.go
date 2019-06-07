@@ -15,6 +15,7 @@ type Buffer struct {
 	// The extra vars to pass
 	Extravars map[string]string
 	// The inventories to pass
+	//TODO CHECK IF THIS CAN BE DELETED
 	Inventories map[string]string
 	// The parameters to pass.
 	// The parameters can be any valid yaml content

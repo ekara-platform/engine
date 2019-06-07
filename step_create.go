@@ -9,8 +9,9 @@ import (
 var createSteps = []step{fsetup, fconsumesetup, fcreate, fconsumecreate}
 
 func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
+	cm := lC.Ekara().ComponentManager()
 	sCs := InitStepResults()
-	for _, p := range lC.Ekara().ComponentManager().Environment().Providers {
+	for _, p := range cm.Environment().Providers {
 		sc := InitPlaybookStepResult("Running the setup phase", p, NoCleanUpRequired)
 		lC.Log().Printf(LogRunningSetupFor, p.Name)
 
@@ -60,7 +61,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		}
 
 		// We launch the playbook
-		code, err := lC.Ekara().AnsibleManager().Execute(p, "setup.yml", exv, env, "")
+		code, err := lC.Ekara().AnsibleManager().Execute(cm.Use(p), "setup.yml", exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "setup.yml",
@@ -96,8 +97,9 @@ func fconsumesetup(lC LaunchContext, rC *runtimeContext) StepResults {
 }
 
 func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
+	cm := lC.Ekara().ComponentManager()
 	sCs := InitStepResults()
-	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
+	for _, n := range cm.Environment().NodeSets {
 		sc := InitPlaybookStepResult("Running the create phase", n, NoCleanUpRequired)
 		lC.Log().Printf(LogProcessingNode, n.Name)
 
@@ -129,26 +131,23 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		env.Add("no_proxy", lC.NoProxy())
 		env.AddBuffer(buffer)
 
-		inventory := ""
-		if len(buffer.Inventories) > 0 {
-			inventory = buffer.Inventories["inventory_path"]
-		}
-
 		// Process hook : environment - provision - before
-		RunHookBefore(lC,
+		RunHookBefore(cm,
+			lC,
 			rC,
 			sCs,
-			lC.Ekara().ComponentManager().Environment().Hooks.Provision,
-			hookContext{"create", n, "environment", "provision", bp, env, buffer, inventory},
+			cm.Environment().Hooks.Provision,
+			hookContext{"create", n, "environment", "provision", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 
 		// Process hook : nodeset - provision - before
-		RunHookBefore(lC,
+		RunHookBefore(cm,
+			lC,
 			rC,
 			sCs,
 			n.Hooks.Provision,
-			hookContext{"create", n, "nodeset", "provision", bp, env, buffer, inventory},
+			hookContext{"create", n, "nodeset", "provision", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 
@@ -174,7 +173,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		exv := ansible.BuildExtraVars("", *nodeCreateEf.Input, *nodeCreateEf.Output, buffer)
 
 		// We launch the playbook
-		code, err := lC.Ekara().AnsibleManager().Execute(p, "create.yml", exv, env, inventory)
+		code, err := lC.Ekara().AnsibleManager().Execute(cm.Use(p), "create.yml", exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "create.yml",
@@ -188,20 +187,22 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		sCs.Add(sc)
 
 		// Process hook : nodeset - provision - after
-		RunHookAfter(lC,
+		RunHookAfter(cm,
+			lC,
 			rC,
 			sCs,
 			n.Hooks.Provision,
-			hookContext{"create", n, "nodeset", "provision", bp, env, buffer, inventory},
+			hookContext{"create", n, "nodeset", "provision", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 
 		// Process hook : environment - provision - after
-		RunHookAfter(lC,
+		RunHookAfter(cm,
+			lC,
 			rC,
 			sCs,
-			lC.Ekara().ComponentManager().Environment().Hooks.Provision,
-			hookContext{"create", n, "environment", "provision", bp, env, buffer, inventory},
+			cm.Environment().Hooks.Provision,
+			hookContext{"create", n, "environment", "provision", bp, env, buffer},
 			NoCleanUpRequired,
 		)
 	}

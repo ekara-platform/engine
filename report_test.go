@@ -2,8 +2,8 @@ package engine
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
-	"os"
 	"testing"
 
 	"github.com/ekara-platform/engine/util"
@@ -113,21 +113,49 @@ func TestReportContentMultipleSteps(t *testing.T) {
 func TestReadReport(t *testing.T) {
 	var err error
 
-	ef, err := util.CreateExchangeFolder("./testdata/report", "")
-	assert.Nil(t, err)
-
-	c := MockLaunchContext{
-		efolder:              ef,
-		logger:               log.New(os.Stdout, util.InstallerLogPrefix, log.Ldate|log.Ltime|log.Lmicroseconds),
-		sshPublicKeyContent:  "sshPublicKey_content",
-		sshPrivateKeyContent: "sshPrivateKey_content",
-		engine: EkaraMock{
-			Env: model.Environment{
-				Name:      "NameContent",
-				Qualifier: "QualifierContent",
+	p, _ := model.CreateParameters(map[string]interface{}{
+		"ek": map[interface{}]interface{}{
+			"aws": map[interface{}]interface{}{
+				"region": "dummy",
+				"accessKey": map[interface{}]interface{}{
+					"id":     "dummy",
+					"secret": "dummy",
+				},
 			},
 		},
+	})
+	mainPath := "./testdata/gittest/descriptor"
+	tc := model.CreateContext(p)
+
+	ef, err := util.CreateExchangeFolder("./testdata/report", "")
+	assert.Nil(t, err)
+	assert.NotNil(t, ef)
+	assert.Nil(t, err)
+
+	c := &MockLaunchContext{
+		locationContent:      mainPath,
+		templateContext:      tc,
+		efolder:              ef,
+		logger:               log.New(ioutil.Discard, "Test", log.Ldate|log.Ltime|log.Lmicroseconds),
+		sshPublicKeyContent:  "sshPublicKey_content",
+		sshPrivateKeyContent: "sshPrivateKey_content",
 	}
+	tester := gitTester(t, c)
+	defer tester.clean()
+
+	repDesc := tester.createRep(mainPath)
+
+	descContent := `
+name: NameContent
+qualifier: QualifierContent
+
+`
+	repDesc.writeCommit(t, "ekara.yaml", descContent)
+
+	err = tester.initEngine()
+	assert.Nil(t, err)
+	env := tester.env()
+	assert.NotNil(t, env)
 
 	rC := &runtimeContext{}
 

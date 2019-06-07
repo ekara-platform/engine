@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ekara-platform/engine/ansible"
+	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
 	"github.com/ekara-platform/model"
 )
@@ -20,21 +21,20 @@ type (
 		baseParam ansible.BaseParam
 		envVar    ansible.EnvVars
 		buffer    ansible.Buffer
-		inventory string
 	}
 )
 
 //RunHookBefore Runs the hooks defined to be executed before a task.
-func RunHookBefore(lC LaunchContext, rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
-	runHooks(h.Before, lC, rC, r, ctx, cl)
+func RunHookBefore(cm component.ComponentManager, lC LaunchContext, rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
+	runHooks(cm, h.Before, lC, rC, r, ctx, cl)
 }
 
 //RunHookAfter Runs the hooks defined to be executed after a task.
-func RunHookAfter(lC LaunchContext, rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
-	runHooks(h.After, lC, rC, r, ctx, cl)
+func RunHookAfter(cm component.ComponentManager, lC LaunchContext, rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
+	runHooks(cm, h.After, lC, rC, r, ctx, cl)
 }
 
-func runHooks(hooks []model.TaskRef, lC LaunchContext, rC *runtimeContext, r *StepResults, ctx hookContext, cl Cleanup) {
+func runHooks(cm component.ComponentManager, hooks []model.TaskRef, lC LaunchContext, rC *runtimeContext, r *StepResults, ctx hookContext, cl Cleanup) {
 	for i, hook := range hooks {
 		repName := fmt.Sprintf("%s_%s_hook_%s_%s_%s_%d", ctx.action, ctx.target.DescName(), ctx.hookOnwer, ctx.hookName, hook.HookLocation, i)
 		sc := InitHookStepResult(folderAsMessage(repName), ctx.target, cl)
@@ -67,13 +67,13 @@ func runHooks(hooks []model.TaskRef, lC LaunchContext, rC *runtimeContext, r *St
 
 		exv := ansible.BuildExtraVars("", *ef.Input, *ef.Output, ctx.buffer)
 
-		runTask(lC, rC, t, ctx.target, sc, r, ef, exv, ctx.envVar, ctx.inventory)
+		runTask(cm, lC, rC, t, ctx.target, sc, r, ef, exv, ctx.envVar)
 		// TODO Consume hook buffer here
 	}
 }
 
-func runTask(lC LaunchContext, rC *runtimeContext, task model.Task, target model.Describable, sc StepResult, r *StepResults, ef *util.ExchangeFolder, exv ansible.ExtraVars, env ansible.EnvVars, inventory string) {
-	code, err := lC.Ekara().AnsibleManager().Execute(task, task.Playbook, exv, env, inventory)
+func runTask(cm component.ComponentManager, lC LaunchContext, rC *runtimeContext, task model.Task, target model.Describable, sc StepResult, r *StepResults, ef *util.ExchangeFolder, exv ansible.ExtraVars, env ansible.EnvVars) {
+	code, err := lC.Ekara().AnsibleManager().Execute(cm.Use(task), task.Playbook, exv, env)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  task.Playbook,
