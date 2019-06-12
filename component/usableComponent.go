@@ -8,12 +8,19 @@ import (
 )
 
 type (
+	//UsableComponent Represent a component which can be used physically
 	UsableComponent interface {
+		//Name returns the name of the component
 		Name() string
+		//Templated returns true is the component content has been templated
 		Templated() bool
+		//Release deletes the templated content. 
 		Release()
+		//RootPath returns the absolute path of the, eventually templated, component
 		RootPath() string
+		//ContainsFile returns the matching path of the searched file
 		ContainsFile(name string) (bool, MatchingPath)
+		//ContainsDirectory returns the matching path of the searched directory
 		ContainsDirectory(name string) (bool, MatchingPath)
 	}
 

@@ -2,31 +2,14 @@ package engine
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/model"
 )
 
-var deploySteps = []step{/*ftemplate, */fstack}
-
-/*
-func ftemplate(lC LaunchContext, rC *runtimeContext) StepResults {
-	sCs := InitStepResults()
-	cpMan := lC.Ekara().ComponentManager()
-	for _, s := range cpMan.Environment().Stacks {
-		sc := InitCodeStepResult("Starting a stack template phase", s, NoCleanUpRequired)
-		if len(s.Templates.Content) > 0 {
-			lC.Log().Printf("The stack %s has templates to process ", s.Name)
-			runTemplate(lC, sCs, &sc, s.Templates, s)
-		} else {
-			lC.Log().Printf("The stack %s has no templates to process ", s.Name)
-		}
-		sCs.Add(sc)
-	}
-	return *sCs
-}
-*/
+var deploySteps = []step{fstack}
 
 func fstack(lC LaunchContext, rC *runtimeContext) StepResults {
 	cm := lC.Ekara().ComponentManager()
@@ -263,7 +246,7 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 		su := cm.Use(s)
 		defer su.Release()
 		if ok, match := su.ContainsFile("docker-compose.yml"); ok {
-			exv = ansible.BuildExtraVars("compose_path="+match.RelativePath(), *stackEf.Input, *stackEf.Output, buffer)
+			exv = ansible.BuildExtraVars("compose_path="+filepath.Join(match.Component().RootPath(), match.RelativePath()), *stackEf.Input, *stackEf.Output, buffer)
 		} else {
 			exv = ansible.BuildExtraVars("", *stackEf.Input, *stackEf.Output, buffer)
 		}

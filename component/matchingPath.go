@@ -7,8 +7,11 @@ import (
 )
 
 type (
+	//MatchingPath represents the matching path of the searched content
 	MatchingPath interface {
+		//Component gives the usable component wherin the searched content has been located
 		Component() UsableComponent
+		//RelativePath specifies the relatives path of the searched content into the usable component
 		RelativePath() string
 	}
 
@@ -17,7 +20,9 @@ type (
 		relativePath string
 	}
 
+	//MatchingPaths represents the matching paths of the searched content
 	MatchingPaths struct {
+		//Paths holds the searched  results
 		Paths []MatchingPath
 	}
 )

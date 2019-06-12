@@ -40,14 +40,16 @@ type (
 
 	context struct {
 		// Common to all environments
-		logger *log.Logger
-		data   *model.TemplateContext
+		logger      *log.Logger
+		data        *model.TemplateContext
+		environment *model.Environment
 
 		// Local to one environment (in the case multiple environments will be supported)
-		directory   string
-		components  map[string]model.Component
-		paths       map[string]string
-		environment *model.Environment
+		directory string
+		paths     map[string]string
+
+		//TODO to be removed because already supported into the Platform
+		components map[string]model.Component
 	}
 
 	localRef struct {
@@ -270,6 +272,24 @@ func (cm *context) contains(isFolder bool, name string, in ...model.ComponentRef
 	}
 	return res
 }
+
+/*
+func () UsedContains(u UsableComponent, name string) ok, MatchingPaths {
+	if isFolder {
+		if ok, match := uv.ContainsDirectory(name); ok {
+			res.Paths = append(res.Paths, match)
+		} else {
+			uv.Release()
+		}
+	} else {
+		if ok, match := uv.ContainsFile(name); ok {
+			res.Paths = append(res.Paths, match)
+		} else {
+			uv.Release()
+		}
+	}
+}
+*/
 
 func (cm *context) Use(cr model.ComponentReferencer) UsableComponent {
 	c := cm.components[cr.ComponentName()]
