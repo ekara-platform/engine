@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"log"
 	"testing"
 
 	"github.com/ekara-platform/model"
@@ -151,4 +152,82 @@ func cp(t *testing.T, p model.Parameters, key, value string) {
 	if assert.True(t, ok) {
 		assert.Equal(t, value, v)
 	}
+}
+
+func TestVarsPrecedence(t *testing.T) {
+
+	p, _ := model.CreateParameters(map[string]interface{}{
+		"key1": "value1.from.cli",
+	})
+
+	comp1Content := `
+vars:
+  key1: val1_comp1
+  key2: val2_comp1
+  key3: val3_comp1
+`
+
+	distContent := `
+ekara:
+  components:
+    comp1:
+      repository: ./testdata/gittest/comp1
+vars:
+  key1: val1_distribution			
+  key2: val2_distribution			
+  key3: val3_distribution			
+`
+	descContent := `
+name: ekara-demo-var
+qualifier: dev
+
+ekara:
+  distribution:
+    repository: ./testdata/gittest/distribution
+vars:
+  key1: val1_descriptor					
+  key3: val3_descriptor					
+# Following content just to force the download of comp1 and comp2
+orchestrator:
+  component: comp1
+providers:
+  p1:
+    component: comp1
+nodes:
+  node1:
+    instances: 1
+    provider:
+      name: p1
+`
+
+	mainPath := "./testdata/gittest/descriptor"
+
+	tc := model.CreateContext(p)
+
+	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	tester := gitTester(t, c)
+	defer tester.clean()
+
+	repDist := tester.createRep("./testdata/gittest/distribution")
+	repComp1 := tester.createRep("./testdata/gittest/comp1")
+	repDesc := tester.createRep(mainPath)
+
+	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
+	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repDesc.writeCommit(t, "ekara.yaml", descContent)
+
+	err := tester.initEngine()
+	assert.Nil(t, err)
+	env := tester.env()
+	assert.NotNil(t, env)
+
+	tester.assertComponentsContains("__main__", "__ekara__", "comp1")
+	log.Printf("--> GBE vars %v", tc.Vars)
+	assert.Equal(t, len(tc.Vars), 3)
+	// Cli var has precedence over descriptor/distribution/comp1
+	cp(t, tc.Vars, "key1", "value1.from.cli")
+	// Descriptor var has precedence over distribution
+	cp(t, tc.Vars, "key3", "val3_descriptor")
+	// Distribution var has precedence over comp1
+	cp(t, tc.Vars, "key2", "val2_distribution")
 }
