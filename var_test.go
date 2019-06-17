@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"log"
 	"testing"
 
 	"github.com/ekara-platform/model"
@@ -222,7 +221,7 @@ nodes:
 	assert.NotNil(t, env)
 
 	tester.assertComponentsContains("__main__", "__ekara__", "comp1")
-	log.Printf("--> GBE vars %v", tc.Vars)
+
 	assert.Equal(t, len(tc.Vars), 3)
 	// Cli var has precedence over descriptor/distribution/comp1
 	cp(t, tc.Vars, "key1", "value1.from.cli")
