@@ -9,5 +9,5 @@ const (
 	LOG_SAVING                    string = "Saving: %s"
 	LOG_CREATING_FILE             string = "Creation of the file %s"
 	LOG_LAUNCHING_PLAYBOOK        string = "Launching playbook %s"
-	LOG_STARTING_PLAYBOOK         string = "Starting playbook %s"
+	LOG_STARTING_PLAYBOOK         string = "Starting playbook %s, in %s"
 )

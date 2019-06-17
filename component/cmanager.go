@@ -273,24 +273,6 @@ func (cm *context) contains(isFolder bool, name string, in ...model.ComponentRef
 	return res
 }
 
-/*
-func () UsedContains(u UsableComponent, name string) ok, MatchingPaths {
-	if isFolder {
-		if ok, match := uv.ContainsDirectory(name); ok {
-			res.Paths = append(res.Paths, match)
-		} else {
-			uv.Release()
-		}
-	} else {
-		if ok, match := uv.ContainsFile(name); ok {
-			res.Paths = append(res.Paths, match)
-		} else {
-			uv.Release()
-		}
-	}
-}
-*/
-
 func (cm *context) Use(cr model.ComponentReferencer) UsableComponent {
 	c := cm.components[cr.ComponentName()]
 	if ok, patterns := c.Templatable(); ok {

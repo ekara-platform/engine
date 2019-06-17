@@ -48,11 +48,6 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, st model.Stack, ust com
 		}
 		ps[p.Name] = p
 
-		// Provider setup exchange folder
-		//setupProviderEf := lC.Ef().Input.Children["setup_provider_"+p.Name]
-		// We check if we have a buffer corresponding to the provider setup
-		//bufferPro := rC.getBuffer(setupProviderEf.Output)
-
 		// Stack install exchange folder for the given provider
 		fName := fmt.Sprintf("install_stack_%s_for_%s", st.Name, p.Name)
 
@@ -176,11 +171,6 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 		}
 		ps[p.Name] = p
 
-		// Provider setup exchange folder
-		//setupProviderEf := lC.Ef().Input.Children["setup_provider_"+p.Name]
-		// We check if we have a buffer corresponding to the provider setup
-		//bufferPro := rC.getBuffer(setupProviderEf.Output)
-
 		// Stack install exchange folder for the given provider
 		fName := fmt.Sprintf("install_stack_%s_for_%s", s.Name, p.Name)
 
@@ -244,6 +234,7 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 		d := cm.Use(distribution)
 		defer d.Release()
 		su := cm.Use(s)
+
 		defer su.Release()
 		if ok, match := su.ContainsFile("docker-compose.yml"); ok {
 			exv = ansible.BuildExtraVars("compose_path="+filepath.Join(match.Component().RootPath(), match.RelativePath()), *stackEf.Input, *stackEf.Output, buffer)

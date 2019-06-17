@@ -52,9 +52,8 @@ func (ctx context) Execute(uc component.UsableComponent, playbook string, extraV
 	ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
 	ctx.logger.Println("* * * * * A N S I B L E - - P L A Y B O O K  * * * * ")
 	ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
-	ctx.logger.Printf(util.LOG_STARTING_PLAYBOOK, playBookPath)
+	ctx.logger.Printf(util.LOG_STARTING_PLAYBOOK, playBookPath.RelativePath(), playBookPath.Component().RootPath())
 	ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
-	ctx.logger.Printf(util.LOG_LAUNCHING_PLAYBOOK, playBookPath)
 
 	var args = []string{playbook}
 	modulePaths := ctx.componentManager.ContainsDirectory(util.ComponentModuleFolder)
