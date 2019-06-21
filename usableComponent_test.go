@@ -146,7 +146,7 @@ func TestUsableTemplateDoubleMatch(t *testing.T) {
 
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
 	tester := gitTester(t, c)
-	//defer tester.clean()
+	defer tester.clean()
 
 	writecheckUsableCommon(t, tester, mainPath)
 
@@ -226,6 +226,8 @@ func writecheckUsableCommon(t *testing.T, tester *tester, d string) {
 
 func checkUsableCommon(t *testing.T, c *MockLaunchContext, tester *tester, initialComp int) (model.Environment, component.ComponentManager) {
 	err := tester.initEngine()
+	assert.Nil(t, err)
+	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)

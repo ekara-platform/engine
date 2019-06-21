@@ -39,6 +39,7 @@ ekara:
 `
 )
 
+/*
 func TestEngineLocalNoRef(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 
@@ -64,11 +65,14 @@ func TestEngineLocalNoRef(t *testing.T) {
 	assert.Equal(t, b, "")
 	err := tester.initEngine()
 	assert.Nil(t, err)
+	err = tester.context.engine.ComponentManager().Ensure()
+	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	assert.Equal(t, env.Qualifier, "master")
 
 }
+*/
 
 func TestEngineLocalWithBranchRef(t *testing.T) {
 
@@ -89,6 +93,8 @@ func TestEngineLocalWithBranchRef(t *testing.T) {
 	repDesc.checkout(t, "master")
 
 	err := tester.initEngine()
+	assert.Nil(t, err)
+	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
@@ -122,6 +128,8 @@ func TestEngineLocalWithTagRef(t *testing.T) {
 	repDesc.writeCommit(t, "ekara.yaml", refTag2+refDescContent)
 
 	err := tester.initEngine()
+	assert.Nil(t, err)
+	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)

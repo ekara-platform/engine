@@ -25,7 +25,10 @@ func TestTemplateOnMainVars(t *testing.T) {
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
+	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
+
+	repComp1.writeCommit(t, "ekara.yaml", "")
 
 	distContent := `
 ekara:
@@ -39,22 +42,33 @@ qualifier: dev
 ekara:
   distribution:
     repository: ./testdata/gittest/distribution	
+  components:
+    comp1:
+      repository: ./testdata/gittest/comp1	
 vars:
   key1_descriptor: val1_descriptor
   key2_descriptor: "{{ .Vars.value1.from.cli }}"
-
+orchestrator:
+  component: comp1
 providers:
-  ek-aws:
-    component: ek-aws
+  p1:
+    component: comp1
     params:
       param1: {{ .Vars.key1_descriptor }}
       param2: {{ .Vars.key2_descriptor }}
       param3: {{ .Vars.value2 }} 
+nodes:
+  node1:
+    instances: 1
+    provider:
+      name: p1
 `
 
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 
 	err := tester.initEngine()
+	assert.Nil(t, err)
+	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
@@ -64,10 +78,10 @@ providers:
 	cp(t, env.Vars, "key1_descriptor", "val1_descriptor")
 	cp(t, env.Vars, "key2_descriptor", "value1.from.cli_value")
 
-	assert.Equal(t, len(env.Providers["ek-aws"].Parameters), 3)
-	cp(t, env.Providers["ek-aws"].Parameters, "param1", "val1_descriptor")
-	cp(t, env.Providers["ek-aws"].Parameters, "param2", "value1.from.cli_value")
-	cp(t, env.Providers["ek-aws"].Parameters, "param3", "value2.from.cli_value")
+	assert.Equal(t, len(env.Providers["p1"].Parameters), 3)
+	cp(t, env.Providers["p1"].Parameters, "param1", "val1_descriptor")
+	cp(t, env.Providers["p1"].Parameters, "param2", "value1.from.cli_value")
+	cp(t, env.Providers["p1"].Parameters, "param3", "value2.from.cli_value")
 
 }
 
@@ -98,6 +112,7 @@ ekara:
 vars:
   key1_distribution: val1_distribution
   key2_distribution: "{{ .Vars.value1.from.cli.to_distribution }}"
+  key3_distribution: "{{ .Vars.key1_environment }}"
 `
 	repDist.writeCommit(t, "ekara.yaml", distContent)
 
@@ -108,6 +123,7 @@ vars:
   key2_comp1: "{{ .Vars.key1_distribution }}"
   key3_comp1: "{{ .Vars.key2_distribution }}"
   key4_comp1: "{{ .Vars.value1.from.cli.to_comp1 }}"
+  key5_comp1: "{{ .Vars.key1_environment }}"
 `
 	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
 	descContent := `
@@ -120,6 +136,8 @@ ekara:
   components:
     comp1:
       repository: ./testdata/gittest/comp1	
+vars:
+  key1_environment: val1_environment
 providers:
   comp1:
     component: comp1
@@ -134,16 +152,20 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
+	err = tester.context.engine.ComponentManager().Ensure()
+	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
 	tester.assertComponentsContains("__main__", "__ekara__", "comp1")
 
-	assert.Equal(t, len(tc.Vars), 7)
+	assert.Equal(t, len(tc.Vars), 10)
 	cp(t, tc.Vars, "key1_comp1", "val1_comp1")
 	cp(t, tc.Vars, "key2_comp1", "val1_distribution")
 	cp(t, tc.Vars, "key3_comp1", "value_from_cli_to_distribution")
 	cp(t, tc.Vars, "key4_comp1", "value_from_cli_to_comp1")
+	cp(t, tc.Vars, "key5_comp1", "val1_environment")
+	cp(t, tc.Vars, "key3_distribution", "val1_environment")
 }
 
 func cp(t *testing.T, p model.Parameters, key, value string) {
@@ -164,6 +186,7 @@ vars:
   key1: val1_comp1
   key2: val2_comp1
   key3: val3_comp1
+  keyY: val4_comp1
 `
 
 	distContent := `
@@ -175,6 +198,7 @@ vars:
   key1: val1_distribution			
   key2: val2_distribution			
   key3: val3_distribution			
+  keyX: val4_distribution			
 `
 	descContent := `
 name: ekara-demo-var
@@ -217,16 +241,21 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
+	err = tester.context.engine.ComponentManager().Ensure()
+	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
 	tester.assertComponentsContains("__main__", "__ekara__", "comp1")
 
-	assert.Equal(t, len(tc.Vars), 3)
+	assert.Equal(t, len(tc.Vars), 5)
 	// Cli var has precedence over descriptor/distribution/comp1
 	cp(t, tc.Vars, "key1", "value1.from.cli")
 	// Descriptor var has precedence over distribution
 	cp(t, tc.Vars, "key3", "val3_descriptor")
 	// Distribution var has precedence over comp1
 	cp(t, tc.Vars, "key2", "val2_distribution")
+	// Test accumation of vars from distribution and its components
+	cp(t, tc.Vars, "keyY", "val4_comp1")
+	cp(t, tc.Vars, "keyX", "val4_distribution")
 }

@@ -71,9 +71,11 @@ func TestComponentFolderMatching(t *testing.T) {
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
+	err = tester.context.engine.ComponentManager().Ensure()
+	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
-	
+
 	tester.assertComponentsContains("__main__", "__ekara__", "comp1", "comp2")
 
 	cm := c.Ekara().ComponentManager()
@@ -200,9 +202,11 @@ func TestComponentFileMatching(t *testing.T) {
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
+	err = tester.context.engine.ComponentManager().Ensure()
+	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
-	
+
 	tester.assertComponentsContains("__main__", "__ekara__", "comp1", "comp2")
 
 	cm := c.Ekara().ComponentManager()

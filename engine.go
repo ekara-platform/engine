@@ -92,10 +92,10 @@ func (ctx *context) Init(c LaunchContext) (err error) {
 	}
 
 	mainComponent := model.CreateComponent("__main__", mainRep)
-	ctx.componentManager.RegisterComponent(mainComponent)
+	ctx.componentManager.RegisterComponent("", mainComponent)
 
 	// Ensure the main component is present
-	err = ctx.componentManager.Ensure()
+	_, err = ctx.componentManager.EnsureOneComponent(mainComponent.Id, mainComponent)
 	if err != nil {
 		return
 	}
