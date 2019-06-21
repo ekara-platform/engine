@@ -60,6 +60,7 @@ type (
 	}
 )
 
+//CreateComponentManager creates a new component manager
 func CreateComponentManager(logger *log.Logger, data *model.TemplateContext, baseDir string) ComponentManager {
 	c := &context{
 		logger:      logger,
@@ -110,9 +111,8 @@ func (cm *context) Ensure() error {
 	}
 	if cm.isFetchNeeded() {
 		return fmt.Errorf("not all components have been fetched after %d iterations, check for import loops in descriptors", maxFetchIterations)
-	} else {
-		return nil
 	}
+	return nil
 EnsureAgain:
 	cm.Ensure()
 	return nil
