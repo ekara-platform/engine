@@ -11,7 +11,7 @@ import (
 	"github.com/ekara-platform/model"
 )
 
-//scmHandler is the common defintion of all SCM handlers used to acces
+//scmHandler is the common definition of all SCM handlers used to acces
 // to component repositories
 type scmHandler interface {
 	//Matches return true if a repository has already be fetched into the path and if its
