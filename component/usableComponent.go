@@ -14,7 +14,7 @@ type (
 		Name() string
 		//Templated returns true is the component content has been templated
 		Templated() bool
-		//Release deletes the templated content. 
+		//Release deletes the templated content.
 		Release()
 		//RootPath returns the absolute path of the, eventually templated, component
 		RootPath() string

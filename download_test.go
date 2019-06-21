@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-
-
 func TestDownloadOnlyUsedComponents(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
@@ -24,7 +22,7 @@ func TestDownloadOnlyUsedComponents(t *testing.T) {
 	repComp3 := tester.createRep("./testdata/gittest/comp3")
 	repComp4 := tester.createRep("./testdata/gittest/comp4")
 	repDesc := tester.createRep(mainPath)
-	
+
 	repComp1.writeCommit(t, "ekara.yaml", ``)
 	repComp2.writeCommit(t, "ekara.yaml", ``)
 	repComp3.writeCommit(t, "ekara.yaml", ``)
@@ -193,5 +191,3 @@ nodes:
 	// comp2 should be also downloaded because it's used as provider into the descriptor
 	tester.assertComponentsContainsExactly("__main__", "__ekara__", "comp1", "comp2")
 }
-
-
