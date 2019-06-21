@@ -25,6 +25,12 @@ type ExchangeFolder struct {
 	Output *FolderPath
 }
 
+// FolderPath holds the location of a folder and its eventual children
+type FolderPath struct {
+	path     string
+	Children map[string]*ExchangeFolder
+}
+
 // Create creates physically the ExchangeFolder.
 // If the ExchangeFolder already exist  it will remain untouched
 func (f ExchangeFolder) Create() error {
@@ -148,9 +154,9 @@ func (f FolderPath) Copy(content string, destination FolderPath) error {
 			return err
 		}
 		return out.Close()
-	} else {
-		return fmt.Errorf("The content %s doesn't exist", content)
 	}
+	return fmt.Errorf("The content %s doesn't exist", content)
+
 }
 
 // AddChildExchangeFolder creates a child of type ExchangeFolder having
@@ -201,11 +207,6 @@ func (f FolderPath) create() error {
 	}
 
 	return nil
-}
-
-type FolderPath struct {
-	path     string
-	Children map[string]*ExchangeFolder
 }
 
 func CreateFolderPath(path string) FolderPath {
