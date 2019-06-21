@@ -56,11 +56,11 @@ func (gitScm GitScmHandler) Fetch(repository model.Repository, path string, auth
 	authMethod, e := buildAuthMethod(auth)
 	if e != nil {
 		return errors.New("error cloning git repository " + source + ": " + e.Error())
-	} else {
-		if authMethod != nil {
-			options.Auth = authMethod
-		}
 	}
+	if authMethod != nil {
+		options.Auth = authMethod
+	}
+
 	gitScm.Logger.Println("cloning GIT repository " + source)
 	_, err := git.PlainClone(path, false, &options)
 	if err != nil {
@@ -76,9 +76,9 @@ func (gitScm GitScmHandler) Update(path string, auth model.Parameters) error {
 	authMethod, e := buildAuthMethod(auth)
 	if e != nil {
 		return errors.New("error updating git repository " + path + ": " + e.Error())
-	} else {
-		options.Auth = authMethod
 	}
+	options.Auth = authMethod
+
 	repo, err := git.PlainOpen(path)
 	if err != nil {
 		return errors.New("unable to open git repository " + path + ": " + err.Error())
