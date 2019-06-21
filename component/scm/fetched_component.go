@@ -23,6 +23,7 @@ func (fc FetchedComponent) String() string {
 	return fmt.Sprintf("id: %s, localPath: %s, descriptor: %s", fc.ID, fc.LocalPath, fc.Descriptor)
 }
 
+//HasDescriptor returns true if the fetched component contains a descriptor
 func (fc FetchedComponent) HasDescriptor() bool {
 	if _, err := os.Stat(fc.DescriptorUrl.AsFilePath()); err == nil {
 		return true
