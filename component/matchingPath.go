@@ -35,16 +35,19 @@ func (p mPath) RelativePath() string {
 	return p.relativePath
 }
 
+//Release deletes, if any, the templated paths returned
 func (mp MatchingPaths) Release() {
 	for _, v := range mp.Paths {
 		v.Component().Release()
 	}
 }
 
+//Count returns the number of matching paths
 func (mp MatchingPaths) Count() int {
 	return len(mp.Paths)
 }
 
+//JoinAbsolutePaths joins all the matching paths using the given separator
 func (mp MatchingPaths) JoinAbsolutePaths(separator string) string {
 	paths := make([]string, 0, 0)
 	for _, v := range mp.Paths {
