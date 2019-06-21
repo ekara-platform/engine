@@ -60,13 +60,13 @@ func runTemplate(ctx model.TemplateContext, componentPath string, patterns model
 		// No matching files encountered then it won't be templated
 		if len(files) == 0 {
 			return "", nil
-		} else {
-			uuid = genUlid()
-			tmpPath = componentPath + "_" + uuid
-			err = copyFolder(componentPath, tmpPath)
-			if err != nil {
-				return "", err
-			}
+		}
+
+		uuid = genUlid()
+		tmpPath = componentPath + "_" + uuid
+		err = copyFolder(componentPath, tmpPath)
+		if err != nil {
+			return "", err
 		}
 
 		for _, f := range files {
