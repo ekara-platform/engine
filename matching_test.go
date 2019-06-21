@@ -96,10 +96,10 @@ func TestComponentFolderMatching(t *testing.T) {
 		checkMatchingPath(t, match, usableComp1, "wantedfolder1")
 	}
 
-	ok, match = usableComp1.ContainsDirectory("wantedfolder2")
+	ok, _ = usableComp1.ContainsDirectory("wantedfolder2")
 	assert.False(t, ok)
 
-	ok, match = usableComp1.ContainsDirectory("wantedfolder2/subFolder1/subfolder2")
+	ok, _ = usableComp1.ContainsDirectory("wantedfolder2/subFolder1/subfolder2")
 	assert.False(t, ok)
 
 	ok, match = usableComp2.ContainsDirectory("wantedfolder1")
@@ -117,7 +117,7 @@ func TestComponentFolderMatching(t *testing.T) {
 		checkMatchingPath(t, match, usableComp2, "wantedfolder2/subFolder1/subfolder2")
 	}
 
-	ok, match = usableComp2.ContainsDirectory("wantedfolder3/fileSearchedAsFolder.yaml")
+	ok, _ = usableComp2.ContainsDirectory("wantedfolder3/fileSearchedAsFolder.yaml")
 	assert.False(t, ok)
 
 	//----------------------------------------------------------
@@ -227,10 +227,10 @@ func TestComponentFileMatching(t *testing.T) {
 		checkMatchingPath(t, match, usableComp1, "wantedFile1.txt")
 	}
 
-	ok, match = usableComp1.ContainsFile("wantedFile2.txt")
+	ok, _ = usableComp1.ContainsFile("wantedFile2.txt")
 	assert.False(t, ok)
 
-	ok, match = usableComp1.ContainsFile("subfolder/wantedSubFile1.txt")
+	ok, _ = usableComp1.ContainsFile("subfolder/wantedSubFile1.txt")
 	assert.False(t, ok)
 
 	ok, match = usableComp2.ContainsFile("wantedFile1.txt")
@@ -248,7 +248,7 @@ func TestComponentFileMatching(t *testing.T) {
 		checkMatchingPath(t, match, usableComp2, "subfolder/wantedSubFile1.txt")
 	}
 
-	ok, match = usableComp2.ContainsFile("folderSearchedAsFile.txt")
+	ok, _ = usableComp2.ContainsFile("folderSearchedAsFile.txt")
 	assert.False(t, ok)
 
 	//----------------------------------------------------------
