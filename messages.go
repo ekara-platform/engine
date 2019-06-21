@@ -22,7 +22,7 @@ const (
 	//ErrorGeneric  indicates than an error occurred
 	ErrorGeneric string = "An error occurred  %s:"
 
-	//LogValidationSuccessful indicates that the descriptor validation was sucessful
+	//LogValidationSuccessful indicates that the descriptor validation was successful
 	LogValidationSuccessful string = "The envinronment descriptor validation is successful!"
 	//LogProcessingNode  indicates that a node is being processed
 	LogProcessingNode string = "Processing node: %s\n"
