@@ -2,24 +2,24 @@ package engine
 
 const (
 
-	//ErrorParsingDescriptor indicates than an error occured parsing the environment descriptor
+	//ErrorParsingDescriptor indicates than an error occurred parsing the environment descriptor
 	ErrorParsingDescriptor string = "Error parsing the descriptor %s, run the \"cli check\" command to get the details"
-	//ErrorParsingEnvironment indicates than an error occured parsing the environment
+	//ErrorParsingEnvironment indicates than an error occurred parsing the environment
 	ErrorParsingEnvironment string = "Error parsing the environment: %s"
-	//ErrorCreatingReportFile indicates than an error occured creating the execution report file
+	//ErrorCreatingReportFile indicates than an error occurred creating the execution report file
 	ErrorCreatingReportFile string = "Error creating the report file  %s"
-	//ErrorCreatingDumpFile indicates than an error occured creating the environment dump file
+	//ErrorCreatingDumpFile indicates than an error occurred creating the environment dump file
 	ErrorCreatingDumpFile string = "Error creating the dump file  %s"
 
-	//ErrorAddingExchangeFolder indicates than an error occured adding an exchange folder
+	//ErrorAddingExchangeFolder indicates than an error occurred adding an exchange folder
 	ErrorAddingExchangeFolder string = "An error occurred adding the exchange folder %s: %s"
-	//ErrorCreatingExchangeFolder indicates than an error occured creating an exchange folder
+	//ErrorCreatingExchangeFolder indicates than an error occurred creating an exchange folder
 	ErrorCreatingExchangeFolder string = "An error occurred creating the exchange folder %s: %s"
-	//ErrorReadingReport indicates than an error occured reading the execution report file
+	//ErrorReadingReport indicates than an error occurred reading the execution report file
 	ErrorReadingReport string = "error reading the report file \"%s\", error \"%s\""
-	//ErrorUnmarshallingReport indicates than an error occured unmarshalling the execution report file
+	//ErrorUnmarshallingReport indicates than an error occurred unmarshalling the execution report file
 	ErrorUnmarshallingReport string = "error Unmarshalling the report file \"%s\", error \"%s\""
-	//ErrorGeneric  indicates than an error occured
+	//ErrorGeneric  indicates than an error occurred
 	ErrorGeneric string = "An error occurred  %s:"
 
 	//LogValidationSuccessful indicates that the descriptor validation was sucessful

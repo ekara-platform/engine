@@ -11,5 +11,5 @@
 //   - UnknownScm
 //
 // A repository with an UnknownScm but with an URL but with a file scheme will
-// be intented to be fetched as a local files repository.
+// be intended to be fetched as a local files repository.
 package scm

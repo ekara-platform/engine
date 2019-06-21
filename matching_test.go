@@ -88,7 +88,7 @@ func TestComponentFolderMatching(t *testing.T) {
 	usableComp2 := cm.Use(valP1Comp2)
 
 	//----------------------------------------------------------
-	// Matching againts a given component
+	// Matching against a given component
 	//----------------------------------------------------------
 
 	ok, match := usableComp1.ContainsDirectory("wantedfolder1")
@@ -219,7 +219,7 @@ func TestComponentFileMatching(t *testing.T) {
 	usableComp2 := cm.Use(valP1Comp2)
 
 	//----------------------------------------------------------
-	// Matching againts a given component
+	// Matching against a given component
 	//----------------------------------------------------------
 
 	ok, match := usableComp1.ContainsFile("wantedFile1.txt")

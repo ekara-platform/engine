@@ -42,7 +42,7 @@ func GetHandler(l *log.Logger, dir string, c model.Component) (Handler, error) {
 	case model.GitScm:
 		return fetchThroughSccm(git.GitScmHandler{Logger: l}, dir, c, l), nil
 	}
-	return fetchThroughSccm(file.FileScmHandler{Logger: l}, dir, c, l), fmt.Errorf("Unsupported source control managment : %s", c.Repository.Scm)
+	return fetchThroughSccm(file.FileScmHandler{Logger: l}, dir, c, l), fmt.Errorf("Unsupported source control management : %s", c.Repository.Scm)
 
 }
 
