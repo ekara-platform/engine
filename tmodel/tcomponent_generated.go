@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TComponent is a read only component
-// ----------------------------------------------------
 type TComponent interface {
     //Id returns the name of the component
     Id() string

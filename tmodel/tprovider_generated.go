@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TProvider is a read only provider
-// ----------------------------------------------------
 type TProvider interface {
     //Name returns the name of the provider
     Name() string

@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TBase is a read only base location
-// ----------------------------------------------------
 type TBase interface {
     //Url returns the url where the base refers
     Url() TUrl

@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TCopy is a read only representation of files to be copied
-// ----------------------------------------------------
 type TCopy interface {
     //HasLabels returns true if the copy has defined labels
     HasLabels() bool

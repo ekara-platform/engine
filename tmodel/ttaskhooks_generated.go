@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TTaskHooks is a read only representation of the hooks associated to a task
-// ----------------------------------------------------
 type TTaskHooks interface {
     //HasExecute returns true if the hooks has tasks while executing
     HasExecute() bool

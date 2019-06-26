@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TEnvironment is a read only environment
-// ----------------------------------------------------
 type TEnvironment interface {
     //Name returns the name of the environment
     Name() string

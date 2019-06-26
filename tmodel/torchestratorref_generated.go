@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TOrchestratorRef is a read only reference on the orchestrator
-// ----------------------------------------------------
 type TOrchestratorRef interface {
     //Orchestrator returns the orchestrator managing a node
     Orchestrator() (TOrchestrator, error)

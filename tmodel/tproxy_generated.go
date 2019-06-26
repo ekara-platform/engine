@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TProxy is a read only proxy configuration
-// ----------------------------------------------------
 type TProxy interface {
     //Http returns the proxy http definition
     Http() string

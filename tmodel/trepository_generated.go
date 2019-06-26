@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TRepository is a read only repository
-// ----------------------------------------------------
 type TRepository interface {
     //Scm returns the type of the source control management holding the repository
     Scm() string

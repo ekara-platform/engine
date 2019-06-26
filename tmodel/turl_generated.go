@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TUrl is a read only ekara url
-// ----------------------------------------------------
 type TUrl interface {
     //String returns the string representation of the whole url
     String() string

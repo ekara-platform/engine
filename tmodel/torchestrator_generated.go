@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TOrchestrator is a read only orchestrator
-// ----------------------------------------------------
 type TOrchestrator interface {
     //Parameters returns the orchestrator parameters
     Parameters() map[string]interface{}

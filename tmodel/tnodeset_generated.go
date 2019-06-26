@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TNodeSet is a read only node set
-// ----------------------------------------------------
 type TNodeSet interface {
     //Name returns the name of the node set
     Name() string

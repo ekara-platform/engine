@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TStackHooks is a read only representation of the hooks associated to a stack
-// ----------------------------------------------------
 type TStackHooks interface {
     //HasDeploy returns true if the hooks has tasks while deploying
     HasDeploy() bool

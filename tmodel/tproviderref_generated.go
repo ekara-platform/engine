@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TProviderRef is a read only reference on a provider
-// ----------------------------------------------------
 type TProviderRef interface {
     //Provider returns the provider wherein the node should be deployed
     Provider() (TProvider, error)

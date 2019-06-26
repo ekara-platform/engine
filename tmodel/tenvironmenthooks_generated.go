@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TEnvironmentHooks is a read only representation of the hooks associated to an environment
-// ----------------------------------------------------
 type TEnvironmentHooks interface {
     //HasProvision returns true if the hooks has tasks while provisioning
     HasProvision() bool

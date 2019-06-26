@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TTaskRef is a read only reference on a task
-// ----------------------------------------------------
 type TTaskRef interface {
     //Task returns the task corresponding to the ref
     Task() (TTask, error)

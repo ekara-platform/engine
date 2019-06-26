@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TStackRef is a read only reference on a stack
-// ----------------------------------------------------
 type TStackRef interface {
     //Stack returns the stack corresponding to the ref
     Stack() (TStack, error)

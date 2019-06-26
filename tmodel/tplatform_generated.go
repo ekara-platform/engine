@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TPlatform is a read only platform
-// ----------------------------------------------------
 type TPlatform interface {
     //Base returns the base location of the platform
     Base() TBase

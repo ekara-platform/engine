@@ -10,9 +10,7 @@ import(
 //
 //*****************************************************************************
 
-// ----------------------------------------------------
 // TDependencies is a read only list of stack dependencies
-// ----------------------------------------------------
 type TDependencies interface {
     //HasDependencies returns true if there is dependencies
     HasDependencies() bool
