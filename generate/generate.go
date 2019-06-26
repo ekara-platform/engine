@@ -28,44 +28,47 @@ type Interface struct {
 	Methods []Method `json:"methods"`
 }
 
-//Methods represents method exposed by an interface
+//Method represents method exposed by an interface
 type Method struct {
-	Name             string
-	Doc              string
+	//Name represents the name of the method
+	Name string
+	//Doc represents the documentation of the method
+	Doc string
+	//Ret represents the type(s) returned by the method
 	Ret              string               `json:"returns"`
 	Att              string               `json:"attribute"`
 	NoPointer        int                  `json:"no_pointer"`
-	Custom           CustomImplementation `json:"custom"`
-	ReturnTComponent ReturnTComponent     `json:"component"`
-	ReturnTResolve   ReturnTResolve       `json:"resolve"`
-	TInterface       TInterface           `json:"interface"`
-	TInterfaceMap    TInterfaceMap        `json:"interface_map"`
-	TInterfaceArray  TInterfaceArray      `json:"interface_array"`
+	Custom           customImplementation `json:"custom"`
+	ReturnTComponent returnTComponent     `json:"component"`
+	ReturnTResolve   returnTResolve       `json:"resolve"`
+	TInterface       tInterface           `json:"interface"`
+	TInterfaceMap    tInterfaceMap        `json:"interface_map"`
+	TInterfaceArray  tInterfaceArray      `json:"interface_array"`
 }
 
-type ReturnTComponent struct {
+type returnTComponent struct {
 	Att  string `json:"attribute"`
 	Type string `json:"type"`
 }
 
-type TInterface struct {
+type tInterface struct {
 	Name string `json:"name"`
-	ReturnTComponent
+	returnTComponent
 }
 
-type ReturnTResolve struct {
-	TInterface
+type returnTResolve struct {
+	tInterface
 }
 
-type TInterfaceMap struct {
-	TInterface
+type tInterfaceMap struct {
+	tInterface
 }
 
-type TInterfaceArray struct {
-	TInterface
+type tInterfaceArray struct {
+	tInterface
 }
 
-type CustomImplementation struct {
+type customImplementation struct {
 	Impl string `json:"impl"`
 	Ret  string `json:"returns"`
 }
