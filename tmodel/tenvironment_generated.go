@@ -69,12 +69,12 @@ type TEnvironment interface {
 // Implementation(s) of TEnvironment  
 // ----------------------------------------------------
 
-//TEnvironmentOnEnvironmentHolder is the struct containing the Environment in otder to implement TEnvironment  
+//TEnvironmentOnEnvironmentHolder is the struct containing the Environment in order to implement TEnvironment  
 type TEnvironmentOnEnvironmentHolder struct {
 	h 	model.Environment
 }
 
-//CreateTEnvironmentForEnvironment returns a holder implementing TEnvironment
+//CreateTEnvironmentForEnvironment returns an holder of Environment implementing TEnvironment
 func CreateTEnvironmentForEnvironment(o model.Environment) TEnvironmentOnEnvironmentHolder {
 	return TEnvironmentOnEnvironmentHolder{
 		h: o,

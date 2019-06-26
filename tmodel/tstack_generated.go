@@ -41,12 +41,12 @@ type TStack interface {
 // Implementation(s) of TStack  
 // ----------------------------------------------------
 
-//TStackOnStackHolder is the struct containing the Stack in otder to implement TStack  
+//TStackOnStackHolder is the struct containing the Stack in order to implement TStack  
 type TStackOnStackHolder struct {
 	h 	model.Stack
 }
 
-//CreateTStackForStack returns a holder implementing TStack
+//CreateTStackForStack returns an holder of Stack implementing TStack
 func CreateTStackForStack(o model.Stack) TStackOnStackHolder {
 	return TStackOnStackHolder{
 		h: o,

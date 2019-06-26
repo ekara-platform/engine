@@ -23,12 +23,12 @@ type TOrchestratorRef interface {
 // Implementation(s) of TOrchestratorRef  
 // ----------------------------------------------------
 
-//TOrchestratorRefOnOrchestratorRefHolder is the struct containing the OrchestratorRef in otder to implement TOrchestratorRef  
+//TOrchestratorRefOnOrchestratorRefHolder is the struct containing the OrchestratorRef in order to implement TOrchestratorRef  
 type TOrchestratorRefOnOrchestratorRefHolder struct {
 	h 	model.OrchestratorRef
 }
 
-//CreateTOrchestratorRefForOrchestratorRef returns a holder implementing TOrchestratorRef
+//CreateTOrchestratorRefForOrchestratorRef returns an holder of OrchestratorRef implementing TOrchestratorRef
 func CreateTOrchestratorRefForOrchestratorRef(o model.OrchestratorRef) TOrchestratorRefOnOrchestratorRefHolder {
 	return TOrchestratorRefOnOrchestratorRefHolder{
 		h: o,

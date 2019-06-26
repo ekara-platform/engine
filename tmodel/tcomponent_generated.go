@@ -29,12 +29,12 @@ type TComponent interface {
 // Implementation(s) of TComponent  
 // ----------------------------------------------------
 
-//TComponentOnDistributionHolder is the struct containing the Distribution in otder to implement TComponent  
+//TComponentOnDistributionHolder is the struct containing the Distribution in order to implement TComponent  
 type TComponentOnDistributionHolder struct {
 	h 	model.Distribution
 }
 
-//CreateTComponentForDistribution returns a holder implementing TComponent
+//CreateTComponentForDistribution returns an holder of Distribution implementing TComponent
 func CreateTComponentForDistribution(o model.Distribution) TComponentOnDistributionHolder {
 	return TComponentOnDistributionHolder{
 		h: o,
@@ -61,12 +61,12 @@ func (r TComponentOnDistributionHolder) Templates() []string{
 	return r.h.Templates.Content
 }
 
-//TComponentOnComponentHolder is the struct containing the Component in otder to implement TComponent  
+//TComponentOnComponentHolder is the struct containing the Component in order to implement TComponent  
 type TComponentOnComponentHolder struct {
 	h 	model.Component
 }
 
-//CreateTComponentForComponent returns a holder implementing TComponent
+//CreateTComponentForComponent returns an holder of Component implementing TComponent
 func CreateTComponentForComponent(o model.Component) TComponentOnComponentHolder {
 	return TComponentOnComponentHolder{
 		h: o,

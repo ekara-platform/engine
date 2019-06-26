@@ -35,12 +35,12 @@ type TTask interface {
 // Implementation(s) of TTask  
 // ----------------------------------------------------
 
-//TTaskOnTaskHolder is the struct containing the Task in otder to implement TTask  
+//TTaskOnTaskHolder is the struct containing the Task in order to implement TTask  
 type TTaskOnTaskHolder struct {
 	h 	model.Task
 }
 
-//CreateTTaskForTask returns a holder implementing TTask
+//CreateTTaskForTask returns an holder of Task implementing TTask
 func CreateTTaskForTask(o model.Task) TTaskOnTaskHolder {
 	return TTaskOnTaskHolder{
 		h: o,

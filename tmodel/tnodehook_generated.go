@@ -29,12 +29,12 @@ type TNodeHook interface {
 // Implementation(s) of TNodeHook  
 // ----------------------------------------------------
 
-//TNodeHookOnNodeHookHolder is the struct containing the NodeHook in otder to implement TNodeHook  
+//TNodeHookOnNodeHookHolder is the struct containing the NodeHook in order to implement TNodeHook  
 type TNodeHookOnNodeHookHolder struct {
 	h 	model.NodeHook
 }
 
-//CreateTNodeHookForNodeHook returns a holder implementing TNodeHook
+//CreateTNodeHookForNodeHook returns an holder of NodeHook implementing TNodeHook
 func CreateTNodeHookForNodeHook(o model.NodeHook) TNodeHookOnNodeHookHolder {
 	return TNodeHookOnNodeHookHolder{
 		h: o,

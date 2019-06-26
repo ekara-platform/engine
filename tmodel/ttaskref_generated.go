@@ -23,12 +23,12 @@ type TTaskRef interface {
 // Implementation(s) of TTaskRef  
 // ----------------------------------------------------
 
-//TTaskRefOnTaskRefHolder is the struct containing the TaskRef in otder to implement TTaskRef  
+//TTaskRefOnTaskRefHolder is the struct containing the TaskRef in order to implement TTaskRef  
 type TTaskRefOnTaskRefHolder struct {
 	h 	model.TaskRef
 }
 
-//CreateTTaskRefForTaskRef returns a holder implementing TTaskRef
+//CreateTTaskRefForTaskRef returns an holder of TaskRef implementing TTaskRef
 func CreateTTaskRefForTaskRef(o model.TaskRef) TTaskRefOnTaskRefHolder {
 	return TTaskRefOnTaskRefHolder{
 		h: o,

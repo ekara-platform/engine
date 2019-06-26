@@ -41,12 +41,12 @@ type TNodeSet interface {
 // Implementation(s) of TNodeSet  
 // ----------------------------------------------------
 
-//TNodeSetOnNodeSetHolder is the struct containing the NodeSet in otder to implement TNodeSet  
+//TNodeSetOnNodeSetHolder is the struct containing the NodeSet in order to implement TNodeSet  
 type TNodeSetOnNodeSetHolder struct {
 	h 	model.NodeSet
 }
 
-//CreateTNodeSetForNodeSet returns a holder implementing TNodeSet
+//CreateTNodeSetForNodeSet returns an holder of NodeSet implementing TNodeSet
 func CreateTNodeSetForNodeSet(o model.NodeSet) TNodeSetOnNodeSetHolder {
 	return TNodeSetOnNodeSetHolder{
 		h: o,

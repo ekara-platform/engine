@@ -23,12 +23,12 @@ type {{.Name}} interface {
 // Implementation(s) of {{.Name}}  
 // ----------------------------------------------------
 
-{{range .Implentations}}{{$on := .}}{{ $holderName := $impl.HolderSignature $on}}//{{$holderName}} is the struct containing the {{$on}} in otder to implement {{$.Name}}  
+{{range .Implentations}}{{$on := .}}{{ $holderName := $impl.HolderSignature $on}}//{{$holderName}} is the struct containing the {{$on}} in order to implement {{$.Name}}  
 type {{$holderName}} struct {
 	h 	model.{{$on}}
 }
 
-//Create{{$impl.Name}}For{{$on}} returns a holder implementing {{$.Name}}
+//Create{{$impl.Name}}For{{$on}} returns an holder of {{$on}} implementing {{$.Name}}
 func Create{{$impl.Name}}For{{$on}}(o model.{{$on}}) {{$holderName}} {
 	return {{$holderName}}{
 		h: o,

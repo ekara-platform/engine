@@ -29,12 +29,12 @@ type TCopy interface {
 // Implementation(s) of TCopy  
 // ----------------------------------------------------
 
-//TCopyOnCopyHolder is the struct containing the Copy in otder to implement TCopy  
+//TCopyOnCopyHolder is the struct containing the Copy in order to implement TCopy  
 type TCopyOnCopyHolder struct {
 	h 	model.Copy
 }
 
-//CreateTCopyForCopy returns a holder implementing TCopy
+//CreateTCopyForCopy returns an holder of Copy implementing TCopy
 func CreateTCopyForCopy(o model.Copy) TCopyOnCopyHolder {
 	return TCopyOnCopyHolder{
 		h: o,

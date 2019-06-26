@@ -31,12 +31,12 @@ type TUrl interface {
 // Implementation(s) of TUrl  
 // ----------------------------------------------------
 
-//TUrlOnEkUrlHolder is the struct containing the EkUrl in otder to implement TUrl  
+//TUrlOnEkUrlHolder is the struct containing the EkUrl in order to implement TUrl  
 type TUrlOnEkUrlHolder struct {
 	h 	model.EkUrl
 }
 
-//CreateTUrlForEkUrl returns a holder implementing TUrl
+//CreateTUrlForEkUrl returns an holder of EkUrl implementing TUrl
 func CreateTUrlForEkUrl(o model.EkUrl) TUrlOnEkUrlHolder {
 	return TUrlOnEkUrlHolder{
 		h: o,

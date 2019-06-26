@@ -23,12 +23,12 @@ type TProviderRef interface {
 // Implementation(s) of TProviderRef  
 // ----------------------------------------------------
 
-//TProviderRefOnProviderRefHolder is the struct containing the ProviderRef in otder to implement TProviderRef  
+//TProviderRefOnProviderRefHolder is the struct containing the ProviderRef in order to implement TProviderRef  
 type TProviderRefOnProviderRefHolder struct {
 	h 	model.ProviderRef
 }
 
-//CreateTProviderRefForProviderRef returns a holder implementing TProviderRef
+//CreateTProviderRefForProviderRef returns an holder of ProviderRef implementing TProviderRef
 func CreateTProviderRefForProviderRef(o model.ProviderRef) TProviderRefOnProviderRefHolder {
 	return TProviderRefOnProviderRefHolder{
 		h: o,

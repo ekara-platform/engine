@@ -27,12 +27,12 @@ type TPlatform interface {
 // Implementation(s) of TPlatform  
 // ----------------------------------------------------
 
-//TPlatformOnPlatformHolder is the struct containing the Platform in otder to implement TPlatform  
+//TPlatformOnPlatformHolder is the struct containing the Platform in order to implement TPlatform  
 type TPlatformOnPlatformHolder struct {
 	h 	model.Platform
 }
 
-//CreateTPlatformForPlatform returns a holder implementing TPlatform
+//CreateTPlatformForPlatform returns an holder of Platform implementing TPlatform
 func CreateTPlatformForPlatform(o model.Platform) TPlatformOnPlatformHolder {
 	return TPlatformOnPlatformHolder{
 		h: o,

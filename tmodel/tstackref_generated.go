@@ -23,12 +23,12 @@ type TStackRef interface {
 // Implementation(s) of TStackRef  
 // ----------------------------------------------------
 
-//TStackRefOnStackRefHolder is the struct containing the StackRef in otder to implement TStackRef  
+//TStackRefOnStackRefHolder is the struct containing the StackRef in order to implement TStackRef  
 type TStackRefOnStackRefHolder struct {
 	h 	model.StackRef
 }
 
-//CreateTStackRefForStackRef returns a holder implementing TStackRef
+//CreateTStackRefForStackRef returns an holder of StackRef implementing TStackRef
 func CreateTStackRefForStackRef(o model.StackRef) TStackRefOnStackRefHolder {
 	return TStackRefOnStackRefHolder{
 		h: o,

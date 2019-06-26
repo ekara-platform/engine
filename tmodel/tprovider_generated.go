@@ -31,12 +31,12 @@ type TProvider interface {
 // Implementation(s) of TProvider  
 // ----------------------------------------------------
 
-//TProviderOnProviderHolder is the struct containing the Provider in otder to implement TProvider  
+//TProviderOnProviderHolder is the struct containing the Provider in order to implement TProvider  
 type TProviderOnProviderHolder struct {
 	h 	model.Provider
 }
 
-//CreateTProviderForProvider returns a holder implementing TProvider
+//CreateTProviderForProvider returns an holder of Provider implementing TProvider
 func CreateTProviderForProvider(o model.Provider) TProviderOnProviderHolder {
 	return TProviderOnProviderHolder{
 		h: o,

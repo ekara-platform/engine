@@ -29,12 +29,12 @@ type TRepository interface {
 // Implementation(s) of TRepository  
 // ----------------------------------------------------
 
-//TRepositoryOnRepositoryHolder is the struct containing the Repository in otder to implement TRepository  
+//TRepositoryOnRepositoryHolder is the struct containing the Repository in order to implement TRepository  
 type TRepositoryOnRepositoryHolder struct {
 	h 	model.Repository
 }
 
-//CreateTRepositoryForRepository returns a holder implementing TRepository
+//CreateTRepositoryForRepository returns an holder of Repository implementing TRepository
 func CreateTRepositoryForRepository(o model.Repository) TRepositoryOnRepositoryHolder {
 	return TRepositoryOnRepositoryHolder{
 		h: o,

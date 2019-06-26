@@ -25,12 +25,12 @@ type TTaskHooks interface {
 // Implementation(s) of TTaskHooks  
 // ----------------------------------------------------
 
-//TTaskHooksOnTaskHookHolder is the struct containing the TaskHook in otder to implement TTaskHooks  
+//TTaskHooksOnTaskHookHolder is the struct containing the TaskHook in order to implement TTaskHooks  
 type TTaskHooksOnTaskHookHolder struct {
 	h 	model.TaskHook
 }
 
-//CreateTTaskHooksForTaskHook returns a holder implementing TTaskHooks
+//CreateTTaskHooksForTaskHook returns an holder of TaskHook implementing TTaskHooks
 func CreateTTaskHooksForTaskHook(o model.TaskHook) TTaskHooksOnTaskHookHolder {
 	return TTaskHooksOnTaskHookHolder{
 		h: o,

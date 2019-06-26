@@ -27,12 +27,12 @@ type TProxy interface {
 // Implementation(s) of TProxy  
 // ----------------------------------------------------
 
-//TProxyOnProxyHolder is the struct containing the Proxy in otder to implement TProxy  
+//TProxyOnProxyHolder is the struct containing the Proxy in order to implement TProxy  
 type TProxyOnProxyHolder struct {
 	h 	model.Proxy
 }
 
-//CreateTProxyForProxy returns a holder implementing TProxy
+//CreateTProxyForProxy returns an holder of Proxy implementing TProxy
 func CreateTProxyForProxy(o model.Proxy) TProxyOnProxyHolder {
 	return TProxyOnProxyHolder{
 		h: o,

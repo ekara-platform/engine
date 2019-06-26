@@ -29,12 +29,12 @@ type TOrchestrator interface {
 // Implementation(s) of TOrchestrator  
 // ----------------------------------------------------
 
-//TOrchestratorOnOrchestratorHolder is the struct containing the Orchestrator in otder to implement TOrchestrator  
+//TOrchestratorOnOrchestratorHolder is the struct containing the Orchestrator in order to implement TOrchestrator  
 type TOrchestratorOnOrchestratorHolder struct {
 	h 	model.Orchestrator
 }
 
-//CreateTOrchestratorForOrchestrator returns a holder implementing TOrchestrator
+//CreateTOrchestratorForOrchestrator returns an holder of Orchestrator implementing TOrchestrator
 func CreateTOrchestratorForOrchestrator(o model.Orchestrator) TOrchestratorOnOrchestratorHolder {
 	return TOrchestratorOnOrchestratorHolder{
 		h: o,

@@ -37,12 +37,12 @@ type TEnvironmentHooks interface {
 // Implementation(s) of TEnvironmentHooks  
 // ----------------------------------------------------
 
-//TEnvironmentHooksOnEnvironmentHooksHolder is the struct containing the EnvironmentHooks in otder to implement TEnvironmentHooks  
+//TEnvironmentHooksOnEnvironmentHooksHolder is the struct containing the EnvironmentHooks in order to implement TEnvironmentHooks  
 type TEnvironmentHooksOnEnvironmentHooksHolder struct {
 	h 	model.EnvironmentHooks
 }
 
-//CreateTEnvironmentHooksForEnvironmentHooks returns a holder implementing TEnvironmentHooks
+//CreateTEnvironmentHooksForEnvironmentHooks returns an holder of EnvironmentHooks implementing TEnvironmentHooks
 func CreateTEnvironmentHooksForEnvironmentHooks(o model.EnvironmentHooks) TEnvironmentHooksOnEnvironmentHooksHolder {
 	return TEnvironmentHooksOnEnvironmentHooksHolder{
 		h: o,

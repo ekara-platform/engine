@@ -29,12 +29,12 @@ type TStackHooks interface {
 // Implementation(s) of TStackHooks  
 // ----------------------------------------------------
 
-//TStackHooksOnStackHookHolder is the struct containing the StackHook in otder to implement TStackHooks  
+//TStackHooksOnStackHookHolder is the struct containing the StackHook in order to implement TStackHooks  
 type TStackHooksOnStackHookHolder struct {
 	h 	model.StackHook
 }
 
-//CreateTStackHooksForStackHook returns a holder implementing TStackHooks
+//CreateTStackHooksForStackHook returns an holder of StackHook implementing TStackHooks
 func CreateTStackHooksForStackHook(o model.StackHook) TStackHooksOnStackHookHolder {
 	return TStackHooksOnStackHookHolder{
 		h: o,

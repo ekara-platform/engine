@@ -25,12 +25,12 @@ type THook interface {
 // Implementation(s) of THook  
 // ----------------------------------------------------
 
-//THookOnHookHolder is the struct containing the Hook in otder to implement THook  
+//THookOnHookHolder is the struct containing the Hook in order to implement THook  
 type THookOnHookHolder struct {
 	h 	model.Hook
 }
 
-//CreateTHookForHook returns a holder implementing THook
+//CreateTHookForHook returns an holder of Hook implementing THook
 func CreateTHookForHook(o model.Hook) THookOnHookHolder {
 	return THookOnHookHolder{
 		h: o,

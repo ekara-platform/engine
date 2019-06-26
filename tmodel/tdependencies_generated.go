@@ -25,12 +25,12 @@ type TDependencies interface {
 // Implementation(s) of TDependencies  
 // ----------------------------------------------------
 
-//TDependenciesOnDependenciesHolder is the struct containing the Dependencies in otder to implement TDependencies  
+//TDependenciesOnDependenciesHolder is the struct containing the Dependencies in order to implement TDependencies  
 type TDependenciesOnDependenciesHolder struct {
 	h 	model.Dependencies
 }
 
-//CreateTDependenciesForDependencies returns a holder implementing TDependencies
+//CreateTDependenciesForDependencies returns an holder of Dependencies implementing TDependencies
 func CreateTDependenciesForDependencies(o model.Dependencies) TDependenciesOnDependenciesHolder {
 	return TDependenciesOnDependenciesHolder{
 		h: o,
