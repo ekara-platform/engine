@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,24 +12,23 @@ import(
 
 // TRepository is a read only repository
 type TRepository interface {
-    //Scm returns the type of the source control management holding the repository
-    Scm() string
-    //Url returns the url where the repository is located
-    Url() TUrl
-    //Ref returns the reference (tag,branch, ...) to use within the repository
-    Ref() string
-    //DescriptorName returns the name of the ekara descriptor for this repository
-    DescriptorName() string
-	
+	//Scm returns the type of the source control management holding the repository
+	Scm() string
+	//Url returns the url where the repository is located
+	Url() TUrl
+	//Ref returns the reference (tag,branch, ...) to use within the repository
+	Ref() string
+	//DescriptorName returns the name of the ekara descriptor for this repository
+	DescriptorName() string
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TRepository  
+// Implementation(s) of TRepository
 // ----------------------------------------------------
 
-//TRepositoryOnRepositoryHolder is the struct containing the Repository in order to implement TRepository  
+//TRepositoryOnRepositoryHolder is the struct containing the Repository in order to implement TRepository
 type TRepositoryOnRepositoryHolder struct {
-	h 	model.Repository
+	h model.Repository
 }
 
 //CreateTRepositoryForRepository returns an holder of Repository implementing TRepository
@@ -40,22 +39,21 @@ func CreateTRepositoryForRepository(o model.Repository) TRepositoryOnRepositoryH
 }
 
 //Scm returns the type of the source control management holding the repository
-func (r TRepositoryOnRepositoryHolder) Scm() string{
+func (r TRepositoryOnRepositoryHolder) Scm() string {
 	return string(r.h.Scm)
 }
 
 //Url returns the url where the repository is located
-func (r TRepositoryOnRepositoryHolder) Url() TUrl{
-	    return CreateTUrlForEkUrl(r.h.Url)
+func (r TRepositoryOnRepositoryHolder) Url() TUrl {
+	return CreateTUrlForEkUrl(r.h.Url)
 }
 
 //Ref returns the reference (tag,branch, ...) to use within the repository
-func (r TRepositoryOnRepositoryHolder) Ref() string{
+func (r TRepositoryOnRepositoryHolder) Ref() string {
 	return r.h.Ref
 }
 
 //DescriptorName returns the name of the ekara descriptor for this repository
-func (r TRepositoryOnRepositoryHolder) DescriptorName() string{
+func (r TRepositoryOnRepositoryHolder) DescriptorName() string {
 	return r.h.DescriptorName
 }
-

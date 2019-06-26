@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,24 +12,23 @@ import(
 
 // TNodeHook is a read only representation of the hooks associated to a node
 type TNodeHook interface {
-    //HasProvision returns true if the hooks has tasks while provisioning
-    HasProvision() bool
-    //Provision returns the provisioning tasks
-    Provision() THook
-    //HasDestroy returns true if the hooks has tasks while destroying
-    HasDestroy() bool
-    //Destroy returns the destroyinh tasks
-    Destroy() THook
-	
+	//HasProvision returns true if the hooks has tasks while provisioning
+	HasProvision() bool
+	//Provision returns the provisioning tasks
+	Provision() THook
+	//HasDestroy returns true if the hooks has tasks while destroying
+	HasDestroy() bool
+	//Destroy returns the destroyinh tasks
+	Destroy() THook
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TNodeHook  
+// Implementation(s) of TNodeHook
 // ----------------------------------------------------
 
-//TNodeHookOnNodeHookHolder is the struct containing the NodeHook in order to implement TNodeHook  
+//TNodeHookOnNodeHookHolder is the struct containing the NodeHook in order to implement TNodeHook
 type TNodeHookOnNodeHookHolder struct {
-	h 	model.NodeHook
+	h model.NodeHook
 }
 
 //CreateTNodeHookForNodeHook returns an holder of NodeHook implementing TNodeHook
@@ -40,22 +39,21 @@ func CreateTNodeHookForNodeHook(o model.NodeHook) TNodeHookOnNodeHookHolder {
 }
 
 //HasProvision returns true if the hooks has tasks while provisioning
-func (r TNodeHookOnNodeHookHolder) HasProvision() bool{
+func (r TNodeHookOnNodeHookHolder) HasProvision() bool {
 	return r.h.Provision.HasTasks()
 }
 
 //Provision returns the provisioning tasks
-func (r TNodeHookOnNodeHookHolder) Provision() THook{
-	    return CreateTHookForHook(r.h.Provision)
+func (r TNodeHookOnNodeHookHolder) Provision() THook {
+	return CreateTHookForHook(r.h.Provision)
 }
 
 //HasDestroy returns true if the hooks has tasks while destroying
-func (r TNodeHookOnNodeHookHolder) HasDestroy() bool{
+func (r TNodeHookOnNodeHookHolder) HasDestroy() bool {
 	return r.h.Destroy.HasTasks()
 }
 
 //Destroy returns the destroyinh tasks
-func (r TNodeHookOnNodeHookHolder) Destroy() THook{
-	    return CreateTHookForHook(r.h.Destroy)
+func (r TNodeHookOnNodeHookHolder) Destroy() THook {
+	return CreateTHookForHook(r.h.Destroy)
 }
-

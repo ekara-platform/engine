@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,36 +12,35 @@ import(
 
 // TNodeSet is a read only node set
 type TNodeSet interface {
-    //Name returns the name of the node set
-    Name() string
-    //Instances returns the number of nodes to create for this node set
-    Instances() int
-    //Orchestrator returns the reference on the orchestrator managing the node
-    Orchestrator() TOrchestratorRef
-    //Provider returns the reference on the provider wherein the node should be deployed
-    Provider() TProviderRef
-    //HasHooks returns true if the node has hooks
-    HasHooks() bool
-    //Hooks returns the node hooks
-    Hooks() TNodeHook
-    //HasProvisionHooks returns true if the node has hooks while provisioning
-    HasProvisionHooks() bool
-    //HasDestroyHooks returns true if the node has hooks while destroying
-    HasDestroyHooks() bool
-    //HasLabels returns true if the node has defined labels
-    HasLabels() bool
-    //Labels returns the node labels
-    Labels() map[string]string
-	
+	//Name returns the name of the node set
+	Name() string
+	//Instances returns the number of nodes to create for this node set
+	Instances() int
+	//Orchestrator returns the reference on the orchestrator managing the node
+	Orchestrator() TOrchestratorRef
+	//Provider returns the reference on the provider wherein the node should be deployed
+	Provider() TProviderRef
+	//HasHooks returns true if the node has hooks
+	HasHooks() bool
+	//Hooks returns the node hooks
+	Hooks() TNodeHook
+	//HasProvisionHooks returns true if the node has hooks while provisioning
+	HasProvisionHooks() bool
+	//HasDestroyHooks returns true if the node has hooks while destroying
+	HasDestroyHooks() bool
+	//HasLabels returns true if the node has defined labels
+	HasLabels() bool
+	//Labels returns the node labels
+	Labels() map[string]string
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TNodeSet  
+// Implementation(s) of TNodeSet
 // ----------------------------------------------------
 
-//TNodeSetOnNodeSetHolder is the struct containing the NodeSet in order to implement TNodeSet  
+//TNodeSetOnNodeSetHolder is the struct containing the NodeSet in order to implement TNodeSet
 type TNodeSetOnNodeSetHolder struct {
-	h 	model.NodeSet
+	h model.NodeSet
 }
 
 //CreateTNodeSetForNodeSet returns an holder of NodeSet implementing TNodeSet
@@ -52,52 +51,51 @@ func CreateTNodeSetForNodeSet(o model.NodeSet) TNodeSetOnNodeSetHolder {
 }
 
 //Name returns the name of the node set
-func (r TNodeSetOnNodeSetHolder) Name() string{
+func (r TNodeSetOnNodeSetHolder) Name() string {
 	return r.h.Name
 }
 
 //Instances returns the number of nodes to create for this node set
-func (r TNodeSetOnNodeSetHolder) Instances() int{
+func (r TNodeSetOnNodeSetHolder) Instances() int {
 	return r.h.Instances
 }
 
 //Orchestrator returns the reference on the orchestrator managing the node
-func (r TNodeSetOnNodeSetHolder) Orchestrator() TOrchestratorRef{
-	    return CreateTOrchestratorRefForOrchestratorRef(r.h.Orchestrator)
+func (r TNodeSetOnNodeSetHolder) Orchestrator() TOrchestratorRef {
+	return CreateTOrchestratorRefForOrchestratorRef(r.h.Orchestrator)
 }
 
 //Provider returns the reference on the provider wherein the node should be deployed
-func (r TNodeSetOnNodeSetHolder) Provider() TProviderRef{
-	    return CreateTProviderRefForProviderRef(r.h.Provider)
+func (r TNodeSetOnNodeSetHolder) Provider() TProviderRef {
+	return CreateTProviderRefForProviderRef(r.h.Provider)
 }
 
 //HasHooks returns true if the node has hooks
-func (r TNodeSetOnNodeSetHolder) HasHooks() bool{
+func (r TNodeSetOnNodeSetHolder) HasHooks() bool {
 	return r.h.Hooks.HasTasks()
 }
 
 //Hooks returns the node hooks
-func (r TNodeSetOnNodeSetHolder) Hooks() TNodeHook{
-	    return CreateTNodeHookForNodeHook(r.h.Hooks)
+func (r TNodeSetOnNodeSetHolder) Hooks() TNodeHook {
+	return CreateTNodeHookForNodeHook(r.h.Hooks)
 }
 
 //HasProvisionHooks returns true if the node has hooks while provisioning
-func (r TNodeSetOnNodeSetHolder) HasProvisionHooks() bool{
+func (r TNodeSetOnNodeSetHolder) HasProvisionHooks() bool {
 	return r.h.Hooks.Provision.HasTasks()
 }
 
 //HasDestroyHooks returns true if the node has hooks while destroying
-func (r TNodeSetOnNodeSetHolder) HasDestroyHooks() bool{
+func (r TNodeSetOnNodeSetHolder) HasDestroyHooks() bool {
 	return r.h.Hooks.Destroy.HasTasks()
 }
 
 //HasLabels returns true if the node has defined labels
-func (r TNodeSetOnNodeSetHolder) HasLabels() bool{
+func (r TNodeSetOnNodeSetHolder) HasLabels() bool {
 	return len(r.h.Labels) > 0
 }
 
 //Labels returns the node labels
-func (r TNodeSetOnNodeSetHolder) Labels() map[string]string{
+func (r TNodeSetOnNodeSetHolder) Labels() map[string]string {
 	return r.h.Labels
 }
-

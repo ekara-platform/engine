@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,18 +12,17 @@ import(
 
 // TTaskRef is a read only reference on a task
 type TTaskRef interface {
-    //Task returns the task corresponding to the ref
-    Task() (TTask, error)
-	
+	//Task returns the task corresponding to the ref
+	Task() (TTask, error)
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TTaskRef  
+// Implementation(s) of TTaskRef
 // ----------------------------------------------------
 
-//TTaskRefOnTaskRefHolder is the struct containing the TaskRef in order to implement TTaskRef  
+//TTaskRefOnTaskRefHolder is the struct containing the TaskRef in order to implement TTaskRef
 type TTaskRefOnTaskRefHolder struct {
-	h 	model.TaskRef
+	h model.TaskRef
 }
 
 //CreateTTaskRefForTaskRef returns an holder of TaskRef implementing TTaskRef
@@ -34,8 +33,7 @@ func CreateTTaskRefForTaskRef(o model.TaskRef) TTaskRefOnTaskRefHolder {
 }
 
 //Task returns the task corresponding to the ref
-func (r TTaskRefOnTaskRefHolder) Task() (TTask, error){
-	    v, err := r.h.Resolve()
-    return CreateTTaskForTask(v), err
+func (r TTaskRefOnTaskRefHolder) Task() (TTask, error) {
+	v, err := r.h.Resolve()
+	return CreateTTaskForTask(v), err
 }
-

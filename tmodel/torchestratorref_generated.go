@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,18 +12,17 @@ import(
 
 // TOrchestratorRef is a read only reference on the orchestrator
 type TOrchestratorRef interface {
-    //Orchestrator returns the orchestrator managing a node
-    Orchestrator() (TOrchestrator, error)
-	
+	//Orchestrator returns the orchestrator managing a node
+	Orchestrator() (TOrchestrator, error)
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TOrchestratorRef  
+// Implementation(s) of TOrchestratorRef
 // ----------------------------------------------------
 
-//TOrchestratorRefOnOrchestratorRefHolder is the struct containing the OrchestratorRef in order to implement TOrchestratorRef  
+//TOrchestratorRefOnOrchestratorRefHolder is the struct containing the OrchestratorRef in order to implement TOrchestratorRef
 type TOrchestratorRefOnOrchestratorRefHolder struct {
-	h 	model.OrchestratorRef
+	h model.OrchestratorRef
 }
 
 //CreateTOrchestratorRefForOrchestratorRef returns an holder of OrchestratorRef implementing TOrchestratorRef
@@ -34,8 +33,7 @@ func CreateTOrchestratorRefForOrchestratorRef(o model.OrchestratorRef) TOrchestr
 }
 
 //Orchestrator returns the orchestrator managing a node
-func (r TOrchestratorRefOnOrchestratorRefHolder) Orchestrator() (TOrchestrator, error){
-	    v, err := r.h.Resolve()
-    return CreateTOrchestratorForOrchestrator(v), err
+func (r TOrchestratorRefOnOrchestratorRefHolder) Orchestrator() (TOrchestrator, error) {
+	v, err := r.h.Resolve()
+	return CreateTOrchestratorForOrchestrator(v), err
 }
-

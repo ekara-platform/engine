@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,22 +12,21 @@ import(
 
 // TPlatform is a read only platform
 type TPlatform interface {
-    //Base returns the base location of the platform
-    Base() TBase
-    //Distribution returns the distribution used by the platform
-    Distribution() TComponent
-    //HasComponents returns true if the platform has components
-    HasComponents() bool
-	
+	//Base returns the base location of the platform
+	Base() TBase
+	//Distribution returns the distribution used by the platform
+	Distribution() TComponent
+	//HasComponents returns true if the platform has components
+	HasComponents() bool
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TPlatform  
+// Implementation(s) of TPlatform
 // ----------------------------------------------------
 
-//TPlatformOnPlatformHolder is the struct containing the Platform in order to implement TPlatform  
+//TPlatformOnPlatformHolder is the struct containing the Platform in order to implement TPlatform
 type TPlatformOnPlatformHolder struct {
-	h 	model.Platform
+	h model.Platform
 }
 
 //CreateTPlatformForPlatform returns an holder of Platform implementing TPlatform
@@ -38,17 +37,16 @@ func CreateTPlatformForPlatform(o model.Platform) TPlatformOnPlatformHolder {
 }
 
 //Base returns the base location of the platform
-func (r TPlatformOnPlatformHolder) Base() TBase{
-	    return CreateTBaseForBase(r.h.Base)
+func (r TPlatformOnPlatformHolder) Base() TBase {
+	return CreateTBaseForBase(r.h.Base)
 }
 
 //Distribution returns the distribution used by the platform
-func (r TPlatformOnPlatformHolder) Distribution() TComponent{
-	    return CreateTComponentForDistribution(r.h.Distribution)
+func (r TPlatformOnPlatformHolder) Distribution() TComponent {
+	return CreateTComponentForDistribution(r.h.Distribution)
 }
 
 //HasComponents returns true if the platform has components
-func (r TPlatformOnPlatformHolder) HasComponents() bool{
+func (r TPlatformOnPlatformHolder) HasComponents() bool {
 	return len(r.h.Components) > 0
 }
-

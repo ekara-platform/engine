@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"go/format"
 	"os"
 	"strings"
 	"text/template"
@@ -200,7 +202,18 @@ func main() {
 			panic(err)
 		}
 
-		err = t.Execute(w, i)
+		var buf bytes.Buffer
+		err = t.Execute(&buf, i)
+		if err != nil {
+			panic(err)
+		}
+
+		src, err := format.Source(buf.Bytes())
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = w.Write(src)
 		if err != nil {
 			panic(err)
 		}

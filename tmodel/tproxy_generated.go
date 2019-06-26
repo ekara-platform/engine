@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,22 +12,21 @@ import(
 
 // TProxy is a read only proxy configuration
 type TProxy interface {
-    //Http returns the proxy http definition
-    Http() string
-    //Https returns the proxy https definition
-    Https() string
-    //NoProxy returns the no proxy definition
-    NoProxy() string
-	
+	//Http returns the proxy http definition
+	Http() string
+	//Https returns the proxy https definition
+	Https() string
+	//NoProxy returns the no proxy definition
+	NoProxy() string
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TProxy  
+// Implementation(s) of TProxy
 // ----------------------------------------------------
 
-//TProxyOnProxyHolder is the struct containing the Proxy in order to implement TProxy  
+//TProxyOnProxyHolder is the struct containing the Proxy in order to implement TProxy
 type TProxyOnProxyHolder struct {
-	h 	model.Proxy
+	h model.Proxy
 }
 
 //CreateTProxyForProxy returns an holder of Proxy implementing TProxy
@@ -38,17 +37,16 @@ func CreateTProxyForProxy(o model.Proxy) TProxyOnProxyHolder {
 }
 
 //Http returns the proxy http definition
-func (r TProxyOnProxyHolder) Http() string{
+func (r TProxyOnProxyHolder) Http() string {
 	return r.h.Http
 }
 
 //Https returns the proxy https definition
-func (r TProxyOnProxyHolder) Https() string{
+func (r TProxyOnProxyHolder) Https() string {
 	return r.h.Https
 }
 
 //NoProxy returns the no proxy definition
-func (r TProxyOnProxyHolder) NoProxy() string{
+func (r TProxyOnProxyHolder) NoProxy() string {
 	return r.h.NoProxy
 }
-

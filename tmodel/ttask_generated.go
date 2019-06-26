@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,30 +12,29 @@ import(
 
 // TTask is a read only task
 type TTask interface {
-    //Name returns the name of the task
-    Name() string
-    //Playbook returns the playbook linked to the task
-    Playbook() string
-    //Cron returns the cron linked to the task
-    Cron() string
-    //Parameters returns the task parameters
-    Parameters() map[string]interface{}
-    //EnvVars returns the task environment variables
-    EnvVars() map[string]string
-    //HasHooks returns true if the task has hooks
-    HasHooks() bool
-    //Hooks returns the task hooks
-    Hooks() TTaskHooks
-	
+	//Name returns the name of the task
+	Name() string
+	//Playbook returns the playbook linked to the task
+	Playbook() string
+	//Cron returns the cron linked to the task
+	Cron() string
+	//Parameters returns the task parameters
+	Parameters() map[string]interface{}
+	//EnvVars returns the task environment variables
+	EnvVars() map[string]string
+	//HasHooks returns true if the task has hooks
+	HasHooks() bool
+	//Hooks returns the task hooks
+	Hooks() TTaskHooks
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TTask  
+// Implementation(s) of TTask
 // ----------------------------------------------------
 
-//TTaskOnTaskHolder is the struct containing the Task in order to implement TTask  
+//TTaskOnTaskHolder is the struct containing the Task in order to implement TTask
 type TTaskOnTaskHolder struct {
-	h 	model.Task
+	h model.Task
 }
 
 //CreateTTaskForTask returns an holder of Task implementing TTask
@@ -46,37 +45,36 @@ func CreateTTaskForTask(o model.Task) TTaskOnTaskHolder {
 }
 
 //Name returns the name of the task
-func (r TTaskOnTaskHolder) Name() string{
+func (r TTaskOnTaskHolder) Name() string {
 	return r.h.Name
 }
 
 //Playbook returns the playbook linked to the task
-func (r TTaskOnTaskHolder) Playbook() string{
+func (r TTaskOnTaskHolder) Playbook() string {
 	return r.h.Playbook
 }
 
 //Cron returns the cron linked to the task
-func (r TTaskOnTaskHolder) Cron() string{
+func (r TTaskOnTaskHolder) Cron() string {
 	return r.h.Cron
 }
 
 //Parameters returns the task parameters
-func (r TTaskOnTaskHolder) Parameters() map[string]interface{}{
+func (r TTaskOnTaskHolder) Parameters() map[string]interface{} {
 	return r.h.Parameters
 }
 
 //EnvVars returns the task environment variables
-func (r TTaskOnTaskHolder) EnvVars() map[string]string{
+func (r TTaskOnTaskHolder) EnvVars() map[string]string {
 	return r.h.EnvVars
 }
 
 //HasHooks returns true if the task has hooks
-func (r TTaskOnTaskHolder) HasHooks() bool{
+func (r TTaskOnTaskHolder) HasHooks() bool {
 	return r.h.Hooks.HasTasks()
 }
 
 //Hooks returns the task hooks
-func (r TTaskOnTaskHolder) Hooks() TTaskHooks{
-	    return CreateTTaskHooksForTaskHook(r.h.Hooks)
+func (r TTaskOnTaskHolder) Hooks() TTaskHooks {
+	return CreateTTaskHooksForTaskHook(r.h.Hooks)
 }
-

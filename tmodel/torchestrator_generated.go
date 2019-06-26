@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,24 +12,23 @@ import(
 
 // TOrchestrator is a read only orchestrator
 type TOrchestrator interface {
-    //Parameters returns the orchestrator parameters
-    Parameters() map[string]interface{}
-    //EnvVars returns the orchestrator environment variables
-    EnvVars() map[string]string
-    //Docker returns the orchestrator parameters for docker
-    Docker() map[string]interface{}
-    //Component returns the orchestrator component
-    Component() (TComponent, error)
-	
+	//Parameters returns the orchestrator parameters
+	Parameters() map[string]interface{}
+	//EnvVars returns the orchestrator environment variables
+	EnvVars() map[string]string
+	//Docker returns the orchestrator parameters for docker
+	Docker() map[string]interface{}
+	//Component returns the orchestrator component
+	Component() (TComponent, error)
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TOrchestrator  
+// Implementation(s) of TOrchestrator
 // ----------------------------------------------------
 
-//TOrchestratorOnOrchestratorHolder is the struct containing the Orchestrator in order to implement TOrchestrator  
+//TOrchestratorOnOrchestratorHolder is the struct containing the Orchestrator in order to implement TOrchestrator
 type TOrchestratorOnOrchestratorHolder struct {
-	h 	model.Orchestrator
+	h model.Orchestrator
 }
 
 //CreateTOrchestratorForOrchestrator returns an holder of Orchestrator implementing TOrchestrator
@@ -40,23 +39,22 @@ func CreateTOrchestratorForOrchestrator(o model.Orchestrator) TOrchestratorOnOrc
 }
 
 //Parameters returns the orchestrator parameters
-func (r TOrchestratorOnOrchestratorHolder) Parameters() map[string]interface{}{
+func (r TOrchestratorOnOrchestratorHolder) Parameters() map[string]interface{} {
 	return r.h.Parameters
 }
 
 //EnvVars returns the orchestrator environment variables
-func (r TOrchestratorOnOrchestratorHolder) EnvVars() map[string]string{
+func (r TOrchestratorOnOrchestratorHolder) EnvVars() map[string]string {
 	return r.h.EnvVars
 }
 
 //Docker returns the orchestrator parameters for docker
-func (r TOrchestratorOnOrchestratorHolder) Docker() map[string]interface{}{
+func (r TOrchestratorOnOrchestratorHolder) Docker() map[string]interface{} {
 	return r.h.Docker
 }
 
 //Component returns the orchestrator component
-func (r TOrchestratorOnOrchestratorHolder) Component() (TComponent, error){
-	    v, err := r.h.Component()
-    return CreateTComponentForComponent(v), err
+func (r TOrchestratorOnOrchestratorHolder) Component() (TComponent, error) {
+	v, err := r.h.Component()
+	return CreateTComponentForComponent(v), err
 }
-

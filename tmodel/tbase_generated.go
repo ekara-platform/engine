@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,18 +12,17 @@ import(
 
 // TBase is a read only base location
 type TBase interface {
-    //Url returns the url where the base refers
-    Url() TUrl
-	
+	//Url returns the url where the base refers
+	Url() TUrl
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TBase  
+// Implementation(s) of TBase
 // ----------------------------------------------------
 
-//TBaseOnBaseHolder is the struct containing the Base in order to implement TBase  
+//TBaseOnBaseHolder is the struct containing the Base in order to implement TBase
 type TBaseOnBaseHolder struct {
-	h 	model.Base
+	h model.Base
 }
 
 //CreateTBaseForBase returns an holder of Base implementing TBase
@@ -34,7 +33,6 @@ func CreateTBaseForBase(o model.Base) TBaseOnBaseHolder {
 }
 
 //Url returns the url where the base refers
-func (r TBaseOnBaseHolder) Url() TUrl{
-	    return CreateTUrlForEkUrl(r.h.Url)
+func (r TBaseOnBaseHolder) Url() TUrl {
+	return CreateTUrlForEkUrl(r.h.Url)
 }
-

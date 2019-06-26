@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,20 +12,19 @@ import(
 
 // TDependencies is a read only list of stack dependencies
 type TDependencies interface {
-    //HasDependencies returns true if there is dependencies
-    HasDependencies() bool
-    //Dependencies returns the references of stacks we depend on
-    Dependencies() []TStackRef
-	
+	//HasDependencies returns true if there is dependencies
+	HasDependencies() bool
+	//Dependencies returns the references of stacks we depend on
+	Dependencies() []TStackRef
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TDependencies  
+// Implementation(s) of TDependencies
 // ----------------------------------------------------
 
-//TDependenciesOnDependenciesHolder is the struct containing the Dependencies in order to implement TDependencies  
+//TDependenciesOnDependenciesHolder is the struct containing the Dependencies in order to implement TDependencies
 type TDependenciesOnDependenciesHolder struct {
-	h 	model.Dependencies
+	h model.Dependencies
 }
 
 //CreateTDependenciesForDependencies returns an holder of Dependencies implementing TDependencies
@@ -36,17 +35,16 @@ func CreateTDependenciesForDependencies(o model.Dependencies) TDependenciesOnDep
 }
 
 //HasDependencies returns true if there is dependencies
-func (r TDependenciesOnDependenciesHolder) HasDependencies() bool{
+func (r TDependenciesOnDependenciesHolder) HasDependencies() bool {
 	return len(r.h.Content) > 0
 }
 
 //Dependencies returns the references of stacks we depend on
-func (r TDependenciesOnDependenciesHolder) Dependencies() []TStackRef{
-	    result := make([]TStackRef, 0, 0)
-    for _ , val := range r.h.Content{
-        result = append(result, CreateTStackRefForStackRef(val))
-    }
-    return result
+func (r TDependenciesOnDependenciesHolder) Dependencies() []TStackRef {
+	result := make([]TStackRef, 0, 0)
+	for _, val := range r.h.Content {
+		result = append(result, CreateTStackRefForStackRef(val))
+	}
+	return result
 
 }
-

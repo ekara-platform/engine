@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,20 +12,19 @@ import(
 
 // TTaskHooks is a read only representation of the hooks associated to a task
 type TTaskHooks interface {
-    //HasExecute returns true if the hooks has tasks while executing
-    HasExecute() bool
-    //Execute returns the executing tasks
-    Execute() THook
-	
+	//HasExecute returns true if the hooks has tasks while executing
+	HasExecute() bool
+	//Execute returns the executing tasks
+	Execute() THook
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TTaskHooks  
+// Implementation(s) of TTaskHooks
 // ----------------------------------------------------
 
-//TTaskHooksOnTaskHookHolder is the struct containing the TaskHook in order to implement TTaskHooks  
+//TTaskHooksOnTaskHookHolder is the struct containing the TaskHook in order to implement TTaskHooks
 type TTaskHooksOnTaskHookHolder struct {
-	h 	model.TaskHook
+	h model.TaskHook
 }
 
 //CreateTTaskHooksForTaskHook returns an holder of TaskHook implementing TTaskHooks
@@ -36,12 +35,11 @@ func CreateTTaskHooksForTaskHook(o model.TaskHook) TTaskHooksOnTaskHookHolder {
 }
 
 //HasExecute returns true if the hooks has tasks while executing
-func (r TTaskHooksOnTaskHookHolder) HasExecute() bool{
+func (r TTaskHooksOnTaskHookHolder) HasExecute() bool {
 	return r.h.Execute.HasTasks()
 }
 
 //Execute returns the executing tasks
-func (r TTaskHooksOnTaskHookHolder) Execute() THook{
-	    return CreateTHookForHook(r.h.Execute)
+func (r TTaskHooksOnTaskHookHolder) Execute() THook {
+	return CreateTHookForHook(r.h.Execute)
 }
-

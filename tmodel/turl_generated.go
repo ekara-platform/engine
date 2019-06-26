@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,26 +12,25 @@ import(
 
 // TUrl is a read only ekara url
 type TUrl interface {
-    //String returns the string representation of the whole url
-    String() string
-    //Scheme returns the url scheme
-    Scheme() string
-    //Path returns the url path
-    Path() string
-    //AsFilePath returns the path converted as a file path
-    AsFilePath() string
-    //Host returns the url host
-    Host() string
-	
+	//String returns the string representation of the whole url
+	String() string
+	//Scheme returns the url scheme
+	Scheme() string
+	//Path returns the url path
+	Path() string
+	//AsFilePath returns the path converted as a file path
+	AsFilePath() string
+	//Host returns the url host
+	Host() string
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TUrl  
+// Implementation(s) of TUrl
 // ----------------------------------------------------
 
-//TUrlOnEkUrlHolder is the struct containing the EkUrl in order to implement TUrl  
+//TUrlOnEkUrlHolder is the struct containing the EkUrl in order to implement TUrl
 type TUrlOnEkUrlHolder struct {
-	h 	model.EkUrl
+	h model.EkUrl
 }
 
 //CreateTUrlForEkUrl returns an holder of EkUrl implementing TUrl
@@ -42,27 +41,26 @@ func CreateTUrlForEkUrl(o model.EkUrl) TUrlOnEkUrlHolder {
 }
 
 //String returns the string representation of the whole url
-func (r TUrlOnEkUrlHolder) String() string{
+func (r TUrlOnEkUrlHolder) String() string {
 	return r.h.String()
 }
 
 //Scheme returns the url scheme
-func (r TUrlOnEkUrlHolder) Scheme() string{
+func (r TUrlOnEkUrlHolder) Scheme() string {
 	return r.h.Scheme()
 }
 
 //Path returns the url path
-func (r TUrlOnEkUrlHolder) Path() string{
+func (r TUrlOnEkUrlHolder) Path() string {
 	return r.h.Path()
 }
 
 //AsFilePath returns the path converted as a file path
-func (r TUrlOnEkUrlHolder) AsFilePath() string{
+func (r TUrlOnEkUrlHolder) AsFilePath() string {
 	return r.h.AsFilePath()
 }
 
 //Host returns the url host
-func (r TUrlOnEkUrlHolder) Host() string{
+func (r TUrlOnEkUrlHolder) Host() string {
 	return r.h.Host()
 }
-

@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,18 +12,17 @@ import(
 
 // TProviderRef is a read only reference on a provider
 type TProviderRef interface {
-    //Provider returns the provider wherein the node should be deployed
-    Provider() (TProvider, error)
-	
+	//Provider returns the provider wherein the node should be deployed
+	Provider() (TProvider, error)
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TProviderRef  
+// Implementation(s) of TProviderRef
 // ----------------------------------------------------
 
-//TProviderRefOnProviderRefHolder is the struct containing the ProviderRef in order to implement TProviderRef  
+//TProviderRefOnProviderRefHolder is the struct containing the ProviderRef in order to implement TProviderRef
 type TProviderRefOnProviderRefHolder struct {
-	h 	model.ProviderRef
+	h model.ProviderRef
 }
 
 //CreateTProviderRefForProviderRef returns an holder of ProviderRef implementing TProviderRef
@@ -34,8 +33,7 @@ func CreateTProviderRefForProviderRef(o model.ProviderRef) TProviderRefOnProvide
 }
 
 //Provider returns the provider wherein the node should be deployed
-func (r TProviderRefOnProviderRefHolder) Provider() (TProvider, error){
-	    v, err := r.h.Resolve()
-    return CreateTProviderForProvider(v), err
+func (r TProviderRefOnProviderRefHolder) Provider() (TProvider, error) {
+	v, err := r.h.Resolve()
+	return CreateTProviderForProvider(v), err
 }
-

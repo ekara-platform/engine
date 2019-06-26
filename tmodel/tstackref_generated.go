@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,18 +12,17 @@ import(
 
 // TStackRef is a read only reference on a stack
 type TStackRef interface {
-    //Stack returns the stack corresponding to the ref
-    Stack() (TStack, error)
-	
+	//Stack returns the stack corresponding to the ref
+	Stack() (TStack, error)
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TStackRef  
+// Implementation(s) of TStackRef
 // ----------------------------------------------------
 
-//TStackRefOnStackRefHolder is the struct containing the StackRef in order to implement TStackRef  
+//TStackRefOnStackRefHolder is the struct containing the StackRef in order to implement TStackRef
 type TStackRefOnStackRefHolder struct {
-	h 	model.StackRef
+	h model.StackRef
 }
 
 //CreateTStackRefForStackRef returns an holder of StackRef implementing TStackRef
@@ -34,8 +33,7 @@ func CreateTStackRefForStackRef(o model.StackRef) TStackRefOnStackRefHolder {
 }
 
 //Stack returns the stack corresponding to the ref
-func (r TStackRefOnStackRefHolder) Stack() (TStack, error){
-	    v, err := r.h.Resolve()
-    return CreateTStackForStack(v), err
+func (r TStackRefOnStackRefHolder) Stack() (TStack, error) {
+	v, err := r.h.Resolve()
+	return CreateTStackForStack(v), err
 }
-

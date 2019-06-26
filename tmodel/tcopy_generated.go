@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,24 +12,23 @@ import(
 
 // TCopy is a read only representation of files to be copied
 type TCopy interface {
-    //HasLabels returns true if the copy has defined labels
-    HasLabels() bool
-    //Labels returns the copy labels
-    Labels() map[string]string
-    //HasSources returns true if the copy has defined sources
-    HasSources() bool
-    //Sources returns the copy sources
-    Sources() []string
-	
+	//HasLabels returns true if the copy has defined labels
+	HasLabels() bool
+	//Labels returns the copy labels
+	Labels() map[string]string
+	//HasSources returns true if the copy has defined sources
+	HasSources() bool
+	//Sources returns the copy sources
+	Sources() []string
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TCopy  
+// Implementation(s) of TCopy
 // ----------------------------------------------------
 
-//TCopyOnCopyHolder is the struct containing the Copy in order to implement TCopy  
+//TCopyOnCopyHolder is the struct containing the Copy in order to implement TCopy
 type TCopyOnCopyHolder struct {
-	h 	model.Copy
+	h model.Copy
 }
 
 //CreateTCopyForCopy returns an holder of Copy implementing TCopy
@@ -40,22 +39,21 @@ func CreateTCopyForCopy(o model.Copy) TCopyOnCopyHolder {
 }
 
 //HasLabels returns true if the copy has defined labels
-func (r TCopyOnCopyHolder) HasLabels() bool{
+func (r TCopyOnCopyHolder) HasLabels() bool {
 	return len(r.h.Labels) > 0
 }
 
 //Labels returns the copy labels
-func (r TCopyOnCopyHolder) Labels() map[string]string{
+func (r TCopyOnCopyHolder) Labels() map[string]string {
 	return r.h.Labels
 }
 
 //HasSources returns true if the copy has defined sources
-func (r TCopyOnCopyHolder) HasSources() bool{
+func (r TCopyOnCopyHolder) HasSources() bool {
 	return len(r.h.Sources.Content) > 0
 }
 
 //Sources returns the copy sources
-func (r TCopyOnCopyHolder) Sources() []string{
+func (r TCopyOnCopyHolder) Sources() []string {
 	return r.h.Sources.Content
 }
-

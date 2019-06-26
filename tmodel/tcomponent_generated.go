@@ -1,6 +1,6 @@
 package engine
 
-import(
+import (
 	"github.com/ekara-platform/model"
 )
 
@@ -12,24 +12,23 @@ import(
 
 // TComponent is a read only component
 type TComponent interface {
-    //Id returns the name of the component
-    Id() string
-    //Repository returns the repository where the component is located
-    Repository() TRepository
-    //HasTemplates returns true if the component has defined templates
-    HasTemplates() bool
-    //Templates returns true if the component templates
-    Templates() []string
-	
+	//Id returns the name of the component
+	Id() string
+	//Repository returns the repository where the component is located
+	Repository() TRepository
+	//HasTemplates returns true if the component has defined templates
+	HasTemplates() bool
+	//Templates returns true if the component templates
+	Templates() []string
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TComponent  
+// Implementation(s) of TComponent
 // ----------------------------------------------------
 
-//TComponentOnDistributionHolder is the struct containing the Distribution in order to implement TComponent  
+//TComponentOnDistributionHolder is the struct containing the Distribution in order to implement TComponent
 type TComponentOnDistributionHolder struct {
-	h 	model.Distribution
+	h model.Distribution
 }
 
 //CreateTComponentForDistribution returns an holder of Distribution implementing TComponent
@@ -40,28 +39,28 @@ func CreateTComponentForDistribution(o model.Distribution) TComponentOnDistribut
 }
 
 //Id returns the name of the component
-func (r TComponentOnDistributionHolder) Id() string{
+func (r TComponentOnDistributionHolder) Id() string {
 	return r.h.Id
 }
 
 //Repository returns the repository where the component is located
-func (r TComponentOnDistributionHolder) Repository() TRepository{
-	    return CreateTRepositoryForRepository(r.h.Repository)
+func (r TComponentOnDistributionHolder) Repository() TRepository {
+	return CreateTRepositoryForRepository(r.h.Repository)
 }
 
 //HasTemplates returns true if the component has defined templates
-func (r TComponentOnDistributionHolder) HasTemplates() bool{
+func (r TComponentOnDistributionHolder) HasTemplates() bool {
 	return len(r.h.Templates.Content) > 0
 }
 
 //Templates returns true if the component templates
-func (r TComponentOnDistributionHolder) Templates() []string{
+func (r TComponentOnDistributionHolder) Templates() []string {
 	return r.h.Templates.Content
 }
 
-//TComponentOnComponentHolder is the struct containing the Component in order to implement TComponent  
+//TComponentOnComponentHolder is the struct containing the Component in order to implement TComponent
 type TComponentOnComponentHolder struct {
-	h 	model.Component
+	h model.Component
 }
 
 //CreateTComponentForComponent returns an holder of Component implementing TComponent
@@ -72,22 +71,21 @@ func CreateTComponentForComponent(o model.Component) TComponentOnComponentHolder
 }
 
 //Id returns the name of the component
-func (r TComponentOnComponentHolder) Id() string{
+func (r TComponentOnComponentHolder) Id() string {
 	return r.h.Id
 }
 
 //Repository returns the repository where the component is located
-func (r TComponentOnComponentHolder) Repository() TRepository{
-	    return CreateTRepositoryForRepository(r.h.Repository)
+func (r TComponentOnComponentHolder) Repository() TRepository {
+	return CreateTRepositoryForRepository(r.h.Repository)
 }
 
 //HasTemplates returns true if the component has defined templates
-func (r TComponentOnComponentHolder) HasTemplates() bool{
+func (r TComponentOnComponentHolder) HasTemplates() bool {
 	return len(r.h.Templates.Content) > 0
 }
 
 //Templates returns true if the component templates
-func (r TComponentOnComponentHolder) Templates() []string{
+func (r TComponentOnComponentHolder) Templates() []string {
 	return r.h.Templates.Content
 }
-
