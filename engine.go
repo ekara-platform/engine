@@ -13,8 +13,6 @@ import (
 	"github.com/ekara-platform/model"
 )
 
-//go:generate go run ./generate/generate.go
-
 //Engine  represents the Ekara engine in charge of dealing with the environment
 type Engine interface {
 	Init(c LaunchContext) error

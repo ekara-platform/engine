@@ -207,7 +207,6 @@ func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) ([]model
 			// We don't want to merge the templates defined into the environment
 			// But instead we want to keep them into the component
 			if len(cEnv.Templates.Content) > 0 {
-				cm.logger.Printf("env has template %s", fComp.ID)
 				comp := cm.environment.Ekara.Components[fComp.ID]
 				comp.Templates = cEnv.Templates
 				cm.environment.Ekara.Components[fComp.ID] = comp
@@ -224,6 +223,7 @@ func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) ([]model
 				return toRegister, err
 			}
 		}
+		cm.data.Model = model.CreateTEnvironmentForEnvironment(*cm.environment)
 	}
 	return toRegister, nil
 }
