@@ -1,73 +1,81 @@
 package util
 
 const (
-	// The environment variable used to pass the environment descriptor
-	// location between several Ekara components.
+	//StarterEnvVariableKey is the environment variable key used to pass
+	// the environment descriptor location between several Ekara components.
 	StarterEnvVariableKey string = "EKARA_ENV_DESCR"
 
+	//StarterEnvQualifiedVariableKey is the environment variable key used to pass
+	// the environment qualified name between several Ekara components.
 	StarterEnvQualifiedVariableKey string = "EKARA_QUALIFIED_NAME"
 
-	// The environment variable used to pass the environment descriptor
-	// name between several Ekara components.
+	//StarterEnvNameVariableKey is the environment variable key used to pass
+	// the environment descriptor name between several Ekara components.
 	StarterEnvNameVariableKey string = "EKARA_ENV_DESCR_NAME"
 
-	// The environment variable used to pass the environment descriptor user
+	//StarterEnvLoginVariableKey is the environment variable key used to pass
+	//the environment descriptor user
 	StarterEnvLoginVariableKey string = "EKARA_ENV_DESCR_LOGIN"
 
-	// The environment variable used to pass the environment descriptor password
+	//StarterEnvPasswordVariableKey is the environment variable key used
+	//to pass the environment descriptor password
 	StarterEnvPasswordVariableKey string = "EKARA_ENV_DESCR_PASSWORD"
 
-	// The Name of the SSH Public key file
+	//SSHPuplicKeyFileName is the Name of the SSH Public key file
 	SSHPuplicKeyFileName string = "ssh.pub"
 
-	// The Name of the SSH Private key file
+	//SSHPrivateKeyFileName is the Name of the SSH Private key file
 	SSHPrivateKeyFileName string = "ssh.pem"
 
-	// The action to perform on the environment
+	//ActionEnvVariableKey is the environment variable key used to pass
+	// the ekera action to perform between several Ekara components.
 	ActionEnvVariableKey string = "EKARA_ACTION"
 
-	// The environment variable used to get or store the http proxy definition
+	//HttpProxyEnvVariableKey is the environment variable key used to
+	// get or store the http proxy definition
 	HttpProxyEnvVariableKey string = "http_proxy"
 
-	// The environment variable used to get or store the https proxy definition
+	//HttpsProxyEnvVariableKey  is the environment variable key used to
+	// get or store the https proxy definition
 	HttpsProxyEnvVariableKey string = "https_proxy"
 
-	// The environment variable used to get or store the no proxy definition
+	//NoProxyEnvVariableKey is the environment variable key used to
+	// get or store the http noproxy definition
 	NoProxyEnvVariableKey string = "no_proxy"
 
-	// The name of the generated proxy configuration file
+	//ProxyConfigFileName is the name of the generated proxy configuration file
 	ProxyConfigFileName string = "proxy_env.yml"
 
-	// The name of the file containing the map of all components locations
+	//ComponentPathsFileName is the name of the file containing the map of all components locations
 	ComponentPathsFileName string = "component_paths.yaml"
 
-	// The name of the file containing the map of all components locations
+	//CliParametersFileName is the name of the file containing the map of all components locations
 	CliParametersFileName string = "cli_parameters.yaml"
 
-	// The name of the generated creation session file returned to the client
+	//CreationSessionFileName is the name of the generated creation session file returned to the client
 	CreationSessionFileName string = "create_session.json"
 
-	// Prefix for the installer logs
+	//InstallerLogPrefix is the prefix for the installer logs
 	InstallerLogPrefix string = "Ekara INSTALLER LOG:"
 
-	// Volum location used by the installer
+	//InstallerVolume is the volume location used by the installer
 	InstallerVolume string = "/opt/ekara/output"
 
-	// The name of file containing params
+	//ParamYamlFileName is the name of any file containing params
 	ParamYamlFileName string = "params.yaml"
 
-	// The name of file containing extra vars
+	//ExtraVarYamlFileName is the name of any file containing extra vars
 	ExtraVarYamlFileName string = "extra-vars.yaml"
 
-	//  The name of file containing environment variables
+	//EnvYamlFileName is the name of any file containing environment variables
 	EnvYamlFileName string = "env.yaml"
 
-	//  The name of file containing host inventories
+	//InventoryYamlFileName is the name of any file containing host inventories
 	InventoryYamlFileName string = "inventory.yaml"
 
-	// Component modules folder
+	//ComponentModuleFolder is the name of any folder containing component modules
 	ComponentModuleFolder string = "modules"
 
-	// Inventory modules folder
+	//InventoryModuleFolder is the name of any folder containing inventories
 	InventoryModuleFolder string = "inventory"
 )

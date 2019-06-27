@@ -209,10 +209,13 @@ func (f FolderPath) create() error {
 	return nil
 }
 
+//CreateFolderPath returns a FolderPath matching the given path
 func CreateFolderPath(path string) FolderPath {
 	return FolderPath{path: path}
 }
 
+//CreateExchangeFolder creates an ExchangeFolder at the provided location
+// and with the give name
 func CreateExchangeFolder(location string, folderName string) (*ExchangeFolder, error) {
 	r := ExchangeFolder{}
 	var err error
@@ -227,6 +230,7 @@ func CreateExchangeFolder(location string, folderName string) (*ExchangeFolder, 
 	return &r, nil
 }
 
+//JoinPaths joins the provided paths as a string
 func JoinPaths(paths ...string) string {
 	var r string
 	for _, v := range paths {
@@ -235,6 +239,10 @@ func JoinPaths(paths ...string) string {
 	return r
 }
 
+//AdaptPath tunes the received path base on the runtime OS
+//
+//Example for Windows: "c:\\" will be replaced by "/c", and
+//  "\\" by "/"
 func AdaptPath(path string) string {
 	s := path
 	log.Printf("AdaptPath runtime %s", runtime.GOOS)
