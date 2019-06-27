@@ -29,11 +29,7 @@ func TestTemplateOnMainVars(t *testing.T) {
 	repDesc := tester.createRep(mainPath)
 
 	repComp1.writeCommit(t, "ekara.yaml", "")
-
-	distContent := `
-ekara:
-`
-	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repDist.writeCommit(t, "ekara.yaml", "")
 
 	descContent := `
 name: ekara-demo-var
