@@ -1,4 +1,4 @@
-package engine
+package tmodel
 
 import (
 	"github.com/ekara-platform/model"
@@ -12,8 +12,8 @@ import (
 
 // TComponent is a read only component
 type TComponent interface {
-	//Id returns the name of the component
-	Id() string
+	//ID returns the name of the component
+	ID() string
 	//Repository returns the repository where the component is located
 	Repository() TRepository
 	//HasTemplates returns true if the component has defined templates
@@ -38,8 +38,8 @@ func CreateTComponentForDistribution(o model.Distribution) TComponentOnDistribut
 	}
 }
 
-//Id returns the name of the component
-func (r TComponentOnDistributionHolder) Id() string {
+//ID returns the name of the component
+func (r TComponentOnDistributionHolder) ID() string {
 	return r.h.Id
 }
 
@@ -70,8 +70,8 @@ func CreateTComponentForComponent(o model.Component) TComponentOnComponentHolder
 	}
 }
 
-//Id returns the name of the component
-func (r TComponentOnComponentHolder) Id() string {
+//ID returns the name of the component
+func (r TComponentOnComponentHolder) ID() string {
 	return r.h.Id
 }
 

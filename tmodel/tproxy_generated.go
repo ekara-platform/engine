@@ -1,4 +1,4 @@
-package engine
+package tmodel
 
 import (
 	"github.com/ekara-platform/model"
@@ -12,10 +12,10 @@ import (
 
 // TProxy is a read only proxy configuration
 type TProxy interface {
-	//Http returns the proxy http definition
-	Http() string
-	//Https returns the proxy https definition
-	Https() string
+	//HTTP returns the proxy http definition
+	HTTP() string
+	//HTTPS returns the proxy https definition
+	HTTPS() string
 	//NoProxy returns the no proxy definition
 	NoProxy() string
 }
@@ -36,13 +36,13 @@ func CreateTProxyForProxy(o model.Proxy) TProxyOnProxyHolder {
 	}
 }
 
-//Http returns the proxy http definition
-func (r TProxyOnProxyHolder) Http() string {
+//HTTP returns the proxy http definition
+func (r TProxyOnProxyHolder) HTTP() string {
 	return r.h.Http
 }
 
-//Https returns the proxy https definition
-func (r TProxyOnProxyHolder) Https() string {
+//HTTPS returns the proxy https definition
+func (r TProxyOnProxyHolder) HTTPS() string {
 	return r.h.Https
 }
 

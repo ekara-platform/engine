@@ -1,4 +1,4 @@
-package engine
+package tmodel
 
 import (
 	"github.com/ekara-platform/model"
@@ -14,8 +14,8 @@ import (
 type TRepository interface {
 	//Scm returns the type of the source control management holding the repository
 	Scm() string
-	//Url returns the url where the repository is located
-	Url() TUrl
+	//URL returns the url where the repository is located
+	URL() TURL
 	//Ref returns the reference (tag,branch, ...) to use within the repository
 	Ref() string
 	//DescriptorName returns the name of the ekara descriptor for this repository
@@ -43,9 +43,9 @@ func (r TRepositoryOnRepositoryHolder) Scm() string {
 	return string(r.h.Scm)
 }
 
-//Url returns the url where the repository is located
-func (r TRepositoryOnRepositoryHolder) Url() TUrl {
-	return CreateTUrlForEkUrl(r.h.Url)
+//URL returns the url where the repository is located
+func (r TRepositoryOnRepositoryHolder) URL() TURL {
+	return CreateTURLForEkUrl(r.h.Url)
 }
 
 //Ref returns the reference (tag,branch, ...) to use within the repository

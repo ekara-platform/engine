@@ -35,15 +35,23 @@ type Method struct {
 	//Doc represents the documentation of the method
 	Doc string
 	//Ret represents the type(s) returned by the method
-	Ret              string               `json:"returns"`
-	Att              string               `json:"attribute"`
-	NoPointer        int                  `json:"no_pointer"`
-	Custom           customImplementation `json:"custom"`
-	ReturnTComponent returnTComponent     `json:"component"`
-	ReturnTResolve   returnTResolve       `json:"resolve"`
-	TInterface       tInterface           `json:"interface"`
-	TInterfaceMap    tInterfaceMap        `json:"interface_map"`
-	TInterfaceArray  tInterfaceArray      `json:"interface_array"`
+	Ret string `json:"returns"`
+	//Att represents the holder's attribute on which the method implementation is based
+	Att string `json:"attribute"`
+	//NoPointer should be set to 1 in order to dereference an pointer on the Att
+	NoPointer int `json:"no_pointer"`
+	//Custom holds the custom implementation of the method
+	Custom customImplementation `json:"custom"`
+	//ReturnTComponent defines a method which will return a TComponent interface
+	ReturnTComponent returnTComponent `json:"component"`
+	//ReturnTResolve defines a method which will return a generated interface by resolving a reference
+	ReturnTResolve returnTResolve `json:"resolve"`
+	//TInterface defines a method which will return a generated interface
+	TInterface tInterface `json:"interface"`
+	//TInterfaceMap defines a method which will return a map of a generated interface
+	TInterfaceMap tInterfaceMap `json:"interface_map"`
+	//TInterfaceArray defines a method which will return an array   a generated interface
+	TInterfaceArray tInterfaceArray `json:"interface_array"`
 }
 
 type returnTComponent struct {
@@ -83,11 +91,9 @@ func getCreateInterface(noPointer bool, name, att, forType, fixReceiver string) 
 	if noPointer {
 		if fixReceiver == "" {
 			return r + "(*r.h." + att + ")"
-		} else {
-			return r + "(*" + fixReceiver + ")"
 		}
-	}
-	if fixReceiver == "" {
+		return r + "(*" + fixReceiver + ")"
+	} else if fixReceiver == "" {
 		return r + "(r.h." + att + ")"
 	} else {
 		return r + "(" + fixReceiver + ")"
@@ -110,6 +116,7 @@ func getHolderCall(indentation int, receiver, attribute, toCall string) string {
 	return r
 }
 
+//Body returns the method body
 func (m Method) Body() string {
 
 	if m.TInterface.Name != "" {
@@ -147,13 +154,15 @@ func (m Method) Body() string {
 	return r
 }
 
+//ImplSignature returns the signature of the method for its implementation
 func (m Method) ImplSignature(holder string) string {
 	r := "func (r " + holder + ") "
-	r += m.Signature(true)
+	r += m.Signature()
 	return r
 }
 
-func (m Method) Signature(toImpl bool) string {
+//Signature returns the simple signature of the method
+func (m Method) Signature() string {
 	if m.TInterface.Name != "" {
 		m.Ret = m.TInterface.Name
 	} else if m.TInterfaceArray.Name != "" {
@@ -175,6 +184,7 @@ func (m Method) Signature(toImpl bool) string {
 	return r
 }
 
+//HolderSignature returns the signature of an older
 func (i Interface) HolderSignature(s string) string {
 	return i.Name + "On" + s + "Holder"
 }

@@ -172,11 +172,11 @@
         "implemented_by":["Base"],
         "doc":"is a read only base location",
         "methods":[  
-            {"name":"Url", "interface":{"name":"TUrl", "attribute":"Url","type":"EkUrl"}, "doc":"returns the url where the base refers"}
+            {"name":"URL", "interface":{"name":"TURL", "attribute":"Url","type":"EkUrl"}, "doc":"returns the url where the base refers"}
         ]
     },
     {  
-        "name":"TUrl",
+        "name":"TURL",
         "implemented_by":["EkUrl"],
         "doc":"is a read only ekara url",
         "methods":[  
@@ -192,8 +192,8 @@
         "implemented_by":["Proxy"],
         "doc":"is a read only proxy configuration",
         "methods":[  
-            {"name":"Http", "attribute":"Http", "doc":"returns the proxy http definition"},
-            {"name":"Https", "attribute":"Https", "doc":"returns the proxy https definition"},
+            {"name":"HTTP", "attribute":"Http", "doc":"returns the proxy http definition"},
+            {"name":"HTTPS", "attribute":"Https", "doc":"returns the proxy https definition"},
             {"name":"NoProxy", "attribute":"NoProxy", "doc":"returns the no proxy definition"}
         ]
     },
@@ -202,7 +202,7 @@
         "implemented_by":["Distribution", "Component"],
         "doc":"is a read only component",
         "methods":[  
-            {"name":"Id","attribute":"Id", "doc":"returns the name of the component"},
+            {"name":"ID","attribute":"Id", "doc":"returns the name of the component"},
             {"name":"Repository", "interface":{"name":"TRepository", "attribute":"Repository"}, "doc":"returns the repository where the component is located"},
             {"name":"HasTemplates",  "custom": {"returns":"bool", "impl":"len(r.h.Templates.Content) > 0"}, "doc":"returns true if the component has defined templates"},
             {"name":"Templates", "custom": {"returns":"[]string", "impl":"r.h.Templates.Content"}, "doc":"returns true if the component templates"}
@@ -214,7 +214,7 @@
         "doc":"is a read only repository",
         "methods":[  
             {"name":"Scm","custom":{"impl":"string(r.h.Scm)"}, "doc":"returns the type of the source control management holding the repository"},
-            {"name":"Url", "interface":{"name":"TUrl", "attribute":"Url","type":"EkUrl"}, "doc":"returns the url where the repository is located"},
+            {"name":"URL", "interface":{"name":"TURL", "attribute":"Url","type":"EkUrl"}, "doc":"returns the url where the repository is located"},
             {"name":"Ref", "attribute":"Ref", "doc":"returns the reference (tag,branch, ...) to use within the repository"},
             {"name":"DescriptorName", "attribute":"DescriptorName", "doc":"returns the name of the ekara descriptor for this repository"}
         ]

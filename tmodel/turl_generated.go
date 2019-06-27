@@ -1,4 +1,4 @@
-package engine
+package tmodel
 
 import (
 	"github.com/ekara-platform/model"
@@ -10,8 +10,8 @@ import (
 //
 //*****************************************************************************
 
-// TUrl is a read only ekara url
-type TUrl interface {
+// TURL is a read only ekara url
+type TURL interface {
 	//String returns the string representation of the whole url
 	String() string
 	//Scheme returns the url scheme
@@ -25,42 +25,42 @@ type TUrl interface {
 }
 
 // ----------------------------------------------------
-// Implementation(s) of TUrl
+// Implementation(s) of TURL
 // ----------------------------------------------------
 
-//TUrlOnEkUrlHolder is the struct containing the EkUrl in order to implement TUrl
-type TUrlOnEkUrlHolder struct {
+//TURLOnEkUrlHolder is the struct containing the EkUrl in order to implement TURL
+type TURLOnEkUrlHolder struct {
 	h model.EkUrl
 }
 
-//CreateTUrlForEkUrl returns an holder of EkUrl implementing TUrl
-func CreateTUrlForEkUrl(o model.EkUrl) TUrlOnEkUrlHolder {
-	return TUrlOnEkUrlHolder{
+//CreateTURLForEkUrl returns an holder of EkUrl implementing TURL
+func CreateTURLForEkUrl(o model.EkUrl) TURLOnEkUrlHolder {
+	return TURLOnEkUrlHolder{
 		h: o,
 	}
 }
 
 //String returns the string representation of the whole url
-func (r TUrlOnEkUrlHolder) String() string {
+func (r TURLOnEkUrlHolder) String() string {
 	return r.h.String()
 }
 
 //Scheme returns the url scheme
-func (r TUrlOnEkUrlHolder) Scheme() string {
+func (r TURLOnEkUrlHolder) Scheme() string {
 	return r.h.Scheme()
 }
 
 //Path returns the url path
-func (r TUrlOnEkUrlHolder) Path() string {
+func (r TURLOnEkUrlHolder) Path() string {
 	return r.h.Path()
 }
 
 //AsFilePath returns the path converted as a file path
-func (r TUrlOnEkUrlHolder) AsFilePath() string {
+func (r TURLOnEkUrlHolder) AsFilePath() string {
 	return r.h.AsFilePath()
 }
 
 //Host returns the url host
-func (r TUrlOnEkUrlHolder) Host() string {
+func (r TURLOnEkUrlHolder) Host() string {
 	return r.h.Host()
 }

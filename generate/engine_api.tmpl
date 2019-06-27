@@ -1,4 +1,4 @@
-package engine
+package tmodel
 
 import(
 	"github.com/ekara-platform/model"
@@ -13,7 +13,7 @@ import(
 {{$impl := .}}// {{.Name}} {{.Doc}}
 type {{.Name}} interface {
 {{range $impl.Methods}}    //{{.Name}} {{.Doc}}
-    {{.Signature false}}
+    {{.Signature}}
 {{end}}	
 }
 

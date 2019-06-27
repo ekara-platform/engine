@@ -1,4 +1,4 @@
-package engine
+package tmodel
 
 import (
 	"github.com/ekara-platform/model"
@@ -12,8 +12,8 @@ import (
 
 // TBase is a read only base location
 type TBase interface {
-	//Url returns the url where the base refers
-	Url() TUrl
+	//URL returns the url where the base refers
+	URL() TURL
 }
 
 // ----------------------------------------------------
@@ -32,7 +32,7 @@ func CreateTBaseForBase(o model.Base) TBaseOnBaseHolder {
 	}
 }
 
-//Url returns the url where the base refers
-func (r TBaseOnBaseHolder) Url() TUrl {
-	return CreateTUrlForEkUrl(r.h.Url)
+//URL returns the url where the base refers
+func (r TBaseOnBaseHolder) URL() TURL {
+	return CreateTURLForEkUrl(r.h.Url)
 }
