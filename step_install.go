@@ -80,7 +80,12 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		exv := ansible.BuildExtraVars("", *setupOrchestratorEf.Input, *setupOrchestratorEf.Output, buffer)
 
 		// We launch the playbook
-		code, err := lC.Ekara().AnsibleManager().Execute(cm.Use(o), "setup.yml", exv, env)
+		usable, err := cm.Use(o)
+		if err != nil {
+			FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
+		}
+		defer usable.Release()
+		code, err := lC.Ekara().AnsibleManager().Execute(usable, "setup.yml", exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "setup.yml",
@@ -191,7 +196,12 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		exv := ansible.BuildExtraVars("", *installOrchestratorEf.Input, *installOrchestratorEf.Output, buffer)
 
 		// We launch the playbook
-		code, err := lC.Ekara().AnsibleManager().Execute(cm.Use(o), "install.yml", exv, env)
+		usable, err := cm.Use(o)
+		if err != nil {
+			FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
+		}
+		defer usable.Release()
+		code, err := lC.Ekara().AnsibleManager().Execute(usable, "install.yml", exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "install.yml",

@@ -34,7 +34,7 @@ type (
 		SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error
 		Ensure() error
 		EnsureOneComponent(cID string, c model.Component) (bool, error)
-		Use(cr model.ComponentReferencer) UsableComponent
+		Use(cr model.ComponentReferencer) (UsableComponent, error)
 		Environment() model.Environment
 		ContainsFile(name string, in ...model.ComponentReferencer) MatchingPaths
 		ContainsDirectory(name string, in ...model.ComponentReferencer) MatchingPaths
@@ -223,6 +223,7 @@ func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) ([]model
 				return toRegister, err
 			}
 		}
+
 		cm.data.Model = model.CreateTEnvironmentForEnvironment(*cm.environment)
 	}
 	return toRegister, nil
@@ -268,7 +269,10 @@ func (cm *context) contains(isFolder bool, name string, in ...model.ComponentRef
 	}
 	if len(in) > 0 {
 		for _, v := range in {
-			uv := cm.Use(v)
+			uv, err := cm.Use(v)
+			if err != nil {
+				cm.logger.Printf("An error occured using the component %s : %s", v.ComponentName(), err.Error())
+			}
 			if isFolder {
 				if ok, match := uv.ContainsDirectory(name); ok {
 					res.Paths = append(res.Paths, match)
@@ -288,7 +292,10 @@ func (cm *context) contains(isFolder bool, name string, in ...model.ComponentRef
 			lRef := localRef{
 				component: comp,
 			}
-			uv := cm.Use(lRef)
+			uv, err := cm.Use(lRef)
+			if err != nil {
+				cm.logger.Printf("An error occured using the component %s : %s", lRef.ComponentName(), err.Error())
+			}
 			if isFolder {
 				if ok, match := uv.ContainsDirectory(name); ok {
 					res.Paths = append(res.Paths, match)
@@ -307,12 +314,17 @@ func (cm *context) contains(isFolder bool, name string, in ...model.ComponentRef
 	return res
 }
 
-func (cm *context) Use(cr model.ComponentReferencer) UsableComponent {
+//Use returns a UsableComponent matching the given reference.
+//If the component corresponding to the reference contains a template
+//definition then the component will be duplicated and templated before
+// being returned as a UsableComponent.
+// Don't forget to Release the UsableComponent once is processing is over...
+func (cm *context) Use(cr model.ComponentReferencer) (UsableComponent, error) {
 	c := cm.environment.Ekara.Components[cr.ComponentName()]
 	if ok, patterns := c.Templatable(); ok {
 		path, err := runTemplate(*cm.data, cm.paths[cr.ComponentName()], patterns, cr)
 		if err != nil {
-			//TODO Return the error here !!!
+			return usable{}, err
 		}
 		// No error no path then it has not been templated
 		if err == nil && path == "" {
@@ -324,7 +336,7 @@ func (cm *context) Use(cr model.ComponentReferencer) UsableComponent {
 			release:   cleanup(path),
 			component: cm.environment.Ekara.Components[cr.ComponentName()],
 			templated: true,
-		}
+		}, nil
 	}
 TemplateFalse:
 	return usable{
@@ -333,7 +345,7 @@ TemplateFalse:
 		path:      filepath.Join(cm.directory, cr.ComponentName()),
 		component: cm.environment.Ekara.Components[cr.ComponentName()],
 		templated: false,
-	}
+	}, nil
 }
 
 func cleanup(path string) func() {

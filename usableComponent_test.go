@@ -68,7 +68,8 @@ func TestUsableTemplateOneMatch(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp := cm.Use(env.Orchestrator)
+		usableComp, err := cm.Use(env.Orchestrator)
+		assert.Nil(t, err)
 		assert.True(t, usableComp.Templated())
 		// Check the existence of the templated folder
 		assert.Equal(t, cptComp+1, tester.countComponent())
@@ -109,13 +110,15 @@ func TestUsableTemplateMatch2Usable(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp1 := cm.Use(env.Orchestrator)
+		usableComp1, err := cm.Use(env.Orchestrator)
+		assert.Nil(t, err)
 		assert.True(t, usableComp1.Templated())
 		// Check the existence of the templated folder
 		assert.Equal(t, cptComp+1, tester.countComponent())
 		assert.True(t, tester.rootContainsComponent(usableComp1.RootPath()))
 
-		usableComp2 := cm.Use(env.Orchestrator)
+		usableComp2, err := cm.Use(env.Orchestrator)
+		assert.Nil(t, err)
 		assert.True(t, usableComp2.Templated())
 		// Check the existence of a new templated folder
 		assert.Equal(t, cptComp+2, tester.countComponent())
@@ -157,7 +160,8 @@ func TestUsableTemplateDoubleMatch(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp := cm.Use(env.Orchestrator)
+		usableComp, err := cm.Use(env.Orchestrator)
+		assert.Nil(t, err)
 		assert.True(t, usableComp.Templated())
 		// Check the existence of the templated folder
 		assert.Equal(t, cptComp+1, tester.countComponent())
@@ -196,7 +200,8 @@ func TestUsableTemplateNoMatch(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp := cm.Use(env.Orchestrator)
+		usableComp, err := cm.Use(env.Orchestrator)
+		assert.Nil(t, err)
 		assert.False(t, usableComp.Templated())
 		// Check that no templated folder has been created
 		assert.Equal(t, cptComp, tester.countComponent())

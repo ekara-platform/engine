@@ -18,7 +18,12 @@ func fstack(lC LaunchContext, rC *runtimeContext) StepResults {
 		sc := InitCodeStepResult("Starting a stack setup phase", st, NoCleanUpRequired)
 		lC.Log().Printf("Checking how to install %s", st.Name)
 		sCs.Add(sc)
-		ust := cm.Use(st)
+
+		ust, err := cm.Use(st)
+		if err != nil {
+			FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
+		}
+		defer ust.Release()
 		if ok, _ := ust.ContainsFile("install.yml"); ok {
 			fstackPlabook(lC, rC, st, ust, sCs)
 		} else {
@@ -231,10 +236,15 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 		// Prepare extra vars
 		var exv ansible.ExtraVars
 
-		d := cm.Use(distribution)
+		d, err := cm.Use(distribution)
+		if err != nil {
+			FailsOnCode(&sc, err, "An error occurred getting the usable distribution", nil)
+		}
 		defer d.Release()
-		su := cm.Use(s)
-
+		su, err := cm.Use(s)
+		if err != nil {
+			FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
+		}
 		defer su.Release()
 		if ok, match := su.ContainsFile("docker-compose.yml"); ok {
 			exv = ansible.BuildExtraVars("compose_path="+filepath.Join(match.Component().RootPath(), match.RelativePath()), *stackEf.Input, *stackEf.Output, buffer)

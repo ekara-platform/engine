@@ -84,8 +84,10 @@ func TestComponentFolderMatching(t *testing.T) {
 	valP1Comp2, ok := env.Providers["p1"]
 	assert.True(t, ok)
 
-	usableComp1 := cm.Use(env.Orchestrator)
-	usableComp2 := cm.Use(valP1Comp2)
+	usableComp1, err := cm.Use(env.Orchestrator)
+	assert.Nil(t, err)
+	usableComp2, err := cm.Use(valP1Comp2)
+	assert.Nil(t, err)
 
 	//----------------------------------------------------------
 	// Matching against a given component
@@ -215,8 +217,10 @@ func TestComponentFileMatching(t *testing.T) {
 	valP1Comp2, ok := env.Providers["p1"]
 	assert.True(t, ok)
 
-	usableComp1 := cm.Use(env.Orchestrator)
-	usableComp2 := cm.Use(valP1Comp2)
+	usableComp1, err := cm.Use(env.Orchestrator)
+	assert.Nil(t, err)
+	usableComp2, err := cm.Use(valP1Comp2)
+	assert.Nil(t, err)
 
 	//----------------------------------------------------------
 	// Matching against a given component

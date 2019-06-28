@@ -73,7 +73,12 @@ func runHooks(cm component.ComponentManager, hooks []model.TaskRef, lC LaunchCon
 }
 
 func runTask(cm component.ComponentManager, lC LaunchContext, rC *runtimeContext, task model.Task, target model.Describable, sc StepResult, r *StepResults, ef *util.ExchangeFolder, exv ansible.ExtraVars, env ansible.EnvVars) {
-	code, err := lC.Ekara().AnsibleManager().Execute(cm.Use(task), task.Playbook, exv, env)
+	usable, err := cm.Use(task)
+	if err != nil {
+		FailsOnCode(&sc, err, "An error occurred getting the usable task", nil)
+	}
+	defer usable.Release()
+	code, err := lC.Ekara().AnsibleManager().Execute(usable, task.Playbook, exv, env)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  task.Playbook,
