@@ -69,9 +69,16 @@ func (ctx context) Execute(uc component.UsableComponent, playbook string, extraV
 	inventoryPaths := ctx.componentManager.ContainsDirectory(util.InventoryModuleFolder)
 	defer inventoryPaths.Release()
 	if inventoryPaths.Count() > 0 {
-		pathsStrings := inventoryPaths.JoinAbsolutePaths(":")
-		ctx.logger.Printf("Detected %d inventory directories for launch: %s", inventoryPaths.Count(), pathsStrings)
-		args = append(args, "--inventory", pathsStrings)
+		asParam := inventoryPaths.PrefixPaths("-i")
+		ctx.logger.Printf("Detected %d inventory directories:", inventoryPaths.Count())
+		for _, v := range asParam {
+			if v == "-i" {
+				continue
+			}
+			ctx.logger.Printf("inventory %s:", v)
+		}
+		args = append(args, asParam...)
+
 	} else {
 		ctx.logger.Printf("No inventory directory detected for launch")
 	}

@@ -119,6 +119,7 @@ EnsureAgain:
 }
 
 func (cm *context) EnsureOneComponent(cID string, c model.Component) (bool, error) {
+	cm.logger.Printf("ensuring component: %s", cID)
 	var toRegister []model.Component
 	if cm.isComponentFetchNeeded(cID) {
 		var err error
@@ -217,13 +218,12 @@ func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) ([]model
 
 				cEnv.Templates = model.Patterns{}
 			}
-
 			err = cm.environment.Merge(cEnv)
+
 			if err != nil {
 				return toRegister, err
 			}
 		}
-
 		cm.data.Model = model.CreateTEnvironmentForEnvironment(*cm.environment)
 	}
 	return toRegister, nil
@@ -238,10 +238,6 @@ func (cm *context) ComponentsPaths() map[string]string {
 }
 
 func (cm *context) SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error {
-	err := cm.Ensure()
-	if err != nil {
-		return err
-	}
 	fMap := fileMap{}
 	fMap.File = cm.ComponentsPaths()
 	b, err := yaml.Marshal(&fMap)

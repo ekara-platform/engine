@@ -11,7 +11,7 @@ type (
 	ActionManager struct {
 		// available actions
 		actions map[ActionID]Action
-	}
+	}			
 )
 
 //CreateActionManager initializes the action manager and its content
@@ -40,6 +40,7 @@ func (am ActionManager) get(id ActionID) (Action, error) {
 //Run launches the action corresponding to the given id.
 //The method will panic if the required action is missing.
 func (am ActionManager) Run(id ActionID, lC LaunchContext) {
+	lC.Ekara().ComponentManager().Ensure()
 	a, e := am.get(id)
 	if e != nil {
 		panic(e)
