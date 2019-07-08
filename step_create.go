@@ -132,8 +132,12 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		env := ansible.BuildEnvVars()
 		env.AddDefaultOsVars()
 		env.AddProxy(p.Proxy)
-		env.AddBuffer(buffer)
 
+		// Adding the environment variables from the nodeset provider
+		for envK, envV := range p.EnvVars {
+			env.Add(envK, envV)
+		}
+		
 		// Process hook : environment - provision - before
 		RunHookBefore(cm,
 			lC,
