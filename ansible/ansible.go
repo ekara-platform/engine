@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"os"
 	"os/exec"
 	"syscall"
 
@@ -60,41 +59,44 @@ func (ctx context) Execute(uc component.UsableComponent, playbook string, extraV
 	defer modulePaths.Release()
 	if modulePaths.Count() > 0 {
 		pathsStrings := modulePaths.JoinAbsolutePaths(":")
-		ctx.logger.Printf("Detected %d modules directories for launch: %s", modulePaths.Count(), pathsStrings)
+		ctx.logger.Printf("Playbook modules directories: %s", pathsStrings)
 		args = append(args, "--module-path", pathsStrings)
 	} else {
-		ctx.logger.Printf("No module directory detected for launch")
+		ctx.logger.Printf("No playbook module")
 	}
 
 	inventoryPaths := ctx.componentManager.ContainsDirectory(util.InventoryModuleFolder)
 	defer inventoryPaths.Release()
 	if inventoryPaths.Count() > 0 {
-		asParam := inventoryPaths.PrefixPaths("-i")
-		ctx.logger.Printf("Detected %d inventory directories:", inventoryPaths.Count())
-		for _, v := range asParam {
+		asArgs := inventoryPaths.PrefixPaths("-i")
+		ctx.logger.Printf("Playbook inventory directories: %s", inventoryPaths.JoinAbsolutePaths(":"))
+		for _, v := range asArgs {
 			if v == "-i" {
 				continue
 			}
-			ctx.logger.Printf("inventory %s:", v)
 		}
-		args = append(args, asParam...)
-
+		args = append(args, asArgs...)
 	} else {
-		ctx.logger.Printf("No inventory directory detected for launch")
+		ctx.logger.Printf("No playbook inventory")
 	}
 
 	if extraVars.Bool {
-		ctx.logger.Printf("Playbook extra-vars: %s", extraVars.String())
+		ctx.logger.Printf("Playbook extra vars: %s", extraVars.String())
 		args = append(args, "--extra-vars", extraVars.String())
 	} else {
-		ctx.logger.Printf("No extra-vars")
+		ctx.logger.Printf("No playbook extra-vars")
 	}
 
 	cmd := exec.Command("ansible-playbook", args...)
 	cmd.Dir = uc.RootPath()
-	cmd.Env = os.Environ()
+	cmd.Env = []string{}
 	for k, v := range envars.Content {
 		cmd.Env = append(cmd.Env, k+"="+v)
+	}
+	if len(cmd.Env) > 0 {
+		ctx.logger.Printf("Playbook environment vars: %s", cmd.Env)
+	} else {
+		ctx.logger.Printf("No playbook environment vars")
 	}
 
 	errReader, err := cmd.StderrPipe()
