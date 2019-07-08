@@ -1,6 +1,7 @@
 package ansible
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,16 @@ func TestUniqueEnvVars(t *testing.T) {
 	val, ok = ev.Content["key2"]
 	assert.True(t, ok)
 	assert.Equal(t, val, "value2")
+}
+
+func TestOsEnvVars(t *testing.T) {
+	ev := BuildEnvVars()
+	ev.AddDefaultOsVars()
+
+	_, ok := ev.Content["PATH"]
+	assert.True(t, ok)
+	fmt.Println(ev.Content)
+	assert.True(t, len(ev.Content) <= 4)
 }
 
 func TestBufferedEnvVars(t *testing.T) {

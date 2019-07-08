@@ -16,7 +16,6 @@ type EnvVars struct {
 func BuildEnvVars() EnvVars {
 	r := EnvVars{}
 	r.Content = make(map[string]string)
-	r.AddOsVars("HOSTNAME", "PATH", "TERM", "HOME")
 	return r
 }
 
@@ -46,6 +45,11 @@ func (ev *EnvVars) AddProxy(proxy model.Proxy) {
 	} else {
 		delete(ev.Content, "no_proxy")
 	}
+}
+
+// AddDefaultOsVars adds the HOSTNAME, PATH, TERM and HOME OS variables
+func (ev *EnvVars) AddDefaultOsVars() {
+	ev.AddOsVars("HOSTNAME", "PATH", "TERM", "HOME")
 }
 
 // AddOsVars adds the current OS value of the specified variables
