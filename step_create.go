@@ -51,9 +51,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
-		env.Add("http_proxy", lC.HTTPProxy())
-		env.Add("https_proxy", lC.HTTPSProxy())
-		env.Add("no_proxy", lC.NoProxy())
+		env.AddProxy(p.Proxy)
 
 		// Adding the environment variables from the provider
 		for envK, envV := range p.EnvVars {
@@ -131,9 +129,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
-		env.Add("http_proxy", lC.HTTPProxy())
-		env.Add("https_proxy", lC.HTTPSProxy())
-		env.Add("no_proxy", lC.NoProxy())
+		env.AddProxy(p.Proxy)
 		env.AddBuffer(buffer)
 
 		// Process hook : environment - provision - before
