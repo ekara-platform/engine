@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"os/exec"
 	"syscall"
 
@@ -89,7 +90,7 @@ func (ctx context) Execute(uc component.UsableComponent, playbook string, extraV
 
 	cmd := exec.Command("ansible-playbook", args...)
 	cmd.Dir = uc.RootPath()
-	cmd.Env = []string{}
+	cmd.Env = os.Environ()
 	for k, v := range envars.Content {
 		cmd.Env = append(cmd.Env, k+"="+v)
 	}

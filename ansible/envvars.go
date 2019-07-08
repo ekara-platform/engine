@@ -1,6 +1,11 @@
 package ansible
 
-import "github.com/ekara-platform/model"
+import (
+	"os"
+	"strings"
+
+	"github.com/ekara-platform/model"
+)
 
 // EnvVars contains the extra vars to be passed to a playbook
 type EnvVars struct {
@@ -11,6 +16,7 @@ type EnvVars struct {
 func BuildEnvVars() EnvVars {
 	r := EnvVars{}
 	r.Content = make(map[string]string)
+	r.AddOsVars("HOSTNAME", "PATH", "TERM", "HOME")
 	return r
 }
 
@@ -21,7 +27,7 @@ func (ev *EnvVars) Add(key, value string) {
 	ev.Content[key] = value
 }
 
-// Add the proxy information if any
+// AddProxy adds the proxy information if any
 //
 // If proxy info is already present, it will be overwritten or removed if empty proxy values are passed
 func (ev *EnvVars) AddProxy(proxy model.Proxy) {
@@ -39,6 +45,25 @@ func (ev *EnvVars) AddProxy(proxy model.Proxy) {
 		ev.Content["no_proxy"] = proxy.NoProxy
 	} else {
 		delete(ev.Content, "no_proxy")
+	}
+}
+
+// AddOsVars adds the current OS value of the specified variables
+//
+// If the var list is empty, all os variables are added
+func (ev *EnvVars) AddOsVars(vars ...string) {
+	osVars := os.Environ()
+	for _, osV := range osVars {
+		splitOsV := strings.Split(osV, "=")
+		if len(vars) == 0 {
+			ev.Content[splitOsV[0]] = splitOsV[1]
+		} else {
+			for _, v := range vars {
+				if splitOsV[0] == v {
+					ev.Content[splitOsV[0]] = splitOsV[1]
+				}
+			}
+		}
 	}
 }
 
