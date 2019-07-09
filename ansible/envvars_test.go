@@ -34,7 +34,7 @@ func TestOsEnvVars(t *testing.T) {
 	ev := BuildEnvVars()
 	ev.AddDefaultOsVars()
 
-	assert.True(t, len(ev.Content) = 4)
+	assert.Equal(t, 4, len(ev.Content))
 	val, ok := ev.Content["HOSTNAME"]
 	assert.True(t, ok)
 	assert.Equal(t, val, "1")
