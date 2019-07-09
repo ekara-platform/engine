@@ -65,6 +65,7 @@ func (ev *EnvVars) AddOsVars(vars ...string) {
 			for _, v := range vars {
 				if splitOsV[0] == v {
 					ev.Content[splitOsV[0]] = splitOsV[1]
+					break
 				}
 			}
 		}
