@@ -11,7 +11,7 @@ type (
 	ActionManager struct {
 		// available actions
 		actions map[ActionID]Action
-	}			
+	}
 )
 
 //CreateActionManager initializes the action manager and its content
