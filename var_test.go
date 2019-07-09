@@ -21,7 +21,7 @@ func TestTemplateOnMainVars(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 	tc := model.CreateContext(p)
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -96,7 +96,7 @@ func TestTemplateOnDistributionVars(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 	tc := model.CreateContext(p)
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -153,7 +153,7 @@ nodes:
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains("__main__", "__ekara__", "comp1")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1")
 
 	assert.Equal(t, len(tc.Vars), 10)
 	cp(t, tc.Vars, "key1_comp1", "val1_comp1")
@@ -224,7 +224,7 @@ nodes:
 	tc := model.CreateContext(p)
 
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -242,7 +242,7 @@ nodes:
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains("__main__", "__ekara__", "comp1")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1")
 
 	assert.Equal(t, len(tc.Vars), 5)
 	// Cli var has precedence over descriptor/distribution/comp1

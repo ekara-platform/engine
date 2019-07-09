@@ -39,7 +39,7 @@ func TestSaveComponentMapOk(t *testing.T) {
 		sshPublicKeyContent:  "sshPublicKey_content",
 		sshPrivateKeyContent: "sshPrivateKey_content",
 	}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDesc := tester.createRep(mainPath)

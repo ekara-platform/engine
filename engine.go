@@ -91,7 +91,7 @@ func (ctx *context) Init(c LaunchContext) (err error) {
 		mainRep.Authentication = auth
 	}
 
-	mainComponent := model.CreateComponent("__main__", mainRep)
+	mainComponent := model.CreateComponent(model.MainComponentId, mainRep)
 	ctx.componentManager.RegisterComponent("", mainComponent)
 
 	// Ensure the main component is present

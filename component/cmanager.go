@@ -75,6 +75,7 @@ func CreateComponentManager(logger *log.Logger, data *model.TemplateContext, bas
 
 func (cm *context) isFetchNeeded() bool {
 	for id := range cm.environment.Ekara.Components {
+
 		if cm.isComponentFetchNeeded(id) {
 			return true
 		}
@@ -91,8 +92,11 @@ func (cm *context) isComponentFetchNeeded(id string) bool {
 }
 
 func (cm *context) RegisterComponent(parent string, c model.Component) {
-	cm.logger.Printf("registering component %s@%s with parent %s", c.Repository.Url.String(), c.Repository.Ref, parent)
-	cm.environment.Ekara.RegisterComponent(parent, c)
+	cm.logger.Printf("registering component id, %s located at %s@%s with parent %s", c.Id, c.Repository.Url.String(), c.Repository.Ref, parent)
+	overwritten := cm.environment.Ekara.RegisterComponent(parent, c)
+	if overwritten {
+		cm.logger.Println("a component previously registered has been overwritten")
+	}
 }
 
 func (cm *context) Ensure() error {
@@ -180,7 +184,7 @@ func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) ([]model
 	if fComp.HasDescriptor() {
 		// Parsing the descriptor
 		cm.logger.Printf("creating partial environment based on component %s", fComp.ID)
-		cEnv, err := model.CreateEnvironment(fComp.DescriptorUrl, cm.data)
+		cEnv, err := model.CreateEnvironment(fComp.DescriptorUrl, fComp.ID, cm.data)
 		if err != nil {
 			return toRegister, err
 		}

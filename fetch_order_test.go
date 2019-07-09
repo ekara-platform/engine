@@ -14,7 +14,7 @@ func TestFetchOrderedAlphabetical(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 	tc := model.CreateContext(p)
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDesc := tester.createRep(mainPath)
@@ -99,10 +99,10 @@ nodes:
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains("__main__", "__ekara__", "comp1", "comp2", "comp3", "comp4", "comp5", "comp6")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2", "comp3", "comp4", "comp5", "comp6")
 
 	assert.Equal(t, len(env.Ekara.SortedFetchedComponents), 8)
-	checkFetchOrder(env, t, "__main__", "__ekara__", "comp1", "comp2", "comp3", "comp4", "comp5", "comp6")
+	checkFetchOrder(env, t, model.MainComponentId, model.EkaraComponentId, "comp1", "comp2", "comp3", "comp4", "comp5", "comp6")
 }
 
 //
@@ -123,7 +123,7 @@ func TestFetchOrderedBase(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 	tc := model.CreateContext(p)
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDesc := tester.createRep(mainPath)
@@ -223,10 +223,10 @@ nodes:
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains("__main__", "__ekara__", "comp1", "comp2", "comp3", "comp4", "comp5", "comp6")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2", "comp3", "comp4", "comp5", "comp6")
 
 	assert.Equal(t, len(env.Ekara.SortedFetchedComponents), 8)
-	checkFetchOrder(env, t, "__main__", "__ekara__", "comp1", "comp2", "comp4", "comp5", "comp3", "comp6")
+	checkFetchOrder(env, t, model.MainComponentId, model.EkaraComponentId, "comp1", "comp2", "comp4", "comp5", "comp3", "comp6")
 }
 
 //
@@ -247,7 +247,7 @@ func TestFetchOrderedSwitched(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 	tc := model.CreateContext(p)
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDesc := tester.createRep(mainPath)
@@ -347,10 +347,10 @@ nodes:
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains("__main__", "__ekara__", "comp1", "comp2", "comp3", "comp4", "comp5", "comp6")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2", "comp3", "comp4", "comp5", "comp6")
 
 	assert.Equal(t, len(env.Ekara.SortedFetchedComponents), 8)
-	checkFetchOrder(env, t, "__main__", "__ekara__", "comp1", "comp4", "comp5", "comp2", "comp3", "comp6")
+	checkFetchOrder(env, t, model.MainComponentId, model.EkaraComponentId, "comp1", "comp4", "comp5", "comp2", "comp3", "comp6")
 }
 
 func checkFetchOrder(env model.Environment, t *testing.T, names ...string) {

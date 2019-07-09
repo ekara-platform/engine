@@ -54,7 +54,7 @@ nodes:
 	tc := model.CreateContext(p)
 
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -74,7 +74,7 @@ nodes:
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains("__main__", "__ekara__", "comp1", "comp2")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
 
 	cm := c.Ekara().ComponentManager()
 	assert.NotNil(t, cm)

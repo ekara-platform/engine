@@ -25,7 +25,7 @@ func TestDownloadDefaultDistribution(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 	tc := model.CreateContext(p)
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDesc := tester.createRep(mainPath)
@@ -55,7 +55,7 @@ nodes:
 	assert.NotNil(t, env)
 	// The defaulted distribution should comme with ek-aws as provider
 	// and ek-swarm as orchestrator
-	tester.assertComponentsContains("__main__", "__ekara__", "ek-swarm", "ek-aws")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "ek-swarm", "ek-aws")
 }
 
 func TestDownloadCustomDistribution(t *testing.T) {
@@ -63,7 +63,7 @@ func TestDownloadCustomDistribution(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -115,7 +115,7 @@ nodes:
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 and comp2 should be downloaded because they are used into the descriptor
-	tester.assertComponentsContains("__main__", "__ekara__", "comp1", "comp2")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
 
 }
 
@@ -126,7 +126,7 @@ func TestDownloadFirstDistribution(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist1 := tester.createRep("./testdata/gittest/distribution1")
@@ -201,7 +201,7 @@ nodes:
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 and comp2 should be downloaded because they are used into the descriptor
-	tester.assertComponentsContains("__main__", "__ekara__", "comp1", "comp2")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
 	cpnts := env.Ekara.Components
 	assert.Equal(t, len(cpnts), 4)
 	assert.Contains(t, cpnts, "comp1")

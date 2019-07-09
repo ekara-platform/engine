@@ -13,7 +13,7 @@ func TestDownloadOnlyUsedComponents(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -60,7 +60,7 @@ ekara:
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1, comp2, comp3 and comp4 shouldn't be downloaded because they are not used into the descriptor
-	tester.assertComponentsContainsExactly("__main__", "__ekara__")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId)
 
 }
 
@@ -68,7 +68,7 @@ func TestDonwloadComplex(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -125,14 +125,14 @@ nodes:
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator into the distribution
 	// comp2 should be also downloaded because it's used as provider into the descriptor
-	tester.assertComponentsContainsExactly("__main__", "__ekara__", "comp1", "comp2")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
 }
 
 func TestDonwloadComplexFarReference(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -189,7 +189,7 @@ nodes:
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator into comp1
 	// comp2 should be also downloaded because it's used as provider into the descriptor
-	tester.assertComponentsContainsExactly("__main__", "__ekara__", "comp1", "comp2")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
 }
 
 func TestDonwloadFarInDistribution(t *testing.T) {
@@ -241,7 +241,7 @@ func CheckDonwloadComplexFarReference(t *testing.T, comp1Content, distContent st
 
 	mainPath := "./testdata/gittest/descriptor"
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -280,7 +280,7 @@ nodes:
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator
 	// comp2 should be also downloaded because it's used as provider
-	tester.assertComponentsContainsExactly("__main__", "__ekara__", "comp1", "comp2")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
 }
 
 func TestDonwloadFarProviderSplitted(t *testing.T) {
@@ -311,7 +311,7 @@ func CheckDonwloadSplitted(t *testing.T, comp1Content, distContent string) {
 
 	mainPath := "./testdata/gittest/descriptor"
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -350,7 +350,7 @@ nodes:
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator
 	// comp2 should be also downloaded because it's used as provider
-	tester.assertComponentsContainsExactly("__main__", "__ekara__", "comp1")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1")
 
 	if assert.Equal(t, 1, len(env.Providers)) {
 		p := env.Providers["p1"]

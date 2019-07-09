@@ -20,7 +20,7 @@ func TestTemplate(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Parsing the descriptor
-	env, err := model.CreateEnvironment(url, vars)
+	env, err := model.CreateEnvironment(url, "", vars)
 	assert.Nil(t, err)
 	assert.NotNil(t, env)
 	assert.Equal(t, 2, len(env.Tasks))
@@ -46,7 +46,7 @@ func TestTemplateNoDot(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Parsing the descriptor
-	_, err = model.CreateEnvironment(url, vars)
+	_, err = model.CreateEnvironment(url, "", vars)
 	assert.NotNil(t, err)
 
 }

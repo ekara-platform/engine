@@ -44,7 +44,7 @@ func TestEngineLocalNoRef(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -77,7 +77,7 @@ func TestEngineLocalNoRef(t *testing.T) {
 func TestEngineLocalWithBranchRef(t *testing.T) {
 
 	c := &MockLaunchContext{locationContent: "./testdata/gittest/descriptor@newBranch", templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
@@ -105,7 +105,7 @@ func TestEngineLocalWithBranchRef(t *testing.T) {
 func TestEngineLocalWithTagRef(t *testing.T) {
 
 	c := &MockLaunchContext{locationContent: "./testdata/gittest/descriptor@newTag1", templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/distribution")
