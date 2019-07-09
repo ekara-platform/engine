@@ -32,21 +32,27 @@ type (
 	}
 )
 
-func gitTester(t *testing.T, ctx *MockLaunchContext) *tester {
+func gitTester(t *testing.T, ctx *MockLaunchContext, withLog bool) *tester {
 	tester := &tester{
 		workdir: "testdata/gitwork",
 		context: ctx,
 		t:       t,
 		paths:   make([]string, 0, 0),
 	}
-	tester.context.engine = createGitEngine(ctx.TemplateContext())
+	tester.context.engine = createGitEngine(ctx.TemplateContext(), withLog)
 	tester.clean()
 	return tester
 }
 
-func createGitEngine(data *model.TemplateContext) Engine {
-	ekara, e := Create(log.New(ioutil.Discard, "TEST: ", log.Ldate|log.Ltime), "testdata/gitwork", data)
-	//ekara, e := Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/gitwork", data)
+func createGitEngine(data *model.TemplateContext, withLog bool) Engine {
+	var ekara Engine
+	var e error
+	if withLog {
+		ekara, e = Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/gitwork", data)
+	} else {
+		ekara, e = Create(log.New(ioutil.Discard, "TEST: ", log.Ldate|log.Ltime), "testdata/gitwork", data)
+	}
+
 	if e != nil {
 		panic(e)
 	}
