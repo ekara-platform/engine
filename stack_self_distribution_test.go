@@ -17,6 +17,9 @@ ekara:
       repository: ./testdata/gittest/comp1
 stacks:
   myStack:
+    params:
+      myStack_param_key1: myStack_param_key1_value
+      myStack_param_key2: myStack_param_key1_value
 `
 	checkSelfStackDistribution(t, distContent)
 }
@@ -30,6 +33,9 @@ ekara:
 stacks:
   myStack:
     component: "_"
+    params:
+      myStack_param_key1: myStack_param_key1_value
+      myStack_param_key2: myStack_param_key1_value
 `
 	checkSelfStackDistribution(t, distContent)
 }
@@ -66,6 +72,12 @@ nodes:
     instances: 1
     provider:
       name: p1
+stacks:
+  myStack:
+    component: __ekara__  
+    params:
+      myStack_param_key2: myStack_param_key2_value_overwritten
+      myStack_param_key3: myStack_param_key3_value
 `
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 	// write the compose/playbook content into the distribution component
@@ -103,6 +115,13 @@ nodes:
 			assert.False(t, usableStack.Templated())
 			// Check that the stacks contains the compose/playbook file
 			checkFile(t, usableStack, "docker_compose.yml", "docker compose content")
+
+			//check the stack parameters inheritence
+			if assert.Equal(t, 3, len(stack.Parameters)) {
+				assert.Contains(t, stack.Parameters, "myStack_param_key1", "myStack_param_key1_value")
+				assert.Contains(t, stack.Parameters, "myStack_param_key2", "myStack_param_key2_value_overwritten")
+				assert.Contains(t, stack.Parameters, "myStack_param_key3", "myStack_param_key3_value")
+			}
 		}
 	}
 }
