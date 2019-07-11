@@ -33,8 +33,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 
 # Following content just to force the download of comp1 and comp2
 orchestrator:
@@ -211,7 +211,7 @@ func hasBeenTemplated(t *testing.T, ps component.MatchingPaths, r model.Componen
 }
 
 func writecheckByMatchCommon(t *testing.T, tester *tester, d string) {
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repComp3 := tester.createRep("./testdata/gittest/comp3")

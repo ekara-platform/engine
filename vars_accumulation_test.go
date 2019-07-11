@@ -23,7 +23,7 @@ func TestVarsAccumulation(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
@@ -52,8 +52,8 @@ ekara:
     comp1:
       repository: ./testdata/gittest/comp1
 vars:
-  key1_distribution: val1_distribution
-  key2_distribution: val2_distribution
+  key1_parent: val1_parent
+  key2_parent: val2_parent
 `
 	repDist.writeCommit(t, "ekara.yaml", distContent)
 
@@ -62,8 +62,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent
 vars:
   key1_descriptor: val1_descriptor
   key2_descriptor: val2_descriptor
@@ -100,9 +100,9 @@ nodes:
 	// From comp1
 	cp(t, tc.Vars, "key1_comp1", "val1_comp1")
 	cp(t, tc.Vars, "key2_comp1", "val2_comp1")
-	// From distribution
-	cp(t, tc.Vars, "key1_distribution", "val1_distribution")
-	cp(t, tc.Vars, "key2_distribution", "val2_distribution")
+	// From parent
+	cp(t, tc.Vars, "key1_parent", "val1_parent")
+	cp(t, tc.Vars, "key2_parent", "val2_parent")
 	// From descriptor
 	cp(t, tc.Vars, "key1_descriptor", "val1_descriptor")
 	cp(t, tc.Vars, "key2_descriptor", "val2_descriptor")

@@ -25,8 +25,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 
 # Following content just to force the download of comp1 and comp2
 orchestrator:
@@ -52,7 +52,7 @@ func TestComponentFolderMatching(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
@@ -182,7 +182,7 @@ func TestComponentFileMatching(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
@@ -198,7 +198,7 @@ func TestComponentFileMatching(t *testing.T) {
 	repComp2.writeCommit(t, "wantedFile2.txt", `test content`)
 	repComp2.writeFolderCommit(t, "folderSearchedAsFile.txt", "test.yaml", `test content`)
 
-	// Files in distribution
+	// Files in parent
 	repDist.writeCommit(t, "ekara.yaml", matchDistContent)
 	repDesc.writeCommit(t, "ekara.yaml", matchDescContent)
 

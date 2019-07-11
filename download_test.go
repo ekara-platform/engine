@@ -16,7 +16,7 @@ func TestDownloadOnlyUsedComponents(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repComp3 := tester.createRep("./testdata/gittest/comp3")
@@ -43,8 +43,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
     components:
       comp3:
         repository: ./testdata/gittest/comp3
@@ -71,7 +71,7 @@ func TestDonwloadComplex(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
@@ -101,8 +101,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent	
 
 # Following content just to force the download of comp1 and comp2
 providers:
@@ -123,7 +123,7 @@ nodes:
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
-	// comp1 should be downloaded because it's used as orchestrator into the distribution
+	// comp1 should be downloaded because it's used as orchestrator into the parent
 	// comp2 should be also downloaded because it's used as provider into the descriptor
 	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
 }
@@ -135,7 +135,7 @@ func TestDonwloadComplexFarReference(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
@@ -168,8 +168,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent
 
 # Following content just to force the download of comp1 and comp2
 
@@ -192,7 +192,7 @@ nodes:
 	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
 }
 
-func TestDonwloadFarInDistribution(t *testing.T) {
+func TestDonwloadFarInParent(t *testing.T) {
 	comp1Content := `
 ekara:
   components:
@@ -244,7 +244,7 @@ func CheckDonwloadComplexFarReference(t *testing.T, comp1Content, distContent st
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
@@ -259,8 +259,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent
 
 # Following content just to force the download of comp1 and comp2
 
@@ -314,7 +314,7 @@ func CheckDonwloadSplitted(t *testing.T, comp1Content, distContent string) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
@@ -329,8 +329,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent
 
 # Following content just to force the download of comp1
 

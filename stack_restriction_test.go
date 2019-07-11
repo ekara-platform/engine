@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestStackFromDesciptorAndDistribution(t *testing.T) {
+func TestStackFromDesciptorAndParent(t *testing.T) {
 
 	distContent := `
 ekara:
@@ -17,29 +17,29 @@ ekara:
     comp1:
       repository: ./testdata/gittest/comp1
 stacks:
-  distributionStack:
+  parentStack:
 `
 	mainPath := "./testdata/gittest/descriptor"
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
 
 	repComp1.writeCommit(t, "ekara.yaml", "")
 	repDist.writeCommit(t, "ekara.yaml", distContent)
-	// write the compose/playbook content into the distribution component
-	repDist.writeCommit(t, "docker_compose.yml", "distribution docker compose content")
+	// write the compose/playbook content into the parent component
+	repDist.writeCommit(t, "docker_compose.yml", "parent docker compose content")
 
 	descContent := `
 name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 # Following content just to force the download of comp1
 orchestrator:
   component: comp1
@@ -74,11 +74,11 @@ stacks:
 		cm := c.Ekara().ComponentManager()
 		assert.NotNil(t, cm)
 		checkStack(t, env, cm, model.MainComponentId, "descriptorStack", "descriptor docker compose content")
-		checkStack(t, env, cm, model.EkaraComponentId, "distributionStack", "distribution docker compose content")
+		checkStack(t, env, cm, model.EkaraComponentId, "parentStack", "parent docker compose content")
 	}
 }
 
-func TestIgnoredStackThroughDistribution(t *testing.T) {
+func TestIgnoredStackThroughParent(t *testing.T) {
 
 	comp1Content := `
 stacks:
@@ -96,7 +96,7 @@ ekara:
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	// write the compose/playbook content into the comp1 component
 	repComp1.writeCommit(t, "docker_compose.yml", "comp1 docker compose content")
@@ -110,8 +110,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 # Following content just to force the download of comp1
 orchestrator:
   component: comp1
@@ -158,7 +158,7 @@ ekara:
 	tester := gitTester(t, c, false)
 	//defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	// write the compose/playbook content into the comp2 component
@@ -174,8 +174,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
   components:
     comp2:
       repository: ./testdata/gittest/comp2

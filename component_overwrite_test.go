@@ -21,14 +21,14 @@ ekara:
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp1Overwritten := tester.createRep("./testdata/gittest/comp1Overwritten")
 	repDesc := tester.createRep(mainPath)
 
 	repDist.writeCommit(t, "ekara.yaml", distContent)
 
-	repComp1.writeCommit(t, "content.txt", "comp content from distribution")
+	repComp1.writeCommit(t, "content.txt", "comp content from parent")
 	repComp1Overwritten.writeCommit(t, "content.txt", "comp content overwriten in descriptor")
 
 	descContent := `
@@ -36,8 +36,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent	
   components:
     comp1:
       repository: ./testdata/gittest/comp1Overwritten
@@ -87,14 +87,14 @@ ekara:
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repDist.writeCommit(t, "ekara.yaml", "")
 
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repComp2.writeCommit(t, "ekara.yaml", comp2Content)
 
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp1.writeCommit(t, "content.txt", "comp content from distribution")
+	repComp1.writeCommit(t, "content.txt", "comp content from parent")
 
 	repComp1Overwritten := tester.createRep("./testdata/gittest/comp1Overwritten")
 	repComp1Overwritten.writeCommit(t, "content.txt", "comp content overwriten in descriptor")
@@ -106,8 +106,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent
   components:
     comp1:
       repository: ./testdata/gittest/comp1Overwritten

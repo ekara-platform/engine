@@ -18,7 +18,7 @@ func TestFetchOrderedAlphabetical(t *testing.T) {
 	defer tester.clean()
 
 	repDesc := tester.createRep(mainPath)
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repComp3 := tester.createRep("./testdata/gittest/comp3")
@@ -39,8 +39,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
   components:
     comp6:
       repository: ./testdata/gittest/comp6
@@ -107,7 +107,7 @@ nodes:
 
 //
 // Descriptor
-//   Distribution
+//   Parent
 //     Comp1
 //     Comp2
 //       --> Comp4
@@ -127,7 +127,7 @@ func TestFetchOrderedBase(t *testing.T) {
 	defer tester.clean()
 
 	repDesc := tester.createRep(mainPath)
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repComp3 := tester.createRep("./testdata/gittest/comp3")
@@ -171,8 +171,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
   components:
     comp3:
       repository: ./testdata/gittest/comp3
@@ -231,7 +231,7 @@ nodes:
 
 //
 // Descriptor
-//   Distribution
+//   Parent
 //     Comp2
 //     Comp1
 //       --> Comp4
@@ -251,7 +251,7 @@ func TestFetchOrderedSwitched(t *testing.T) {
 	defer tester.clean()
 
 	repDesc := tester.createRep(mainPath)
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repComp3 := tester.createRep("./testdata/gittest/comp3")
@@ -295,8 +295,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
   components:
     comp6:
       repository: ./testdata/gittest/comp6

@@ -17,7 +17,7 @@ func TestTemplateOnReadOnlyModel(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repStack := tester.createRep("./testdata/gittest/stack")
 	repDesc := tester.createRep(mainPath)
@@ -37,8 +37,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent
   components:
     comp1:
       repository: ./testdata/gittest/comp1	

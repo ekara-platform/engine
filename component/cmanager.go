@@ -133,11 +133,11 @@ func (cm *context) EnsureOneComponent(cID string, c model.Component) (bool, erro
 		}
 
 		if cID == model.MainComponentId {
-			// Registering the distribution
-			if cm.environment != nil && cm.environment.Ekara != nil && cm.environment.Ekara.Distribution.Repository.Url != nil {
-				d := model.Component(cm.environment.Ekara.Distribution)
+			// Registering the parent
+			if cm.environment != nil && cm.environment.Ekara != nil && cm.environment.Ekara.Parent.Repository.Url != nil {
+				d := model.Component(cm.environment.Ekara.Parent)
 				if _, ok := cm.environment.Ekara.Components[d.Id]; !ok {
-					cm.logger.Printf("registering a distribution")
+					cm.logger.Printf("registering a parent")
 					toRegisterDist, err := fetchComponent(cm, d)
 					cm.RegisterComponent(cID, d)
 					if err != nil {

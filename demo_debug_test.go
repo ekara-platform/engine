@@ -41,7 +41,7 @@ name: ekara-demo-al3
 qualifier: dev
 
 ekara:
-  distribution:
+  parent:
     repository: ekara-platform/distribution
   components:
     visualizer:

@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDistributionSelfStackNoComponent(t *testing.T) {
+func TestParentSelfStackNoComponent(t *testing.T) {
 
 	distContent := `
 ekara:
@@ -21,10 +21,10 @@ stacks:
       myStack_param_key1: myStack_param_key1_value
       myStack_param_key2: myStack_param_key1_value
 `
-	checkSelfStackDistribution(t, distContent)
+	checkSelfStackParent(t, distContent)
 }
 
-func TestDistributionSelfStackLowDash(t *testing.T) {
+func TestParentSelfStackLowDash(t *testing.T) {
 	distContent := `
 ekara:
   components:
@@ -37,17 +37,17 @@ stacks:
       myStack_param_key1: myStack_param_key1_value
       myStack_param_key2: myStack_param_key1_value
 `
-	checkSelfStackDistribution(t, distContent)
+	checkSelfStackParent(t, distContent)
 }
 
-func checkSelfStackDistribution(t *testing.T, distContent string) {
+func checkSelfStackParent(t *testing.T, distContent string) {
 
 	mainPath := "./testdata/gittest/descriptor"
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
 
@@ -59,8 +59,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 # Following content just to force the download of comp1
 orchestrator:
   component: comp1
@@ -80,7 +80,7 @@ stacks:
       myStack_param_key3: myStack_param_key3_value
 `
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
-	// write the compose/playbook content into the distribution component
+	// write the compose/playbook content into the parent component
 	repDist.writeCommit(t, "docker_compose.yml", "docker compose content")
 
 	err := tester.initEngine()

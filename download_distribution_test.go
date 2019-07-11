@@ -8,9 +8,9 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// when the descriptor doesn't define its own specific distribution then
+// when the descriptor doesn't define its own specific parent then
 // the defaulted one should be used
-func TestDownloadDefaultDistribution(t *testing.T) {
+func TestDownloadDefaultParent(t *testing.T) {
 	p, _ := model.CreateParameters(map[string]interface{}{
 		"ek": map[interface{}]interface{}{
 			"aws": map[interface{}]interface{}{
@@ -53,12 +53,12 @@ nodes:
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
-	// The defaulted distribution should comme with ek-aws as provider
+	// The defaulted parent should comme with ek-aws as provider
 	// and ek-swarm as orchestrator
 	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "ek-swarm", "ek-aws")
 }
 
-func TestDownloadCustomDistribution(t *testing.T) {
+func TestDownloadCustomParent(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
@@ -66,7 +66,7 @@ func TestDownloadCustomDistribution(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
@@ -89,8 +89,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 
 # Following content just to force the download of comp1 and comp2
 orchestrator:
@@ -119,9 +119,9 @@ nodes:
 
 }
 
-// When more than one ekara.yaml file define a distribution the one taken
+// When more than one ekara.yaml file define a parent the one taken
 // in account should the the one defined in the main descriptor
-func TestDownloadFirstDistribution(t *testing.T) {
+func TestDownloadFirstParent(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
@@ -129,8 +129,8 @@ func TestDownloadFirstDistribution(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist1 := tester.createRep("./testdata/gittest/distribution1")
-	repDist2 := tester.createRep("./testdata/gittest/distribution2")
+	repDist1 := tester.createRep("./testdata/gittest/parent1")
+	repDist2 := tester.createRep("./testdata/gittest/parent2")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repComp3 := tester.createRep("./testdata/gittest/comp3")
@@ -140,12 +140,12 @@ func TestDownloadFirstDistribution(t *testing.T) {
 	repComp4.writeCommit(t, "ekara.yaml", ``)
 	repComp3.writeCommit(t, "ekara.yaml", ``)
 
-	// Comp2 defines another distribution but this
+	// Comp2 defines another parent but this
 	// one should be ignored
 	comp2Content := `
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution2
+  parent:
+    repository: ./testdata/gittest/parent2
 `
 	repComp2.writeCommit(t, "ekara.yaml", comp2Content)
 	repComp1.writeCommit(t, "ekara.yaml", ``)
@@ -175,8 +175,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution1
+  parent:
+    repository: ./testdata/gittest/parent1
 
 # Following content just to force the download of comp1 and comp2
 orchestrator:
