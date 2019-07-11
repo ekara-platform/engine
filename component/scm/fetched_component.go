@@ -14,8 +14,8 @@ type (
 		ID            string
 		LocalPath     string
 		Descriptor    string
-		DescriptorUrl model.EkUrl
-		LocalUrl      model.EkUrl
+		DescriptorUrl model.EkURL
+		LocalUrl      model.EkURL	
 	}
 )
 

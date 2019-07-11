@@ -56,7 +56,7 @@ func fetchThroughSccm(scm scmHandler, dir string, c model.Component, l *log.Logg
 		fc.LocalPath = cPath
 		if _, err := os.Stat(cPath); err == nil {
 			if scm.Matches(c.Repository, cPath) {
-				err := scm.Update(cPath, c.Authentication)
+				err := scm.Update(cPath, c.Repository.Authentication)
 				if err != nil {
 					return fc, err
 				}
@@ -66,18 +66,18 @@ func fetchThroughSccm(scm scmHandler, dir string, c model.Component, l *log.Logg
 				if err != nil {
 					return fc, err
 				}
-				err = scm.Fetch(c.Repository, cPath, c.Authentication)
+				err = scm.Fetch(c.Repository, cPath, c.Repository.Authentication)
 				if err != nil {
 					return fc, err
 				}
 			}
 		} else {
-			err := scm.Fetch(c.Repository, cPath, c.Authentication)
+			err := scm.Fetch(c.Repository, cPath, c.Repository.Authentication)
 			if err != nil {
 				return fc, err
 			}
 		}
-		err := scm.Switch(cPath, c.Ref)
+		err := scm.Switch(cPath, c.Repository.Ref)
 		if err != nil {
 			return fc, err
 		}
