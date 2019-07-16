@@ -82,7 +82,7 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, st model.Stack, ust com
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
 		env.AddDefaultOsVars()
-		env.AddProxy(p.Proxy)
+		env.AddProxy(lC.Proxy())
 
 		// Adding the environment variables from the stack
 		for envK, envV := range st.EnvVars {
@@ -204,7 +204,7 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
 		env.AddDefaultOsVars()
-		env.AddProxy(p.Proxy)
+		env.AddProxy(lC.Proxy())
 
 		// Adding the environment variables from the stack
 		for envK, envV := range s.EnvVars {

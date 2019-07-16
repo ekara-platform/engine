@@ -66,18 +66,8 @@ func (lC MockLaunchContext) Location() string {
 }
 
 //HTTPProxy simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) HTTPProxy() string {
-	return ""
-}
-
-//HTTPSProxy simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) HTTPSProxy() string {
-	return ""
-}
-
-//NoProxy simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) NoProxy() string {
-	return ""
+func (lC MockLaunchContext) Proxy() model.Proxy {
+	return model.Proxy{}
 }
 
 //SSHPublicKey simulates the corresponding method in LaunchContext for testing purposes

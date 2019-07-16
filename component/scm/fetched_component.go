@@ -17,7 +17,7 @@ type (
 		DescriptorUrl model.EkURL
 		LocalUrl      model.EkURL	
 	}
-)
+) 
 
 func (fc FetchedComponent) String() string {
 	return fmt.Sprintf("id: %s, localPath: %s, descriptor: %s", fc.ID, fc.LocalPath, fc.Descriptor)

@@ -29,12 +29,8 @@ type (
 		Ekara() Engine
 		//QualifiedName The qualifie name of the environment to process
 		QualifiedName() string
-		//HTTPProxy The http proxy used by the engine during the process execution
-		HTTPProxy() string
-		//HTTPSProxy The https proxy used by the engine during the process execution
-		HTTPSProxy() string
-		//NoProxy The no proxy configuration used by the engine during the process execution
-		NoProxy() string
+		//Proxy returns launch context proxy settings
+		Proxy() model.Proxy
 		//SSHPublicKey the public key used by the engine during the process execution to
 		// connect the created nodes
 		SSHPublicKey() string
