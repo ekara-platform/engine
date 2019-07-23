@@ -214,7 +214,7 @@ func writecheckByMatchCommon(t *testing.T, tester *tester, d string) {
 	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
-	repComp3 := tester.createRep("./testdata/gittest/comp3")
+	repComp3 := tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp3")
 	repDesc := tester.createRep(d)
 
 	repComp1.writeCommit(t, "ekara.yaml", byMatchComp1Content)
@@ -226,7 +226,6 @@ func writecheckByMatchCommon(t *testing.T, tester *tester, d string) {
 	repComp2.writeCommit(t, "search2.file", "")
 	repComp2.writeCommit(t, "templateTarget1.yaml", `{{ .Vars.templateContent }}`)
 
-	repComp3.writeCommit(t, "ekara.yaml", "")
 	repComp3.writeCommit(t, "search1.file", "")
 	repComp3.writeCommit(t, "search2.file", "")
 
@@ -234,15 +233,13 @@ func writecheckByMatchCommon(t *testing.T, tester *tester, d string) {
 	repDesc.writeCommit(t, "ekara.yaml", byMatchDescContent)
 }
 
-func checkByMatchCommon(t *testing.T, c *MockLaunchContext, tester *tester, initialComp int) (model.Environment, component.ComponentManager) {
+func checkByMatchCommon(t *testing.T, c *MockLaunchContext, tester *tester, initialComp int) (model.Environment, *component.ComponentManager) {
 	err := tester.initEngine()
-	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2", "comp3")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2", "comp3")
 
 	cm := c.Ekara().ComponentManager()
 	assert.NotNil(t, cm)

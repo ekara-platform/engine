@@ -229,15 +229,13 @@ func writecheckUsableCommon(t *testing.T, tester *tester, d string) {
 
 }
 
-func checkUsableCommon(t *testing.T, c *MockLaunchContext, tester *tester, initialComp int) (model.Environment, component.ComponentManager) {
+func checkUsableCommon(t *testing.T, c *MockLaunchContext, tester *tester, initialComp int) (model.Environment, *component.ComponentManager) {
 	err := tester.initEngine()
-	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	cm := c.Ekara().ComponentManager()
 	assert.NotNil(t, cm)

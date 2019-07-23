@@ -52,8 +52,6 @@ qualifier: QualifierContent
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 

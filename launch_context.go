@@ -50,5 +50,5 @@ type (
 
 //BuildBaseParam Returns the base skeleton of the parameters for a node set
 func BuildBaseParam(c LaunchContext, nodeSetName string, provider string) ansible.BaseParam {
-	return ansible.BuildBaseParam(c.Ekara().ComponentManager().Environment(), nodeSetName, provider, c.SSHPublicKey(), c.SSHPrivateKey())
+	return ansible.BuildBaseParam(*c.Ekara().ComponentManager().Environment(), nodeSetName, provider, c.SSHPublicKey(), c.SSHPrivateKey())
 }

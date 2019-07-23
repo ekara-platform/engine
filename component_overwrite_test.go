@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestOverwriteInMain(t *testing.T) {
+func TestOverwritenInMain(t *testing.T) {
 
 	distContent := `
 ekara:
@@ -54,15 +54,13 @@ nodes:
       name: p1
 `
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
-	
+
 	err := tester.initEngine()
-	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator and provider
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	cm := c.Ekara().ComponentManager()
 	assert.NotNil(t, cm)
@@ -87,8 +85,7 @@ ekara:
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
-	repDist.writeCommit(t, "ekara.yaml", "")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/parent")
 
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repComp2.writeCommit(t, "ekara.yaml", comp2Content)
@@ -130,13 +127,11 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator
 	// comp2 should be downloaded because it's used as  provider
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2")
 	cm := c.Ekara().ComponentManager()
 	assert.NotNil(t, cm)
 

@@ -17,16 +17,11 @@ func TestDownloadOnlyUsedComponents(t *testing.T) {
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/parent")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp2 := tester.createRep("./testdata/gittest/comp2")
-	repComp3 := tester.createRep("./testdata/gittest/comp3")
-	repComp4 := tester.createRep("./testdata/gittest/comp4")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp3")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp4")
 	repDesc := tester.createRep(mainPath)
-
-	repComp1.writeCommit(t, "ekara.yaml", ``)
-	repComp2.writeCommit(t, "ekara.yaml", ``)
-	repComp3.writeCommit(t, "ekara.yaml", ``)
-	repComp4.writeCommit(t, "ekara.yaml", ``)
 
 	distContent := `
 ekara:
@@ -55,36 +50,24 @@ ekara:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
+
+	refM := tester.context.engine.ReferenceManager()
+	assert.Equal(t, len(refM.UsedReferences.Refs), 0)
+
 	// comp1, comp2, comp3 and comp4 shouldn't be downloaded because they are not used into the descriptor
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId)
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1")
 
 }
 
-func TestDonwloadComplex(t *testing.T) {
-
-	mainPath := "./testdata/gittest/descriptor"
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c, false)
-	defer tester.clean()
-
-	repDist := tester.createRep("./testdata/gittest/parent")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp2 := tester.createRep("./testdata/gittest/comp2")
-	repDesc := tester.createRep(mainPath)
-
-	repComp2.writeCommit(t, "ekara.yaml", ``)
-
+func TestDonwloadOnlyFromDescriptorAndParents(t *testing.T) {
 	comp1Content := `
 ekara:
   components:
     comp2:
       repository: ./testdata/gittest/comp2
 `
-	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
 
 	distContent := `
 ekara:
@@ -94,8 +77,6 @@ ekara:
 orchestrator:
   component: comp1 
 `
-	repDist.writeCommit(t, "ekara.yaml", distContent)
-
 	descContent := `
 name: ekara-demo-var
 qualifier: dev
@@ -115,63 +96,65 @@ nodes:
     provider:
       name: p1
 `
+	mainPath := "./testdata/gittest/descriptor"
+	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	tester := gitTester(t, c, false)
+	defer tester.clean()
+
+	repDist := tester.createRep("./testdata/gittest/parent")
+	repComp1 := tester.createRep("./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
+	repDesc := tester.createRep(mainPath)
+
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
+	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
+
+	refM := tester.context.engine.ReferenceManager()
+	assert.Equal(t, len(refM.UsedReferences.Refs), 2)
+	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
+	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
+
 	// comp1 should be downloaded because it's used as orchestrator into the parent
-	// comp2 should be also downloaded because it's used as provider into the descriptor
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
+	// comp2 should not be downloaded because it's referenced by a component
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 }
 
-func TestDonwloadComplexFarReference(t *testing.T) {
+func TestDonwloadTwoParents(t *testing.T) {
 
-	mainPath := "./testdata/gittest/descriptor"
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c, false)
-	defer tester.clean()
-
-	repDist := tester.createRep("./testdata/gittest/parent")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp2 := tester.createRep("./testdata/gittest/comp2")
-	repDesc := tester.createRep(mainPath)
-
-	repComp2.writeCommit(t, "ekara.yaml", ``)
-
-	comp1Content := `
+	dist2Content := `
 ekara:
   components:
     comp2:
       repository: ./testdata/gittest/comp2
 `
-	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
-
-	distContent := `
+	dist1Content := `
 ekara:
+  parent:
+    repository: ./testdata/gittest/parent2
   components:
     comp1:
       repository: ./testdata/gittest/comp1
-orchestrator:
-  component: comp2 
-providers:
-  p1:
-    component: comp1  
 `
-	repDist.writeCommit(t, "ekara.yaml", distContent)
-
 	descContent := `
 name: ekara-demo-var
 qualifier: dev
 
 ekara:
   parent:
-    repository: ./testdata/gittest/parent
+    repository: ./testdata/gittest/parent1
 
 # Following content just to force the download of comp1 and comp2
+orchestrator:
+  component: comp2 
+providers:
+  p1:
+    component: comp1  
 
 nodes:
   node1:
@@ -179,110 +162,103 @@ nodes:
     provider:
       name: p1
 `
-	repDesc.writeCommit(t, "ekara.yaml", descContent)
-
-	err := tester.initEngine()
-	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
-	env := tester.env()
-	assert.NotNil(t, env)
-	// comp1 should be downloaded because it's used as orchestrator into comp1
-	// comp2 should be also downloaded because it's used as provider into the descriptor
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
-}
-
-func TestDonwloadFarInParent(t *testing.T) {
-	comp1Content := `
-ekara:
-  components:
-    comp2:
-      repository: ./testdata/gittest/comp2
-`
-
-	distContent := `
-ekara:
-  components:
-    comp1:
-      repository: ./testdata/gittest/comp1
-orchestrator:
-  component: comp2 
-providers:
-  p1:
-    component: comp1  
-`
-	CheckDonwloadComplexFarReference(t, comp1Content, distContent)
-}
-
-func TestDonwloadFarInComp1(t *testing.T) {
-
-	comp1Content := `
-ekara:
-  components:
-    comp2:
-      repository: ./testdata/gittest/comp2
-orchestrator:
-  component: comp2 
-`
-
-	distContent := `
-ekara:
-  components:
-    comp1:
-      repository: ./testdata/gittest/comp1
-providers:
-  p1:
-    component: comp1  
-`
-	CheckDonwloadComplexFarReference(t, comp1Content, distContent)
-}
-
-func CheckDonwloadComplexFarReference(t *testing.T, comp1Content, distContent string) {
-
 	mainPath := "./testdata/gittest/descriptor"
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp2 := tester.createRep("./testdata/gittest/comp2")
+	repDist1 := tester.createRep("./testdata/gittest/parent1")
+	repDist2 := tester.createRep("./testdata/gittest/parent2")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
 
-	repComp2.writeCommit(t, "ekara.yaml", ``)
-
-	repDist.writeCommit(t, "ekara.yaml", distContent)
-	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
-
-	descContent := `
-name: ekara-demo-var
-qualifier: dev
-
-ekara:
-  parent:
-    repository: ./testdata/gittest/parent
-
-# Following content just to force the download of comp1 and comp2
-
-nodes:
-  node1:
-    instances: 1
-    provider:
-      name: p1
-`
+	repDist1.writeCommit(t, "ekara.yaml", dist1Content)
+	repDist2.writeCommit(t, "ekara.yaml", dist2Content)
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
+
+	refM := tester.context.engine.ReferenceManager()
+	assert.Equal(t, len(refM.UsedReferences.Refs), 2)
+	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
+	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
+
 	// comp1 should be downloaded because it's used as orchestrator
 	// comp2 should be also downloaded because it's used as provider
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", model.EkaraComponentId+"2", "comp1", "comp2")
 }
 
+func TestDonwloadTwoParentsUpperUsed(t *testing.T) {
+
+	dist2Content := `
+ekara:
+  components:
+    comp2:
+      repository: ./testdata/gittest/comp2
+orchestrator:
+  component: comp2 
+providers:
+  p1:
+    component: comp1  
+`
+	dist1Content := `
+ekara:
+  parent:
+    repository: ./testdata/gittest/parent2
+  components:
+    comp1:
+      repository: ./testdata/gittest/comp1
+`
+	descContent := `
+name: ekara-demo-var
+qualifier: dev
+
+ekara:
+  parent:
+    repository: ./testdata/gittest/parent1
+
+# Following content just to force the download of comp1 and comp2
+nodes:
+  node1:
+    instances: 1
+    provider:
+      name: p1
+`
+	mainPath := "./testdata/gittest/descriptor"
+	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	tester := gitTester(t, c, false)
+	defer tester.clean()
+
+	repDist1 := tester.createRep("./testdata/gittest/parent1")
+	repDist2 := tester.createRep("./testdata/gittest/parent2")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
+	repDesc := tester.createRep(mainPath)
+
+	repDist1.writeCommit(t, "ekara.yaml", dist1Content)
+	repDist2.writeCommit(t, "ekara.yaml", dist2Content)
+	repDesc.writeCommit(t, "ekara.yaml", descContent)
+
+	err := tester.initEngine()
+	assert.Nil(t, err)
+	env := tester.env()
+	assert.NotNil(t, env)
+
+	refM := tester.context.engine.ReferenceManager()
+	assert.Equal(t, len(refM.UsedReferences.Refs), 2)
+	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
+	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
+
+	// comp1 should be downloaded because it's used as orchestrator
+	// comp2 should be also downloaded because it's used as provider
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", model.EkaraComponentId+"2", "comp1", "comp2")
+}
+
+/*
 func TestDonwloadFarProviderSplitted(t *testing.T) {
 	comp1Content := `
 providers:
@@ -290,7 +266,7 @@ providers:
     params:
       key_1: value_1
     env:
-      env_1: value_1	  
+      env_1: value_1
 `
 
 	distContent := `
@@ -299,10 +275,10 @@ ekara:
     comp1:
       repository: ./testdata/gittest/comp1
 orchestrator:
-  component: comp1 	  
+  component: comp1
 providers:
   p1:
-    component: comp1  
+    component: comp1
 `
 	CheckDonwloadSplitted(t, comp1Content, distContent)
 }
@@ -316,10 +292,8 @@ func CheckDonwloadSplitted(t *testing.T, comp1Content, distContent string) {
 
 	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp2 := tester.createRep("./testdata/gittest/comp2")
+	tester.createRepDefaultDescriptor(t,"./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
-
-	repComp2.writeCommit(t, "ekara.yaml", ``)
 
 	repDist.writeCommit(t, "ekara.yaml", distContent)
 	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
@@ -344,13 +318,11 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator
 	// comp2 should be also downloaded because it's used as provider
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	if assert.Equal(t, 1, len(env.Providers)) {
 		p := env.Providers["p1"]
@@ -365,3 +337,4 @@ nodes:
 		}
 	}
 }
+*/

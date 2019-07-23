@@ -59,8 +59,6 @@ func TestEngineLocalWithBranchRef(t *testing.T) {
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	//TODO Fix this
@@ -93,8 +91,6 @@ func TestEngineLocalWithTagRef(t *testing.T) {
 	repDesc.writeCommit(t, "ekara.yaml", refTag2+refDescContent)
 
 	err := tester.initEngine()
-	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)

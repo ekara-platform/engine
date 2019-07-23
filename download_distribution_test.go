@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"log"
 	"testing"
 
 	"github.com/ekara-platform/model"
@@ -10,7 +11,7 @@ import (
 
 // when the descriptor doesn't define its own specific parent then
 // the defaulted one should be used
-func TestDownloadDefaultParent(t *testing.T) {
+func TestDownloadDefaultParent2(t *testing.T) {
 	p, _ := model.CreateParameters(map[string]interface{}{
 		"ek": map[interface{}]interface{}{
 			"aws": map[interface{}]interface{}{
@@ -49,13 +50,44 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
+
+	refM := tester.context.engine.ReferenceManager()
+	assert.Equal(t, len(refM.UsedReferences.Refs), 3)
+
+	assert.True(t, refM.UsedReferences.IdUsed("ek-swarm"))
+	assert.True(t, refM.UsedReferences.IdUsed("ek-aws"))
+	assert.True(t, refM.UsedReferences.IdUsed("ek-core"))
+
+	log.Printf("--> GBE refM.ReferencedComponents.Refs %v", refM.ReferencedComponents.Refs)
+	assert.Equal(t, len(refM.ReferencedComponents.Refs), 4)
+	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-swarm"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-aws"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-openstack"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-core"))
+
+	assert.Len(t, refM.Parents, 1)
+	// Check that the parent has been renamed base on its position
+	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Component.Id)
+
+	// Check the referenced components has been cleaned
+	refM.ReferencedComponents.Clean(*refM.UsedReferences)
+	assert.Equal(t, len(refM.ReferencedComponents.Refs), 3)
+	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-swarm"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-aws"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-core"))
+
 	env := tester.env()
 	assert.NotNil(t, env)
 	// The defaulted parent should comme with ek-aws as provider
 	// and ek-swarm as orchestrator
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "ek-swarm", "ek-aws")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "ek-swarm", "ek-aws", "ek-core")
+	cpnts := env.Platform().Components
+	assert.Equal(t, len(cpnts), 5)
+	assert.Contains(t, cpnts, "__main__")
+	assert.Contains(t, cpnts, "__ekara__1")
+	assert.Contains(t, cpnts, "ek-swarm")
+	assert.Contains(t, cpnts, "ek-aws")
+	assert.Contains(t, cpnts, "ek-core")
 }
 
 func TestDownloadCustomParent(t *testing.T) {
@@ -67,12 +99,9 @@ func TestDownloadCustomParent(t *testing.T) {
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/parent")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp2 := tester.createRep("./testdata/gittest/comp2")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
-
-	repComp2.writeCommit(t, "ekara.yaml", ``)
-	repComp1.writeCommit(t, "ekara.yaml", ``)
 
 	distContent := `
 ekara:
@@ -110,18 +139,40 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
+
+	refM := tester.context.engine.ReferenceManager()
+	assert.Equal(t, 2, len(refM.UsedReferences.Refs))
+	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
+	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
+	assert.Equal(t, 2, len(refM.ReferencedComponents.Refs))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("comp1"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("comp2"))
+
+	assert.Len(t, refM.Parents, 1)
+	// Check that the parent has been renamed base on its position
+	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Component.Id)
+
+	// Check the referenced components has not been cleaned
+	refM.ReferencedComponents.Clean(*refM.UsedReferences)
+	assert.Equal(t, len(refM.ReferencedComponents.Refs), 2)
+	assert.True(t, refM.ReferencedComponents.IdReferenced("comp1"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("comp2"))
+
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 and comp2 should be downloaded because they are used into the descriptor
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
-
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2")
+	cpnts := env.Platform().Components
+	assert.Equal(t, len(cpnts), 4)
+	assert.Contains(t, cpnts, "__main__")
+	assert.Contains(t, cpnts, "__ekara__1")
+	assert.Contains(t, cpnts, "comp1")
+	assert.Contains(t, cpnts, "comp2")
 }
 
 // When more than one ekara.yaml file define a parent the one taken
 // in account should the the one defined in the main descriptor
-func TestDownloadFirstParent(t *testing.T) {
+func TestDownloadFTwoParents(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
@@ -131,27 +182,16 @@ func TestDownloadFirstParent(t *testing.T) {
 
 	repDist1 := tester.createRep("./testdata/gittest/parent1")
 	repDist2 := tester.createRep("./testdata/gittest/parent2")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp2 := tester.createRep("./testdata/gittest/comp2")
-	repComp3 := tester.createRep("./testdata/gittest/comp3")
-	repComp4 := tester.createRep("./testdata/gittest/comp4")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp3")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp4")
 	repDesc := tester.createRep(mainPath)
-
-	repComp4.writeCommit(t, "ekara.yaml", ``)
-	repComp3.writeCommit(t, "ekara.yaml", ``)
-
-	// Comp2 defines another parent but this
-	// one should be ignored
-	comp2Content := `
-ekara:
-  parent:
-    repository: ./testdata/gittest/parent2
-`
-	repComp2.writeCommit(t, "ekara.yaml", comp2Content)
-	repComp1.writeCommit(t, "ekara.yaml", ``)
 
 	distContent1 := `
 ekara:
+  parent:
+    repository: ./testdata/gittest/parent2
   components:
     comp1:
       repository: ./testdata/gittest/comp1
@@ -163,9 +203,9 @@ ekara:
 	distContent2 := `
 ekara:
   components:
-    comp1:
+    comp3:
       repository: ./testdata/gittest/comp3
-    comp2:
+    comp4:
       repository: ./testdata/gittest/comp4
 `
 	repDist2.writeCommit(t, "ekara.yaml", distContent2)
@@ -196,14 +236,36 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
+
+	refM := tester.context.engine.ReferenceManager()
+	assert.Equal(t, len(refM.UsedReferences.Refs), 2)
+	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
+	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
+	assert.Equal(t, len(refM.ReferencedComponents.Refs), 4)
+	assert.True(t, refM.ReferencedComponents.IdReferenced("comp1"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("comp2"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("comp3"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("comp4"))
+	assert.Len(t, refM.Parents, 2)
+	// Check that the parents has been renamed base on their position
+	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Component.Id)
+	assert.Equal(t, model.EkaraComponentId+"2", refM.Parents[1].Component.Id)
+
+	// Check the referenced components has been cleaned
+	refM.ReferencedComponents.Clean(*refM.UsedReferences)
+	assert.Equal(t, len(refM.ReferencedComponents.Refs), 2)
+	assert.True(t, refM.ReferencedComponents.IdReferenced("comp1"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("comp2"))
+
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 and comp2 should be downloaded because they are used into the descriptor
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
-	cpnts := env.Ekara.Components
-	assert.Equal(t, len(cpnts), 4)
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", model.EkaraComponentId+"2", "comp1", "comp2")
+	cpnts := env.Platform().Components
+	assert.Equal(t, len(cpnts), 5)
+	assert.Contains(t, cpnts, "__main__")
+	assert.Contains(t, cpnts, "__ekara__1")
+	assert.Contains(t, cpnts, "__ekara__2")
 	assert.Contains(t, cpnts, "comp1")
 	assert.Contains(t, cpnts, "comp2")
 

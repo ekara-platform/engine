@@ -137,7 +137,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		for envK, envV := range p.EnvVars {
 			env.Add(envK, envV)
 		}
-		
+
 		// Process hook : environment - provision - before
 		RunHookBefore(cm,
 			lC,

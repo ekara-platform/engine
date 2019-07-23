@@ -48,11 +48,10 @@ func checkSelfStackParent(t *testing.T, distContent string) {
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/parent")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
 
 	repDist.writeCommit(t, "ekara.yaml", distContent)
-	repComp1.writeCommit(t, "ekara.yaml", "")
 
 	descContent := `
 name: ekara-demo-var
@@ -74,7 +73,7 @@ nodes:
       name: p1
 stacks:
   myStack:
-    component: __ekara__  
+    component: __ekara__1  
     params:
       myStack_param_key2: myStack_param_key2_value_overwritten
       myStack_param_key3: myStack_param_key3_value
@@ -85,12 +84,10 @@ stacks:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator and provider
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	// Chect that the enviroment has one self contained stack
 	if assert.Equal(t, 1, len(env.Stacks)) {
@@ -105,7 +102,7 @@ stacks:
 			stackC, err := stack.Component()
 			assert.Nil(t, err)
 			assert.NotNil(t, stackC)
-			assert.Equal(t, model.EkaraComponentId, stackC.Id)
+			assert.Equal(t, model.EkaraComponentId+"1", stackC.Id)
 
 			// Check that the stack is usable and returns the environent as component
 			usableStack, err := cm.Use(stack)

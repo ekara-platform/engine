@@ -18,7 +18,8 @@ type Engine interface {
 	Init(c LaunchContext) error
 	Logger() *log.Logger
 	BaseDir() string
-	ComponentManager() component.ComponentManager
+	ComponentManager() *component.ComponentManager
+	ReferenceManager() *component.ReferenceManager
 	AnsibleManager() ansible.AnsibleManager
 }
 
@@ -28,7 +29,8 @@ type context struct {
 	directory string
 
 	// Subsystems
-	componentManager component.ComponentManager
+	componentManager *component.ComponentManager
+	referenceManager *component.ReferenceManager
 	ansibleManager   ansible.AnsibleManager
 	actionManager    ActionManager
 }
@@ -48,15 +50,16 @@ func Create(logger *log.Logger, workDir string, data *model.TemplateContext) (En
 		return nil, err
 	}
 
-	ctx := context{
+	ctx := &context{
 		logger:    logger,
 		directory: absWorkDir,
 	}
 
 	ctx.componentManager = component.CreateComponentManager(ctx.logger, data, absWorkDir)
-	ctx.ansibleManager = ansible.CreateAnsibleManager(ctx.logger, ctx.componentManager)
+	ctx.referenceManager = component.CreateReferenceManager(ctx.componentManager)
+	ctx.ansibleManager = ansible.CreateAnsibleManager(ctx.logger, *ctx.componentManager)
 	ctx.actionManager = CreateActionManager()
-	return &ctx, nil
+	return ctx, nil
 }
 
 //repositoryFlavor returns the repository flavor, branchn tag ..., based on the
@@ -92,10 +95,12 @@ func (ctx *context) Init(c LaunchContext) (err error) {
 	}
 
 	mainComponent := model.CreateComponent(model.MainComponentId, mainRep)
-	ctx.componentManager.RegisterComponent("", mainComponent)
-
-	// Ensure the main component is present
-	_, err = ctx.componentManager.EnsureOneComponent(mainComponent.Id, mainComponent)
+	// Parse upward all the references composing the environment
+	err = ctx.referenceManager.Init(mainComponent)
+	if err != nil {
+		return
+	}
+	err = ctx.ReferenceManager().Ensure()
 	if err != nil {
 		return
 	}
@@ -110,8 +115,12 @@ func (ctx *context) BaseDir() string {
 	return ctx.directory
 }
 
-func (ctx *context) ComponentManager() component.ComponentManager {
+func (ctx *context) ComponentManager() *component.ComponentManager {
 	return ctx.componentManager
+}
+
+func (ctx *context) ReferenceManager() *component.ReferenceManager {
+	return ctx.referenceManager
 }
 
 func (ctx *context) AnsibleManager() ansible.AnsibleManager {

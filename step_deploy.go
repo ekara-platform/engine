@@ -27,7 +27,9 @@ func fstack(lC LaunchContext, rC *runtimeContext) StepResults {
 		if ok, _ := ust.ContainsFile("install.yml"); ok {
 			fstackPlabook(lC, rC, st, ust, sCs)
 		} else {
-			fstackCompose(lC, rC, lC.Ekara().ComponentManager().Environment().Ekara.Parent, st, sCs)
+			//fstackCompose(lC, rC, lC.Ekara().ComponentManager().Environment().Ekara.Parent, st, sCs)
+			// TODO delete the unused components
+			fstackCompose(lC, rC, model.Parent{}, st, sCs)
 		}
 	}
 	return *sCs

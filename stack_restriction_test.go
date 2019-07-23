@@ -25,10 +25,9 @@ stacks:
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/parent")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
 
-	repComp1.writeCommit(t, "ekara.yaml", "")
 	repDist.writeCommit(t, "ekara.yaml", distContent)
 	// write the compose/playbook content into the parent component
 	repDist.writeCommit(t, "docker_compose.yml", "parent docker compose content")
@@ -61,12 +60,10 @@ stacks:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator and provider
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	// Chect that the enviroment has two stacks
 	if assert.Equal(t, 2, len(env.Stacks)) {
@@ -74,7 +71,7 @@ stacks:
 		cm := c.Ekara().ComponentManager()
 		assert.NotNil(t, cm)
 		checkStack(t, env, cm, model.MainComponentId, "descriptorStack", "descriptor docker compose content")
-		checkStack(t, env, cm, model.EkaraComponentId, "parentStack", "parent docker compose content")
+		checkStack(t, env, cm, model.EkaraComponentId+"1", "parentStack", "parent docker compose content")
 	}
 }
 
@@ -129,12 +126,10 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator and provider
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	// Chect that the enviroment has no stacks
 	assert.Equal(t, 0, len(env.Stacks))
@@ -156,16 +151,15 @@ ekara:
 	mainPath := "./testdata/gittest/descriptor"
 	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
 	tester := gitTester(t, c, false)
-	//defer tester.clean()
+	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/parent")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	// write the compose/playbook content into the comp2 component
 	repComp2.writeCommit(t, "docker_compose.yml", "comp2 docker compose content")
 	repDesc := tester.createRep(mainPath)
 
-	repComp1.writeCommit(t, "ekara.yaml", "")
 	repComp2.writeCommit(t, "ekara.yaml", comp2Content)
 	repDist.writeCommit(t, "ekara.yaml", distContent)
 
@@ -196,19 +190,17 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used asprovider
 	// comp2 should be downloaded because it's used as orchestrator
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2")
 
 	// Chect that the enviroment has no stacks
 	assert.Equal(t, 0, len(env.Stacks))
 }
 
-func checkStack(t *testing.T, env model.Environment, cm component.ComponentManager, holder, stackName, compose string) {
+func checkStack(t *testing.T, env model.Environment, cm *component.ComponentManager, holder, stackName, compose string) {
 	stack, ok := env.Stacks[stackName]
 	if assert.True(t, ok) {
 		//Check that the self contained stack has been well built

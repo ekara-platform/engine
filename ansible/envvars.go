@@ -2,6 +2,7 @@ package ansible
 
 import (
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/ekara-platform/model"
@@ -63,10 +64,18 @@ func (ev *EnvVars) AddOsVars(vars ...string) {
 			ev.Content[splitOsV[0]] = splitOsV[1]
 		} else {
 			for _, v := range vars {
-				if splitOsV[0] == v {
-					ev.Content[splitOsV[0]] = splitOsV[1]
-					break
+				if runtime.GOOS == "windows" {
+					if strings.EqualFold(splitOsV[0], v) {
+						ev.Content[v] = splitOsV[1]
+						break
+					}
+				} else {
+					if splitOsV[0] == v {
+						ev.Content[splitOsV[0]] = splitOsV[1]
+						break
+					}
 				}
+
 			}
 		}
 	}

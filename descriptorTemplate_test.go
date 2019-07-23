@@ -19,9 +19,13 @@ func TestTemplate(t *testing.T) {
 	url, err := model.CreateUrl("./testdata/template/descriptor.yaml")
 	assert.Nil(t, err)
 
-	// Parsing the descriptor
-	env, err := model.CreateEnvironment(url, "", vars)
+	yamlEnv, err := model.ParseYamlDescriptor(url, vars)
 	assert.Nil(t, err)
+	// Parsing the descriptor
+	env, err := model.CreateEnvironmentNew("", yamlEnv, model.MainComponentId)
+	assert.Nil(t, err)
+
+	// Parsing the descriptor
 	assert.NotNil(t, env)
 	assert.Equal(t, 2, len(env.Tasks))
 	ta := env.Tasks["testhook_post"]
@@ -46,7 +50,7 @@ func TestTemplateNoDot(t *testing.T) {
 	assert.Nil(t, err)
 
 	// Parsing the descriptor
-	_, err = model.CreateEnvironment(url, "", vars)
+	_, err = model.ParseYamlDescriptor(url, vars)
 	assert.NotNil(t, err)
 
 }

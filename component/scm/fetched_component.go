@@ -15,7 +15,7 @@ type (
 		LocalPath     string
 		Descriptor    string
 		DescriptorUrl model.EkURL
-		LocalUrl      model.EkURL	
+		LocalUrl      model.EkURL
 	}
 )
 
@@ -25,6 +25,9 @@ func (fc FetchedComponent) String() string {
 
 //HasDescriptor returns true if the fetched component contains a descriptor
 func (fc FetchedComponent) HasDescriptor() bool {
+	if fc.Descriptor == "" {
+		return false
+	}
 	if _, err := os.Stat(fc.DescriptorUrl.AsFilePath()); err == nil {
 		return true
 	}

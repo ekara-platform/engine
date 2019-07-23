@@ -74,11 +74,10 @@ ekara:
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/parent")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
 
 	repDist.writeCommit(t, "ekara.yaml", distContent)
-	repComp1.writeCommit(t, "ekara.yaml", "")
 
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 	// write the compose/playbook content into the descriptor component
@@ -86,12 +85,10 @@ ekara:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator and provider
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	// Chect that the enviroment has one self contained stack
 	if assert.Equal(t, 1, len(env.Stacks)) {

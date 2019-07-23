@@ -36,10 +36,6 @@ vars:
 	repComp2.writeCommit(t, "ekara.yaml", comp2Content)
 
 	comp1Content := `
-ekara:
-  components:
-    comp2:
-      repository: ./testdata/gittest/comp2
 vars:
   key1_comp1: val1_comp1
   key2_comp1: val2_comp1
@@ -51,6 +47,8 @@ ekara:
   components:
     comp1:
       repository: ./testdata/gittest/comp1
+    comp2:
+      repository: ./testdata/gittest/comp2
 vars:
   key1_parent: val1_parent
   key2_parent: val2_parent
@@ -85,8 +83,6 @@ nodes:
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 
 	err := tester.initEngine()
-	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)

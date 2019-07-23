@@ -24,12 +24,9 @@ func TestTemplateOnMainVars(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/parent")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
-
-	repComp1.writeCommit(t, "ekara.yaml", "")
-	repDist.writeCommit(t, "ekara.yaml", "")
 
 	descContent := `
 name: ekara-demo-var
@@ -63,8 +60,6 @@ nodes:
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 
 	err := tester.initEngine()
-	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
@@ -113,7 +108,6 @@ vars:
 	repDist.writeCommit(t, "ekara.yaml", distContent)
 
 	comp1Content := `
-ekara:
 vars:
   key1_comp1: val1_comp1
   key2_comp1: "{{ .Vars.key1_parent }}"
@@ -148,12 +142,10 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	assert.Equal(t, len(tc.Vars), 10)
 	cp(t, tc.Vars, "key1_comp1", "val1_comp1")
@@ -237,12 +229,10 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	assert.Equal(t, len(tc.Vars), 5)
 	// Cli var has precedence over descriptor/parent/comp1
