@@ -73,7 +73,7 @@ func (cm *ComponentManager) EnsureOneComponent(c model.Component) error {
 			return err
 		}
 
-		cEnv, err := model.CreateEnvironmentNew(path.DescriptorUrl.String(), descriptorYaml, c.Id)
+		cEnv, err := model.CreateEnvironment(path.DescriptorUrl.String(), descriptorYaml, c.Id)
 		if err != nil {
 			return err
 		}

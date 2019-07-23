@@ -22,7 +22,7 @@ func TestTemplate(t *testing.T) {
 	yamlEnv, err := model.ParseYamlDescriptor(url, vars)
 	assert.Nil(t, err)
 	// Parsing the descriptor
-	env, err := model.CreateEnvironmentNew("", yamlEnv, model.MainComponentId)
+	env, err := model.CreateEnvironment("", yamlEnv, model.MainComponentId)
 	assert.Nil(t, err)
 
 	// Parsing the descriptor

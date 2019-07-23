@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"log"
 	"testing"
 
 	"github.com/ekara-platform/model"
@@ -58,7 +57,6 @@ nodes:
 	assert.True(t, refM.UsedReferences.IdUsed("ek-aws"))
 	assert.True(t, refM.UsedReferences.IdUsed("ek-core"))
 
-	log.Printf("--> GBE refM.ReferencedComponents.Refs %v", refM.ReferencedComponents.Refs)
 	assert.Equal(t, len(refM.ReferencedComponents.Refs), 4)
 	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-swarm"))
 	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-aws"))
