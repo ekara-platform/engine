@@ -2,13 +2,11 @@ package engine
 
 import (
 	"log"
-	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
-	"github.com/ekara-platform/engine/util"
 
 	"github.com/ekara-platform/model"
 )
@@ -125,17 +123,4 @@ func (ctx *context) ReferenceManager() *component.ReferenceManager {
 
 func (ctx *context) AnsibleManager() ansible.AnsibleManager {
 	return ctx.ansibleManager
-}
-
-//CheckProxy returns the proxy setting from environment variables
-//
-// See:
-//		github.com/ekara-platform/engine/util.HttpProxyEnvVariableKey
-//		github.com/ekara-platform/engine/util.HttpsProxyEnvVariableKey
-//		github.com/ekara-platform/engine/util.NoProxyEnvVariableKey
-func CheckProxy() (httpProxy string, httpsProxy string, noProxy string) {
-	httpProxy = os.Getenv(util.HttpProxyEnvVariableKey)
-	httpsProxy = os.Getenv(util.HttpsProxyEnvVariableKey)
-	noProxy = os.Getenv(util.NoProxyEnvVariableKey)
-	return
 }

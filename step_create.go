@@ -52,7 +52,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
 		env.AddDefaultOsVars()
-		env.AddProxy(p.Proxy)
+		env.AddProxy(lC.Proxy())
 
 		// Adding the environment variables from the provider
 		for envK, envV := range p.EnvVars {
@@ -131,7 +131,7 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
 		env.AddDefaultOsVars()
-		env.AddProxy(p.Proxy)
+		env.AddProxy(lC.Proxy())
 
 		// Adding the environment variables from the nodeset provider
 		for envK, envV := range p.EnvVars {

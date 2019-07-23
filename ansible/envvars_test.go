@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/ekara-platform/model"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -47,6 +49,34 @@ func TestOsEnvVars(t *testing.T) {
 	val, ok = ev.Content["HOME"]
 	assert.True(t, ok)
 	assert.Equal(t, val, "4")
+}
+
+func TestProxyEnvVars(t *testing.T) {
+	ev := BuildEnvVars()
+
+	ev.AddProxy(model.Proxy{
+		Http:    "testHttpProxy",
+		Https:   "testHttpsProxy",
+		NoProxy: "testNoProxy"})
+
+	val, ok := ev.Content["http_proxy"]
+	assert.True(t, ok)
+	assert.Equal(t, val, "testHttpProxy")
+	val, ok = ev.Content["https_proxy"]
+	assert.True(t, ok)
+	assert.Equal(t, val, "testHttpsProxy")
+	val, ok = ev.Content["no_proxy"]
+	assert.True(t, ok)
+	assert.Equal(t, val, "testNoProxy")
+
+	ev.AddProxy(model.Proxy{})
+
+	val, ok = ev.Content["http_proxy"]
+	assert.False(t, ok)
+	val, ok = ev.Content["https_proxy"]
+	assert.False(t, ok)
+	val, ok = ev.Content["no_proxy"]
+	assert.False(t, ok)
 }
 
 func TestBufferedEnvVars(t *testing.T) {

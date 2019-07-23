@@ -69,7 +69,7 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
 		env.AddDefaultOsVars()
-		env.AddProxy(p.Proxy)
+		env.AddProxy(lC.Proxy())
 
 		// Adding the environment variables from the nodeset orchestrator
 		for envK, envV := range o.EnvVars {
@@ -188,7 +188,7 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
 		env.AddDefaultOsVars()
-		env.AddProxy(p.Proxy)
+		env.AddProxy(lC.Proxy())
 
 		// Adding the environment variables from the nodeset orchestrator
 		for envK, envV := range o.EnvVars {
