@@ -65,7 +65,7 @@ stacks:
 	// comp1 should be downloaded because it's used as orchestrator and provider
 	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
-	// Chect that the enviroment has two stacks
+	// Chect that the environment has two stacks
 	if assert.Equal(t, 2, len(env.Stacks)) {
 
 		cm := c.Ekara().ComponentManager()
@@ -131,7 +131,7 @@ nodes:
 	// comp1 should be downloaded because it's used as orchestrator and provider
 	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
-	// Chect that the enviroment has no stacks
+	// Chect that the environment has no stacks
 	assert.Equal(t, 0, len(env.Stacks))
 }
 
@@ -196,7 +196,7 @@ nodes:
 	// comp2 should be downloaded because it's used as orchestrator
 	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2")
 
-	// Chect that the enviroment has no stacks
+	// Chect that the environment has no stacks
 	assert.Equal(t, 0, len(env.Stacks))
 }
 

@@ -90,7 +90,7 @@ ekara:
 	// comp1 should be downloaded because it's used as orchestrator and provider
 	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
-	// Chect that the enviroment has one self contained stack
+	// Chect that the environment has one self contained stack
 	if assert.Equal(t, 1, len(env.Stacks)) {
 
 		cm := c.Ekara().ComponentManager()
