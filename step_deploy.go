@@ -27,7 +27,9 @@ func fstack(lC LaunchContext, rC *runtimeContext) StepResults {
 		if ok, _ := ust.ContainsFile("install.yml"); ok {
 			fstackPlabook(lC, rC, st, ust, sCs)
 		} else {
-			fstackCompose(lC, rC, lC.Ekara().ComponentManager().Environment().Ekara.Distribution, st, sCs)
+			//fstackCompose(lC, rC, lC.Ekara().ComponentManager().Environment().Ekara.Parent, st, sCs)
+			// TODO delete the unused components
+			fstackCompose(lC, rC, model.Parent{}, st, sCs)
 		}
 	}
 	return *sCs
@@ -152,10 +154,10 @@ func fstackPlabook(lC LaunchContext, rC *runtimeContext, st model.Stack, ust com
 	}
 }
 
-// TODO currently only the distribution is able to deploy a compose...
+// TODO currently only the parent is able to deploy a compose...
 // TODO refactor this method in order to run the docker stack deploy only once for the whole cluster,
 // regardless of the number of providers...
-func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Distribution, s model.Stack, sCs *StepResults) {
+func fstackCompose(lC LaunchContext, rC *runtimeContext, parent model.Parent, s model.Stack, sCs *StepResults) {
 	cm := lC.Ekara().ComponentManager()
 	// Map to keep trace on the processed providers
 	ps := make(map[string]model.Provider, len(cm.Environment().NodeSets))
@@ -234,9 +236,9 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 		// Prepare extra vars
 		var exv ansible.ExtraVars
 
-		d, err := cm.Use(distribution)
+		d, err := cm.Use(parent)
 		if err != nil {
-			FailsOnCode(&sc, err, "An error occurred getting the usable distribution", nil)
+			FailsOnCode(&sc, err, "An error occurred getting the usable parent", nil)
 		}
 		defer d.Release()
 		su, err := cm.Use(s)
@@ -254,7 +256,7 @@ func fstackCompose(lC LaunchContext, rC *runtimeContext, distribution model.Dist
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "deploy_compose.yaml",
-				Component: distribution.ComponentName(),
+				Component: parent.ComponentName(),
 				Code:      code,
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)

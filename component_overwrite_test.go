@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestOverwriteInMain(t *testing.T) {
+func TestOverwritenInMain(t *testing.T) {
 
 	distContent := `
 ekara:
@@ -21,14 +21,14 @@ ekara:
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp1Overwritten := tester.createRep("./testdata/gittest/comp1Overwritten")
 	repDesc := tester.createRep(mainPath)
 
 	repDist.writeCommit(t, "ekara.yaml", distContent)
 
-	repComp1.writeCommit(t, "content.txt", "comp content from distribution")
+	repComp1.writeCommit(t, "content.txt", "comp content from parent")
 	repComp1Overwritten.writeCommit(t, "content.txt", "comp content overwriten in descriptor")
 
 	descContent := `
@@ -36,8 +36,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent	
   components:
     comp1:
       repository: ./testdata/gittest/comp1Overwritten
@@ -54,15 +54,13 @@ nodes:
       name: p1
 `
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
-	
+
 	err := tester.initEngine()
-	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator and provider
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	cm := c.Ekara().ComponentManager()
 	assert.NotNil(t, cm)
@@ -87,14 +85,13 @@ ekara:
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
-	repDist.writeCommit(t, "ekara.yaml", "")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/parent")
 
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repComp2.writeCommit(t, "ekara.yaml", comp2Content)
 
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp1.writeCommit(t, "content.txt", "comp content from distribution")
+	repComp1.writeCommit(t, "content.txt", "comp content from parent")
 
 	repComp1Overwritten := tester.createRep("./testdata/gittest/comp1Overwritten")
 	repComp1Overwritten.writeCommit(t, "content.txt", "comp content overwriten in descriptor")
@@ -106,8 +103,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent
   components:
     comp1:
       repository: ./testdata/gittest/comp1Overwritten
@@ -130,13 +127,11 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator
 	// comp2 should be downloaded because it's used as  provider
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2")
 	cm := c.Ekara().ComponentManager()
 	assert.NotNil(t, cm)
 

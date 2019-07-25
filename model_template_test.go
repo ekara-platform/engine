@@ -17,13 +17,10 @@ func TestTemplateOnReadOnlyModel(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t,"./testdata/gittest/parent")
+	tester.createRepDefaultDescriptor(t,"./testdata/gittest/comp1")
 	repStack := tester.createRep("./testdata/gittest/stack")
 	repDesc := tester.createRep(mainPath)
-
-	repComp1.writeCommit(t, "ekara.yaml", "")
-	repDist.writeCommit(t, "ekara.yaml", "")
 
 	stackContent := `
 templates:
@@ -37,8 +34,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent
   components:
     comp1:
       repository: ./testdata/gittest/comp1	
@@ -63,8 +60,6 @@ stacks:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
@@ -77,7 +72,7 @@ stacks:
 	assert.Equal(t, "dev", tEnvironment.Qualifier())
 	assert.Equal(t, "ekara-demo-var_dev", tEnvironment.QualifiedName())
 
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1", "stack1")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId + "1", "comp1", "stack1")
 	if assert.Equal(t, 1, len(env.Stacks)) {
 		stack, ok := env.Stacks["stack1"]
 		if assert.True(t, ok) {

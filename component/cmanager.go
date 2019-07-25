@@ -1,10 +1,8 @@
 package component
 
 import (
-	"fmt"
 	"log"
 	"os"
-	"sort"
 
 	"path/filepath"
 
@@ -14,40 +12,18 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const maxFetchIterations = 9
-
 var releaseNothing = func() {
 	// Doing nothing and it's fine
 }
 
-//ComponentManager represents the common definition of all Component Manager
 type (
-	ComponentManager interface {
-		//RegisterComponent register a new compoment.
-		//
-		//The registration key of a component is its id.
-		//
-		//If the component has already been registered it will remain unaffected
-		// by a potential registration of a new version of the component.
-		RegisterComponent(parent string, c model.Component)
-		ComponentsPaths() map[string]string
-		SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error
-		Ensure() error
-		EnsureOneComponent(cID string, c model.Component) (bool, error)
-		Use(cr model.ComponentReferencer) (UsableComponent, error)
-		Environment() model.Environment
-		ContainsFile(name string, in ...model.ComponentReferencer) MatchingPaths
-		ContainsDirectory(name string, in ...model.ComponentReferencer) MatchingPaths
-	}
-
-	context struct {
-		// Common to all environments
-		logger      *log.Logger
+	// ComponentManager represents the common definition of all Component Manager
+	ComponentManager struct {
+		Logger      *log.Logger
 		data        *model.TemplateContext
 		environment *model.Environment
-		// Local to one environment (in the case multiple environments will be supported)
-		directory string
-		paths     map[string]string
+		Directory   string
+		Paths       map[string]scm.FetchedComponent
 	}
 
 	localRef struct {
@@ -61,148 +37,45 @@ type (
 )
 
 //CreateComponentManager creates a new component manager
-func CreateComponentManager(logger *log.Logger, data *model.TemplateContext, baseDir string) ComponentManager {
-	c := &context{
-		logger:      logger,
+func CreateComponentManager(logger *log.Logger, data *model.TemplateContext, baseDir string) *ComponentManager {
+	c := &ComponentManager{
+		Logger:      logger,
 		environment: nil,
-		directory:   filepath.Join(baseDir, "components"),
-		paths:       map[string]string{},
+		Directory:   filepath.Join(baseDir, "components"),
+		Paths:       map[string]scm.FetchedComponent{},
 		data:        data,
 	}
 	c.environment = model.InitEnvironment()
 	return c
 }
 
-func (cm *context) isFetchNeeded() bool {
-	for id := range cm.environment.Ekara.Components {
-
-		if cm.isComponentFetchNeeded(id) {
-			return true
-		}
-	}
-	return false
+func (cm *ComponentManager) isComponentFetched(id string) (val scm.FetchedComponent, present bool) {
+	val, present = cm.Paths[id]
+	return
 }
 
-func (cm *context) isComponentFetchNeeded(id string) bool {
-	_, present := cm.paths[id]
-	if id == model.MainComponentId || id == model.EkaraComponentId {
-		return !present
-	}
-	return !present && cm.environment.Ekara.Used(id)
-}
-
-func (cm *context) RegisterComponent(parent string, c model.Component) {
-	cm.logger.Printf("registering component id, %s located at %s@%s with parent %s", c.Id, c.Repository.Url.String(), c.Repository.Ref, parent)
-	overwritten := cm.environment.Ekara.RegisterComponent(parent, c)
-	if overwritten {
-		cm.logger.Println("a component previously registered has been overwritten")
-	}
-}
-
-func (cm *context) Ensure() error {
-	for i := 0; i < maxFetchIterations && cm.isFetchNeeded(); i++ {
-		val, cpt := cm.environment.Ekara.ToFetch()
-		for i := 0; i <= cpt-1; i++ {
-			c := <-val
-			b, err := cm.EnsureOneComponent(c.Id, c)
-			if err != nil {
-				return err
-			}
-			if b {
-				goto EnsureAgain
-			}
-		}
-	}
-	if cm.isFetchNeeded() {
-		return fmt.Errorf("not all components have been fetched after %d iterations, check for import loops in descriptors", maxFetchIterations)
-	}
-	return nil
-EnsureAgain:
-	cm.Ensure()
-	return nil
-}
-
-func (cm *context) EnsureOneComponent(cID string, c model.Component) (bool, error) {
-	cm.logger.Printf("ensuring component: %s", cID)
-	var toRegister []model.Component
-	if cm.isComponentFetchNeeded(cID) {
-		var err error
-		toRegister, err = fetchComponent(cm, c)
+func (cm *ComponentManager) EnsureOneComponent(c model.Component) error {
+	cm.Logger.Printf("ensuring component: %s", c.Id)
+	path, fetched := cm.isComponentFetched(c.Id)
+	if !fetched {
+		fComp, err := fetch(cm, c)
 		if err != nil {
-			return len(toRegister) > 0, err
+			cm.Logger.Printf("error fetching the component %s", err.Error())
+			return err
 		}
-
-		if cID == model.MainComponentId {
-			// Registering the distribution
-			if cm.environment != nil && cm.environment.Ekara != nil && cm.environment.Ekara.Distribution.Repository.Url != nil {
-				d := model.Component(cm.environment.Ekara.Distribution)
-				if _, ok := cm.environment.Ekara.Components[d.Id]; !ok {
-					cm.logger.Printf("registering a distribution")
-					toRegisterDist, err := fetchComponent(cm, d)
-					cm.RegisterComponent(cID, d)
-					if err != nil {
-						return len(toRegister) > 0, err
-					}
-					for _, v := range toRegisterDist {
-						cm.RegisterComponent(d.Id, v)
-					}
-				}
-			}
-		}
-		for _, v := range toRegister {
-			cm.RegisterComponent(cID, v)
-		}
+		path = fComp
 	}
-	return len(toRegister) > 0, nil
-}
-
-func fetchComponent(cm *context, c model.Component) ([]model.Component, error) {
-	toRegister := make([]model.Component, 0, 0)
-	h, err := scm.GetHandler(cm.logger, cm.directory, c)
-	if err != nil {
-		return toRegister, err
-	}
-	cm.logger.Printf("fetching component %s ", c.Id)
-	fComp, err := h()
-	if err != nil {
-		return toRegister, err
-	}
-	// Parse default descriptor
-	toRegister, err = cm.parseComponentDescriptor(fComp)
-	if err != nil {
-		return toRegister, err
-	}
-	cm.logger.Printf("component %s is available in %s", c.Id, fComp.LocalPath)
-
-	cm.paths[c.Id] = fComp.LocalPath
-	cm.environment.Ekara.SortedFetchedComponents = append(cm.environment.Ekara.SortedFetchedComponents, c.Id)
-	return toRegister, nil
-}
-
-func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) ([]model.Component, error) {
-	toRegister := make([]model.Component, 0, 0)
-	if fComp.HasDescriptor() {
-		// Parsing the descriptor
-		cm.logger.Printf("creating partial environment based on component %s", fComp.ID)
-		cEnv, err := model.CreateEnvironment(fComp.DescriptorUrl, fComp.ID, cm.data)
+	if path.HasDescriptor() {
+		cm.Logger.Printf("creating partial environment based on component %s", c.Id)
+		descriptorYaml, err := model.ParseYamlDescriptor(path.DescriptorUrl, cm.data)
 		if err != nil {
-			return toRegister, err
+			cm.Logger.Printf("error parsing the descriptor %s", err.Error())
+			return err
 		}
 
-		// If the parsed environment has components we prepare them in order
-		// to be register them in alphabetical order..
-		if len(cEnv.Ekara.Components) > 0 {
-			var keys []string
-			for k := range cEnv.Ekara.Components {
-				keys = append(keys, k)
-			}
-			sort.Strings(keys)
-
-			for _, k := range keys {
-				if val, ok := cEnv.Ekara.Components[k]; ok {
-					toRegister = append(toRegister, val)
-				}
-			}
+		cEnv, err := model.CreateEnvironment(path.DescriptorUrl.String(), descriptorYaml, c.Id)
+		if err != nil {
+			return err
 		}
 
 		// Merge or keep the resulting environment into the global one
@@ -211,37 +84,33 @@ func (cm *context) parseComponentDescriptor(fComp scm.FetchedComponent) ([]model
 		} else {
 			// We don't want to merge the templates defined into the environment
 			// But instead we want to keep them into the component
-			if len(cEnv.Templates.Content) > 0 {
-				comp := cm.environment.Ekara.Components[fComp.ID]
-				comp.Templates = cEnv.Templates
-				cm.environment.Ekara.Components[fComp.ID] = comp
-
-				comp = cm.environment.Ekara.Components[fComp.ID]
-				comp.Templates = cEnv.Templates
-				cm.environment.Ekara.Components[fComp.ID] = comp
-
-				cEnv.Templates = model.Patterns{}
-			}
+			cm.environment.Platform().KeepTemplates(c, cEnv.Templates)
+			cEnv.Templates = model.Patterns{}
 			err = cm.environment.Merge(cEnv)
 
 			if err != nil {
-				return toRegister, err
+				return err
 			}
 		}
-		cm.data.Model = model.CreateTEnvironmentForEnvironment(*cm.environment)
 	}
-	return toRegister, nil
+	cm.data.Model = model.CreateTEnvironmentForEnvironment(*cm.environment)
+
+	return nil
 }
 
-func (cm *context) Environment() model.Environment {
-	return *cm.environment
+func (cm *ComponentManager) Environment() *model.Environment {
+	return cm.environment
 }
 
-func (cm *context) ComponentsPaths() map[string]string {
-	return cm.paths
+func (cm *ComponentManager) ComponentsPaths() map[string]string {
+	res := make(map[string]string)
+	for k, v := range cm.Paths {
+		res[k] = v.LocalPath
+	}
+	return res
 }
 
-func (cm *context) SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error {
+func (cm *ComponentManager) SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error {
 	fMap := fileMap{}
 	fMap.File = cm.ComponentsPaths()
 	b, err := yaml.Marshal(&fMap)
@@ -255,15 +124,15 @@ func (cm *context) SaveComponentsPaths(log *log.Logger, dest util.FolderPath) er
 	return nil
 }
 
-func (cm *context) ContainsFile(name string, in ...model.ComponentReferencer) MatchingPaths {
+func (cm *ComponentManager) ContainsFile(name string, in ...model.ComponentReferencer) MatchingPaths {
 	return cm.contains(false, name, in...)
 }
 
-func (cm *context) ContainsDirectory(name string, in ...model.ComponentReferencer) MatchingPaths {
+func (cm *ComponentManager) ContainsDirectory(name string, in ...model.ComponentReferencer) MatchingPaths {
 	return cm.contains(true, name, in...)
 }
 
-func (cm *context) contains(isFolder bool, name string, in ...model.ComponentReferencer) MatchingPaths {
+func (cm *ComponentManager) contains(isFolder bool, name string, in ...model.ComponentReferencer) MatchingPaths {
 	res := MatchingPaths{
 		Paths: make([]MatchingPath, 0, 0),
 	}
@@ -271,7 +140,7 @@ func (cm *context) contains(isFolder bool, name string, in ...model.ComponentRef
 		for _, v := range in {
 			uv, err := cm.Use(v)
 			if err != nil {
-				cm.logger.Printf("An error occured using the component %s : %s", v.ComponentName(), err.Error())
+				cm.Logger.Printf("An error occured using the component %s : %s", v.ComponentName(), err.Error())
 			}
 			if isFolder {
 				if ok, match := uv.ContainsDirectory(name); ok {
@@ -288,13 +157,13 @@ func (cm *context) contains(isFolder bool, name string, in ...model.ComponentRef
 			}
 		}
 	} else {
-		for _, comp := range cm.environment.Ekara.Components {
+		for _, comp := range cm.environment.Platform().Components {
 			lRef := localRef{
 				component: comp,
 			}
 			uv, err := cm.Use(lRef)
 			if err != nil {
-				cm.logger.Printf("An error occured using the component %s : %s", lRef.ComponentName(), err.Error())
+				cm.Logger.Printf("An error occured using the component %s : %s", lRef.ComponentName(), err.Error())
 			}
 			if isFolder {
 				if ok, match := uv.ContainsDirectory(name); ok {
@@ -319,10 +188,10 @@ func (cm *context) contains(isFolder bool, name string, in ...model.ComponentRef
 //definition then the component will be duplicated and templated before
 // being returned as a UsableComponent.
 // Don't forget to Release the UsableComponent once is processing is over...
-func (cm *context) Use(cr model.ComponentReferencer) (UsableComponent, error) {
-	c := cm.environment.Ekara.Components[cr.ComponentName()]
+func (cm *ComponentManager) Use(cr model.ComponentReferencer) (UsableComponent, error) {
+	c := cm.environment.Platform().Components[cr.ComponentName()]
 	if ok, patterns := c.Templatable(); ok {
-		path, err := runTemplate(*cm.data, cm.paths[cr.ComponentName()], patterns, cr)
+		path, err := runTemplate(*cm.data, cm.Paths[cr.ComponentName()].LocalPath, patterns, cr)
 		if err != nil {
 			return usable{}, err
 		}
@@ -334,7 +203,7 @@ func (cm *context) Use(cr model.ComponentReferencer) (UsableComponent, error) {
 			cm:        cm,
 			path:      path,
 			release:   cleanup(path),
-			component: cm.environment.Ekara.Components[cr.ComponentName()],
+			component: cm.environment.Platform().Components[cr.ComponentName()],
 			templated: true,
 		}, nil
 	}
@@ -342,8 +211,8 @@ TemplateFalse:
 	return usable{
 		cm:        cm,
 		release:   releaseNothing,
-		path:      filepath.Join(cm.directory, cr.ComponentName()),
-		component: cm.environment.Ekara.Components[cr.ComponentName()],
+		path:      filepath.Join(cm.Directory, cr.ComponentName()),
+		component: cm.environment.Platform().Components[cr.ComponentName()],
 		templated: false,
 	}, nil
 }

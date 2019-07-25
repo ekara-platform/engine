@@ -76,7 +76,7 @@ func (t *tester) initEngine() error {
 }
 
 func (t *tester) env() model.Environment {
-	return t.context.engine.ComponentManager().Environment()
+	return *t.context.engine.ComponentManager().Environment()
 }
 
 func (t *tester) assertComponentsContainsExactly(paths ...string) bool {
@@ -97,6 +97,21 @@ func (t *tester) assertComponentsContains(paths ...string) bool {
 		}
 	}
 	return true
+}
+
+
+
+func (t *tester) createRepDefaultDescriptor(tt *testing.T, path string) *testRepo {
+	t.paths = append(t.paths, path)
+	rep, err := git.PlainInit(path, false)
+	assert.NotNil(t.t, rep)
+	assert.Nil(t.t, err)
+	res := &testRepo{
+		path: path,
+		rep:  rep,
+	}
+	res.writeCommit(tt, "ekara.yaml", ``)
+	return res
 }
 
 func (t *tester) createRep(path string) *testRepo {

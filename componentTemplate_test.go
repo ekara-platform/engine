@@ -28,8 +28,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 
 # Following content just to force the download of comp1 and comp2
 orchestrator:
@@ -57,24 +57,21 @@ nodes:
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp2 := tester.createRep("./testdata/gittest/comp2")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
 
 	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
-	repComp2.writeCommit(t, "ekara.yaml", "")
 	repDist.writeCommit(t, "ekara.yaml", distContent)
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2")
 
 	cm := c.Ekara().ComponentManager()
 	assert.NotNil(t, cm)

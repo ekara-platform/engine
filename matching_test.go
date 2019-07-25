@@ -25,8 +25,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 
 # Following content just to force the download of comp1 and comp2
 orchestrator:
@@ -52,15 +52,13 @@ func TestComponentFolderMatching(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp2 := tester.createRep("./testdata/gittest/comp2")
+	repDist := tester.createRep("./testdata/gittest/parent")
+	repComp1 := tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
+	repComp2 := tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
 
-	repComp1.writeCommit(t, "ekara.yaml", ``)
 	repComp1.writeFolderCommit(t, "wantedfolder1", "test.yaml", `test content`)
 
-	repComp2.writeCommit(t, "ekara.yaml", ``)
 	repComp2.writeFolderCommit(t, "wantedfolder1", "test.yaml", `test content`)
 	repComp2.writeFolderCommit(t, "wantedfolder2", "test.yaml", `test content`)
 	repComp2.writeFolderCommit(t, "wantedfolder2/subFolder1/subfolder2", "test.yaml", `test content`)
@@ -71,12 +69,10 @@ func TestComponentFolderMatching(t *testing.T) {
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2")
 
 	cm := c.Ekara().ComponentManager()
 	assert.NotNil(t, cm)
@@ -182,34 +178,30 @@ func TestComponentFileMatching(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
-	repComp2 := tester.createRep("./testdata/gittest/comp2")
+	repDist := tester.createRep("./testdata/gittest/parent")
+	repComp1 := tester.createRepDefaultDescriptor(t,"./testdata/gittest/comp1")
+	repComp2 := tester.createRepDefaultDescriptor(t,"./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
 
 	// Files in component 1
-	repComp1.writeCommit(t, "ekara.yaml", ``)
 	repComp1.writeCommit(t, "wantedFile1.txt", `test content`)
 
 	// Files in component 2
-	repComp2.writeCommit(t, "ekara.yaml", ``)
 	repComp2.writeCommit(t, "wantedFile1.txt", `test content`)
 	repComp2.writeFolderCommit(t, "subfolder", "wantedSubFile1.txt", `test content`)
 	repComp2.writeCommit(t, "wantedFile2.txt", `test content`)
 	repComp2.writeFolderCommit(t, "folderSearchedAsFile.txt", "test.yaml", `test content`)
 
-	// Files in distribution
+	// Files in parent
 	repDist.writeCommit(t, "ekara.yaml", matchDistContent)
 	repDesc.writeCommit(t, "ekara.yaml", matchDescContent)
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1", "comp2")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2")
 
 	cm := c.Ekara().ComponentManager()
 	assert.NotNil(t, cm)

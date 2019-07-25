@@ -28,8 +28,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 
 # Following content just to force the download of comp1 and comp2
 orchestrator:
@@ -217,7 +217,7 @@ func TestUsableTemplateNoMatch(t *testing.T) {
 }
 
 func writecheckUsableCommon(t *testing.T, tester *tester, d string) {
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repDesc := tester.createRep(d)
 
@@ -229,15 +229,13 @@ func writecheckUsableCommon(t *testing.T, tester *tester, d string) {
 
 }
 
-func checkUsableCommon(t *testing.T, c *MockLaunchContext, tester *tester, initialComp int) (model.Environment, component.ComponentManager) {
+func checkUsableCommon(t *testing.T, c *MockLaunchContext, tester *tester, initialComp int) (model.Environment, *component.ComponentManager) {
 	err := tester.initEngine()
-	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
 	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	cm := c.Ekara().ComponentManager()
 	assert.NotNil(t, cm)

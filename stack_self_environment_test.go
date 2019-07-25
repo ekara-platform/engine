@@ -15,8 +15,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 # Following content just to force the download of comp1
 orchestrator:
   component: comp1
@@ -41,8 +41,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 # Following content just to force the download of comp1
 orchestrator:
   component: comp1
@@ -73,12 +73,11 @@ ekara:
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
+	repDist := tester.createRep("./testdata/gittest/parent")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
 
 	repDist.writeCommit(t, "ekara.yaml", distContent)
-	repComp1.writeCommit(t, "ekara.yaml", "")
 
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 	// write the compose/playbook content into the descriptor component
@@ -86,12 +85,10 @@ ekara:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator and provider
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	// Chect that the enviroment has one self contained stack
 	if assert.Equal(t, 1, len(env.Stacks)) {

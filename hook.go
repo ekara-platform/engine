@@ -25,16 +25,16 @@ type (
 )
 
 //RunHookBefore Runs the hooks defined to be executed before a task.
-func RunHookBefore(cm component.ComponentManager, lC LaunchContext, rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
+func RunHookBefore(cm *component.ComponentManager, lC LaunchContext, rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
 	runHooks(cm, h.Before, lC, rC, r, ctx, cl)
 }
 
 //RunHookAfter Runs the hooks defined to be executed after a task.
-func RunHookAfter(cm component.ComponentManager, lC LaunchContext, rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
+func RunHookAfter(cm *component.ComponentManager, lC LaunchContext, rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
 	runHooks(cm, h.After, lC, rC, r, ctx, cl)
 }
 
-func runHooks(cm component.ComponentManager, hooks []model.TaskRef, lC LaunchContext, rC *runtimeContext, r *StepResults, ctx hookContext, cl Cleanup) {
+func runHooks(cm *component.ComponentManager, hooks []model.TaskRef, lC LaunchContext, rC *runtimeContext, r *StepResults, ctx hookContext, cl Cleanup) {
 	for i, hook := range hooks {
 		repName := fmt.Sprintf("%s_%s_hook_%s_%s_%s_%d", ctx.action, ctx.target.DescName(), ctx.hookOnwer, ctx.hookName, hook.HookLocation, i)
 		sc := InitHookStepResult(folderAsMessage(repName), ctx.target, cl)
@@ -72,7 +72,7 @@ func runHooks(cm component.ComponentManager, hooks []model.TaskRef, lC LaunchCon
 	}
 }
 
-func runTask(cm component.ComponentManager, lC LaunchContext, rC *runtimeContext, task model.Task, target model.Describable, sc StepResult, r *StepResults, ef *util.ExchangeFolder, exv ansible.ExtraVars, env ansible.EnvVars) {
+func runTask(cm *component.ComponentManager, lC LaunchContext, rC *runtimeContext, task model.Task, target model.Describable, sc StepResult, r *StepResults, ef *util.ExchangeFolder, exv ansible.ExtraVars, env ansible.EnvVars) {
 	usable, err := cm.Use(task)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable task", nil)

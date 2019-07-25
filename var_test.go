@@ -24,20 +24,17 @@ func TestTemplateOnMainVars(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
-	repComp1 := tester.createRep("./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/parent")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
-
-	repComp1.writeCommit(t, "ekara.yaml", "")
-	repDist.writeCommit(t, "ekara.yaml", "")
 
 	descContent := `
 name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent
   components:
     comp1:
       repository: ./testdata/gittest/comp1	
@@ -64,8 +61,6 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
@@ -81,14 +76,14 @@ nodes:
 
 }
 
-func TestTemplateOnDistributionVars(t *testing.T) {
+func TestTemplateOnParentVars(t *testing.T) {
 
 	p, _ := model.CreateParameters(map[string]interface{}{
 		"value1": map[interface{}]interface{}{
 			"from": map[interface{}]interface{}{
 				"cli": map[interface{}]interface{}{
-					"to_distribution": "value_from_cli_to_distribution",
-					"to_comp1":        "value_from_cli_to_comp1",
+					"to_parent": "value_from_cli_to_parent",
+					"to_comp1":  "value_from_cli_to_comp1",
 				},
 			},
 		},
@@ -99,25 +94,24 @@ func TestTemplateOnDistributionVars(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
 
 	distContent := `
 ekara:
 vars:
-  key1_distribution: val1_distribution
-  key2_distribution: "{{ .Vars.value1.from.cli.to_distribution }}"
-  key3_distribution: "{{ .Vars.key1_environment }}"
+  key1_parent: val1_parent
+  key2_parent: "{{ .Vars.value1.from.cli.to_parent }}"
+  key3_parent: "{{ .Vars.key1_environment }}"
 `
 	repDist.writeCommit(t, "ekara.yaml", distContent)
 
 	comp1Content := `
-ekara:
 vars:
   key1_comp1: val1_comp1
-  key2_comp1: "{{ .Vars.key1_distribution }}"
-  key3_comp1: "{{ .Vars.key2_distribution }}"
+  key2_comp1: "{{ .Vars.key1_parent }}"
+  key3_comp1: "{{ .Vars.key2_parent }}"
   key4_comp1: "{{ .Vars.value1.from.cli.to_comp1 }}"
   key5_comp1: "{{ .Vars.key1_environment }}"
 `
@@ -127,8 +121,8 @@ name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution	
+  parent:
+    repository: ./testdata/gittest/parent
   components:
     comp1:
       repository: ./testdata/gittest/comp1	
@@ -148,20 +142,18 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	assert.Equal(t, len(tc.Vars), 10)
 	cp(t, tc.Vars, "key1_comp1", "val1_comp1")
-	cp(t, tc.Vars, "key2_comp1", "val1_distribution")
-	cp(t, tc.Vars, "key3_comp1", "value_from_cli_to_distribution")
+	cp(t, tc.Vars, "key2_comp1", "val1_parent")
+	cp(t, tc.Vars, "key3_comp1", "value_from_cli_to_parent")
 	cp(t, tc.Vars, "key4_comp1", "value_from_cli_to_comp1")
 	cp(t, tc.Vars, "key5_comp1", "val1_environment")
-	cp(t, tc.Vars, "key3_distribution", "val1_environment")
+	cp(t, tc.Vars, "key3_parent", "val1_environment")
 }
 
 func cp(t *testing.T, p model.Parameters, key, value string) {
@@ -191,18 +183,18 @@ ekara:
     comp1:
       repository: ./testdata/gittest/comp1
 vars:
-  key1: val1_distribution			
-  key2: val2_distribution			
-  key3: val3_distribution			
-  keyX: val4_distribution			
+  key1: val1_parent
+  key2: val2_parent
+  key3: val3_parent
+  keyX: val4_parent
 `
 	descContent := `
 name: ekara-demo-var
 qualifier: dev
 
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 vars:
   key1: val1_descriptor					
   key3: val3_descriptor					
@@ -227,7 +219,7 @@ nodes:
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
 
@@ -237,21 +229,19 @@ nodes:
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 
-	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId, "comp1")
+	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	assert.Equal(t, len(tc.Vars), 5)
-	// Cli var has precedence over descriptor/distribution/comp1
+	// Cli var has precedence over descriptor/parent/comp1
 	cp(t, tc.Vars, "key1", "value1.from.cli")
-	// Descriptor var has precedence over distribution
+	// Descriptor var has precedence over parent
 	cp(t, tc.Vars, "key3", "val3_descriptor")
-	// Distribution var has precedence over comp1
-	cp(t, tc.Vars, "key2", "val2_distribution")
-	// Test accumation of vars from distribution and its components
+	// Parent var has precedence over comp1
+	cp(t, tc.Vars, "key2", "val2_parent")
+	// Test accumation of vars from parent and its components
 	cp(t, tc.Vars, "keyY", "val4_comp1")
-	cp(t, tc.Vars, "keyX", "val4_distribution")
+	cp(t, tc.Vars, "keyX", "val4_parent")
 }

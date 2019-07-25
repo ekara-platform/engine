@@ -34,45 +34,10 @@ qualifier: newTag2
 
 	refDescContent = `
 ekara:
-  distribution:
-    repository: ./testdata/gittest/distribution
+  parent:
+    repository: ./testdata/gittest/parent
 `
 )
-
-/*
-func TestEngineLocalNoRef(t *testing.T) {
-	mainPath := "./testdata/gittest/descriptor"
-
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
-	tester := gitTester(t, c, false)
-	defer tester.clean()
-
-	repDist := tester.createRep("./testdata/gittest/distribution")
-	repDist.writeCommit(t, "ekara.yaml", refDistContent)
-
-	repDesc := tester.createRep(mainPath)
-	// Commit the master
-	repDesc.writeCommit(t, "ekara.yaml", refMaster+refDescContent)
-
-	// Commit the new branch
-	repDesc.createBranch(t, "newBranch")
-	repDesc.writeCommit(t, "ekara.yaml", refBranch+refDescContent)
-	repDesc.checkout(t, "master")
-
-	c.locationContent = mainPath
-	a, b := repositoryFlavor(c.locationContent)
-	assert.Equal(t, a, mainPath)
-	assert.Equal(t, b, "")
-	err := tester.initEngine()
-	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
-	env := tester.env()
-	assert.NotNil(t, env)
-	assert.Equal(t, env.Qualifier, "master")
-
-}
-*/
 
 func TestEngineLocalWithBranchRef(t *testing.T) {
 
@@ -80,7 +45,7 @@ func TestEngineLocalWithBranchRef(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repDist.writeCommit(t, "ekara.yaml", refDistContent)
 
 	repDesc := tester.createRep("./testdata/gittest/descriptor")
@@ -94,8 +59,6 @@ func TestEngineLocalWithBranchRef(t *testing.T) {
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	//TODO Fix this
@@ -108,7 +71,7 @@ func TestEngineLocalWithTagRef(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/distribution")
+	repDist := tester.createRep("./testdata/gittest/parent")
 	repDist.writeCommit(t, "ekara.yaml", refDistContent)
 
 	repDesc := tester.createRep("./testdata/gittest/descriptor")
@@ -129,30 +92,12 @@ func TestEngineLocalWithTagRef(t *testing.T) {
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
-	err = tester.context.engine.ComponentManager().Ensure()
-	assert.Nil(t, err)
 	env := tester.env()
 	assert.NotNil(t, env)
 	//TODO Fix this
 	//assert.Equal(t, "newTag1", env.Qualifier)
 }
 
-/*
-func TestEngineLocalWithTagRef(t *testing.T) {
-	engine := createTestEngine()
-	c := MockLaunchContext{locationContent: "testdata/sample@v1.0.0"}
-	e := engine.Init(c)
-	assertOnlyWarnings(t, e)
-}
-
-func TestEngineLocalWithRawRef(t *testing.T) {
-	engine := createTestEngine()
-	c := MockLaunchContext{locationContent: "testdata/sample@refs/remotes/origin/test"}
-	e := engine.Init(c)
-	assertOnlyWarnings(t, e)
-}
-
-*/
 func TestRepositoryFlavor(t *testing.T) {
 
 	a, b := repositoryFlavor("aaa")
