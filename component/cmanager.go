@@ -140,7 +140,7 @@ func (cm *ComponentManager) contains(isFolder bool, name string, in ...model.Com
 		for _, v := range in {
 			uv, err := cm.Use(v)
 			if err != nil {
-				cm.Logger.Printf("An error occured using the component %s : %s", v.ComponentName(), err.Error())
+				cm.Logger.Printf("An error occurred using the component %s : %s", v.ComponentName(), err.Error())
 			}
 			if isFolder {
 				if ok, match := uv.ContainsDirectory(name); ok {
@@ -163,7 +163,7 @@ func (cm *ComponentManager) contains(isFolder bool, name string, in ...model.Com
 			}
 			uv, err := cm.Use(lRef)
 			if err != nil {
-				cm.Logger.Printf("An error occured using the component %s : %s", lRef.ComponentName(), err.Error())
+				cm.Logger.Printf("An error occurred using the component %s : %s", lRef.ComponentName(), err.Error())
 			}
 			if isFolder {
 				if ok, match := uv.ContainsDirectory(name); ok {

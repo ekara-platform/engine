@@ -113,7 +113,7 @@ stacks:
 			// Check that the stacks contains the compose/playbook file
 			checkFile(t, usableStack, "docker_compose.yml", "docker compose content")
 
-			//check the stack parameters inheritence
+			//check the stack parameters inheritance
 			if assert.Equal(t, 3, len(stack.Parameters)) {
 				assert.Contains(t, stack.Parameters, "myStack_param_key1", "myStack_param_key1_value")
 				assert.Contains(t, stack.Parameters, "myStack_param_key2", "myStack_param_key2_value_overwritten")
