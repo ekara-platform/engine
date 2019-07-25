@@ -17,8 +17,8 @@ func TestTemplateOnReadOnlyModel(t *testing.T) {
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	tester.createRepDefaultDescriptor(t,"./testdata/gittest/parent")
-	tester.createRepDefaultDescriptor(t,"./testdata/gittest/comp1")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/parent")
+	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	repStack := tester.createRep("./testdata/gittest/stack")
 	repDesc := tester.createRep(mainPath)
 
@@ -72,7 +72,7 @@ stacks:
 	assert.Equal(t, "dev", tEnvironment.Qualifier())
 	assert.Equal(t, "ekara-demo-var_dev", tEnvironment.QualifiedName())
 
-	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId + "1", "comp1", "stack1")
+	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "stack1")
 	if assert.Equal(t, 1, len(env.Stacks)) {
 		stack, ok := env.Stacks["stack1"]
 		if assert.True(t, ok) {

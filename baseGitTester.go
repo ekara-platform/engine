@@ -99,8 +99,6 @@ func (t *tester) assertComponentsContains(paths ...string) bool {
 	return true
 }
 
-
-
 func (t *tester) createRepDefaultDescriptor(tt *testing.T, path string) *testRepo {
 	t.paths = append(t.paths, path)
 	rep, err := git.PlainInit(path, false)

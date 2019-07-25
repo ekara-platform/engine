@@ -179,8 +179,8 @@ func TestComponentFileMatching(t *testing.T) {
 	defer tester.clean()
 
 	repDist := tester.createRep("./testdata/gittest/parent")
-	repComp1 := tester.createRepDefaultDescriptor(t,"./testdata/gittest/comp1")
-	repComp2 := tester.createRepDefaultDescriptor(t,"./testdata/gittest/comp2")
+	repComp1 := tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
+	repComp2 := tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
 
 	// Files in component 1
