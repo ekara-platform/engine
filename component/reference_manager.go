@@ -59,8 +59,15 @@ func (rm *ReferenceManager) Init(c model.Component) error {
 
 	// Keep all the references used into the main descriptor
 	u, o := refs.Uses(rm.Orphans)
-	rm.UsedReferences.AddAll(*u)
-	rm.Orphans.AddAll(*o)
+	for id := range u.Refs {
+		rm.l.Printf("Component used by the main descriptor %s", id)
+		rm.UsedReferences.AddReference(id)
+	}
+	for id := range o.Refs {
+		rm.l.Printf("Orphan used by the main descriptor %s", id)
+		rm.Orphans.AddReference(id)
+	}
+
 	referenced, err := refs.References(c.Id)
 	if err != nil {
 		return err
@@ -105,8 +112,14 @@ func (rm *ReferenceManager) parseParent(p model.Component) error {
 	}
 	// Keep all the references used into the parent
 	u, o := refs.Uses(rm.Orphans)
-	rm.UsedReferences.AddAll(*u)
-	rm.Orphans.AddAll(*o)
+	for id := range u.Refs {
+		rm.l.Printf("Component used by the parent %s", id)
+		rm.UsedReferences.AddReference(id)
+	}
+	for id := range o.Refs {
+		rm.l.Printf("Orphan used by the parent %s", id)
+		rm.Orphans.AddReference(id)
+	}
 
 	pRef := ParentRef{
 		Component:            p,
