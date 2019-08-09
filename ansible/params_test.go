@@ -9,21 +9,19 @@ import (
 )
 
 func TestBuild(t *testing.T) {
-	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
 	body := bp.Body
 
-	val, ok := body["connectionConfig"]
+	val, ok := body["ssh"]
 	assert.True(t, ok)
 
 	v, okType := val.(map[string]interface{})
 	assert.True(t, okType)
 	for k, v := range v {
 		switch k {
-		case "provider":
-			assert.Equal(t, "provider_val", v)
-		case "machine_public_key":
+		case "public_key":
 			assert.Equal(t, "pubK_val", v)
-		case "machine_private_key":
+		case "private_key":
 			assert.Equal(t, "privK_val", v)
 		default:
 			assert.Fail(t, "unknown key")
@@ -43,7 +41,7 @@ func TestBuild(t *testing.T) {
 		case "qualifier":
 			assert.Equal(t, "val", v)
 		case "id":
-			assert.Equal(t, "client_val_uid_val", v)
+			assert.Equal(t, "client_val", v)
 		case "nodeset":
 			assert.Equal(t, "uid_val", v)
 		default:
@@ -53,7 +51,7 @@ func TestBuild(t *testing.T) {
 }
 
 func TestAddString(t *testing.T) {
-	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
 
 	bp.AddString("string_key1", "string_val1")
 	bp.AddString("string_key2", "string_val2")
@@ -78,8 +76,7 @@ func TestAddString(t *testing.T) {
 }
 
 func TestAddInt(t *testing.T) {
-
-	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
 
 	bp.AddInt("string_key1", 11)
 	bp.AddInt("string_key2", 22)
@@ -104,8 +101,7 @@ func TestAddInt(t *testing.T) {
 }
 
 func TestAddMapString(t *testing.T) {
-
-	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "string_val1"
@@ -132,8 +128,7 @@ func TestAddMapString(t *testing.T) {
 }
 
 func TestAddMapInt(t *testing.T) {
-
-	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = 11
@@ -160,8 +155,7 @@ func TestAddMapInt(t *testing.T) {
 }
 
 func TestAddInterface(t *testing.T) {
-
-	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "String"
@@ -200,8 +194,7 @@ func TestAddInterface(t *testing.T) {
 }
 
 func TestAddNamedMapString(t *testing.T) {
-
-	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "string_val1"
@@ -228,8 +221,7 @@ func TestAddNamedMapString(t *testing.T) {
 }
 
 func TestAddBuffer(t *testing.T) {
-
-	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
 
 	buf := CreateBuffer()
 	buf.Param["string_key1"] = "string_val1"
@@ -257,7 +249,7 @@ func TestAddBuffer(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	bp := BuildBaseParam(model.Environment{Name: "client", Qualifier: "val"}, "uid_val", "provider_val", "pubK_val", "privK_val")
+	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
 	copy := bp.Copy()
 
 	bpB := bp.Body
@@ -266,7 +258,7 @@ func TestCopy(t *testing.T) {
 	assert.Equal(t, len(bpB), len(cB))
 
 	// check origin
-	val, ok := bpB["connectionConfig"]
+	val, ok := bpB["ssh"]
 	assert.True(t, ok)
 	v, okType := val.(map[string]interface{})
 	assert.True(t, okType)
@@ -274,9 +266,9 @@ func TestCopy(t *testing.T) {
 		switch k {
 		case "provider":
 			assert.Equal(t, "provider_val", v)
-		case "machine_public_key":
+		case "public_key":
 			assert.Equal(t, "pubK_val", v)
-		case "machine_private_key":
+		case "private_key":
 			assert.Equal(t, "privK_val", v)
 		default:
 			assert.Fail(t, "unknown key")
@@ -284,7 +276,7 @@ func TestCopy(t *testing.T) {
 	}
 
 	// check copy
-	val, ok = cB["connectionConfig"]
+	val, ok = cB["ssh"]
 	assert.True(t, ok)
 	v, okType = val.(map[string]interface{})
 	assert.True(t, okType)
@@ -292,9 +284,9 @@ func TestCopy(t *testing.T) {
 		switch k {
 		case "provider":
 			assert.Equal(t, "provider_val", v)
-		case "machine_public_key":
+		case "public_key":
 			assert.Equal(t, "pubK_val", v)
-		case "machine_private_key":
+		case "private_key":
 			assert.Equal(t, "privK_val", v)
 		default:
 			assert.Fail(t, "unknown key")
@@ -315,7 +307,7 @@ func TestCopy(t *testing.T) {
 		case "qualifier":
 			assert.Equal(t, "val", v)
 		case "id":
-			assert.Equal(t, "client_val_uid_val", v)
+			assert.Equal(t, "client_val", v)
 		case "nodeset":
 			assert.Equal(t, "uid_val", v)
 		default:
@@ -337,7 +329,7 @@ func TestCopy(t *testing.T) {
 		case "qualifier":
 			assert.Equal(t, "val", v)
 		case "id":
-			assert.Equal(t, "client_val_uid_val", v)
+			assert.Equal(t, "client_val", v)
 		case "nodeset":
 			assert.Equal(t, "uid_val", v)
 		default:
@@ -367,5 +359,4 @@ func TestCopy(t *testing.T) {
 	v, okType = val.(map[string]interface{})
 	assert.True(t, okType)
 	assert.Equal(t, v["name"], "updated")
-
 }
