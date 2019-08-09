@@ -59,12 +59,6 @@ func runHooks(cm *component.ComponentManager, hooks []model.TaskRef, lC LaunchCo
 			continue
 		}
 
-		// Prepare components map
-		if ko := saveComponentMap(lC, ef.Input, &sc); ko {
-			r.Add(sc)
-			continue
-		}
-
 		exv := ansible.BuildExtraVars("", *ef.Input, *ef.Output, ctx.buffer)
 
 		runTask(cm, lC, rC, t, ctx.target, sc, r, ef, exv, ctx.envVar)
