@@ -26,8 +26,8 @@
 
 
 [[constraint]]
-  branch = "no-buffer-sharing"
-  name = "github.com/adrienlauer/model"
+  branch = "master"
+  name = "github.com/ekara-platform/model"
 
 [[constraint]]
   name = "github.com/stretchr/testify"
