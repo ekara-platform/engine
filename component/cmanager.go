@@ -7,9 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/ekara-platform/engine/component/scm"
-	"github.com/ekara-platform/engine/util"
 	"github.com/ekara-platform/model"
-	"gopkg.in/yaml.v2"
 )
 
 var releaseNothing = func() {
@@ -17,7 +15,7 @@ var releaseNothing = func() {
 }
 
 type (
-	// ComponentManager represents the common definition of all Component Manager
+	// ComponentManager downloads and keep track of ekara components on disk.
 	ComponentManager struct {
 		Logger      *log.Logger
 		data        *model.TemplateContext
@@ -100,28 +98,6 @@ func (cm *ComponentManager) EnsureOneComponent(c model.Component) error {
 
 func (cm *ComponentManager) Environment() *model.Environment {
 	return cm.environment
-}
-
-func (cm *ComponentManager) ComponentsPaths() map[string]string {
-	res := make(map[string]string)
-	for k, v := range cm.Paths {
-		res[k] = v.LocalPath
-	}
-	return res
-}
-
-func (cm *ComponentManager) SaveComponentsPaths(log *log.Logger, dest util.FolderPath) error {
-	fMap := fileMap{}
-	fMap.File = cm.ComponentsPaths()
-	b, err := yaml.Marshal(&fMap)
-	if err != nil {
-		return err
-	}
-	_, err = util.SaveFile(log, dest, util.ComponentPathsFileName, b)
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (cm *ComponentManager) ContainsFile(name string, in ...model.ComponentReferencer) MatchingPaths {

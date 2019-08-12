@@ -34,45 +34,33 @@ type BaseParam struct {
 //		pubK: the public SSH key to connect on the created nodeset ( the name of the file)
 //		privK: the private SSH key to connect on the created nodeset ( the name of the file)
 //
-func BuildBaseParam(env model.Environment, nodesetName string, provider string, pubK string, privK string) BaseParam {
-
+func BuildBaseParam(env *model.Environment, pubK string, privK string, nodesetName string) BaseParam {
 	baseParam := BaseParam{}
 	baseParam.Body = make(map[string]interface{})
 
-	connectionM := make(map[string]interface{})
-	if provider != "" {
-		connectionM["provider"] = provider
-	}
+	sshM := make(map[string]interface{})
 	if pubK != "" {
-		connectionM["machine_public_key"] = pubK
+		sshM["public_key"] = pubK
 	}
 	if privK != "" {
-		connectionM["machine_private_key"] = privK
+		sshM["private_key"] = privK
 	}
-	baseParam.Body["connectionConfig"] = connectionM
+	baseParam.Body["ssh"] = sshM
 
-	clientM := make(map[string]interface{})
-
+	environmentM := make(map[string]interface{})
 	if env.QualifiedName().String() != "" {
-		if nodesetName != "" {
-			clientM["id"] = env.QualifiedName().String() + "_" + nodesetName
-		} else {
-			clientM["id"] = env.QualifiedName().String()
-		}
+		environmentM["id"] = env.QualifiedName().String()
 	}
-
 	if env.Name != "" {
-		clientM["name"] = env.Name
+		environmentM["name"] = env.Name
 	}
-
 	if env.Qualifier != "" {
-		clientM["qualifier"] = env.Qualifier
+		environmentM["qualifier"] = env.Qualifier
 	}
-
 	if nodesetName != "" {
-		clientM["nodeset"] = nodesetName
+		environmentM["nodeset"] = nodesetName
 	}
-	baseParam.Body["environment"] = clientM
+	baseParam.Body["environment"] = environmentM
 
 	return baseParam
 }

@@ -245,14 +245,12 @@ func JoinPaths(paths ...string) string {
 //  "\\" by "/"
 func AdaptPath(path string) string {
 	s := path
-	log.Printf("AdaptPath runtime %s", runtime.GOOS)
 	if runtime.GOOS == "windows" {
 		if strings.Index(s, "c:\\") == 0 {
 			s = "/c" + s[2:]
 		}
 		s = strings.Replace(s, "\\", "/", -1)
 	}
-	log.Printf("AdaptPath func %s", s)
 	return s
 }
 

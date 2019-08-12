@@ -6,7 +6,7 @@ import (
 	"github.com/ekara-platform/engine/ansible"
 )
 
-var createSteps = []step{fsetup, fconsumesetup, fcreate, fconsumecreate}
+var createSteps = []step{fsetup /*fconsumesetup,*/, fcreate /*, fconsumecreate*/}
 
 func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 	cm := lC.Ekara().ComponentManager()
@@ -28,26 +28,19 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		setupProviderEfIn := setupProviderEf.Input
 		setupProviderEfOut := setupProviderEf.Output
 
-		// Prepare parameters
-		bp := BuildBaseParam(lC, "", p.Name) // TODO : review if provider name is ok
-		bp.AddNamedMap("params", p.Parameters)
+		// Create a new buffer
+		buffer := ansible.CreateBuffer()
 
+		// Prepare parameters
+		bp := BuildBaseParam(lC, "")
+		bp.AddNamedMap("params", p.Parameters)
 		if ko := saveBaseParams(bp, lC, setupProviderEfIn, &sc); ko {
 			sCs.Add(sc)
 			continue
 		}
 
-		// This is the first "real" step of the process so the used buffer is empty
-		emptyBuff := ansible.CreateBuffer()
-
-		// Prepare components map
-		if ko := saveComponentMap(lC, setupProviderEfIn, &sc); ko {
-			sCs.Add(sc)
-			continue
-		}
-
 		// Prepare extra vars
-		exv := ansible.BuildExtraVars("", *setupProviderEfIn, *setupProviderEfOut, emptyBuff)
+		exv := ansible.BuildExtraVars("", *setupProviderEfIn, *setupProviderEfOut, buffer)
 
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
@@ -81,24 +74,24 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func fconsumesetup(lC LaunchContext, rC *runtimeContext) StepResults {
-	sCs := InitStepResults()
-	for _, p := range lC.Ekara().ComponentManager().Environment().Providers {
-		sc := InitCodeStepResult("Consuming the setup phase", p, NoCleanUpRequired)
-		lC.Log().Printf("Consume setup for provider %s", p.Name)
-		setupProviderEfOut := lC.Ef().Input.Children["setup_provider_"+p.Name].Output
-		buffer, err := ansible.GetBuffer(setupProviderEfOut, lC.Log(), "provider:"+p.Name)
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the buffer"), nil)
-			sCs.Add(sc)
-			continue
-		}
-		// Keep a reference on the buffer based on the output folder
-		rC.buffer[setupProviderEfOut.Path()] = buffer
-		sCs.Add(sc)
-	}
-	return *sCs
-}
+// func fconsumesetup(lC LaunchContext, rC *runtimeContext) StepResults {
+// 	sCs := InitStepResults()
+// 	for _, p := range lC.Ekara().ComponentManager().Environment().Providers {
+// 		sc := InitCodeStepResult("Consuming the setup phase", p, NoCleanUpRequired)
+// 		lC.Log().Printf("Consume setup for provider %s", p.Name)
+// 		setupProviderEfOut := lC.Ef().Input.Children["setup_provider_"+p.Name].Output
+// 		buffer, err := ansible.GetBuffer(setupProviderEfOut, lC.Log(), "provider:"+p.Name)
+// 		if err != nil {
+// 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the buffer"), nil)
+// 			sCs.Add(sc)
+// 			continue
+// 		}
+// 		// Keep a reference on the buffer based on the output folder
+// 		rC.buffer[setupProviderEfOut.Path()] = buffer
+// 		sCs.Add(sc)
+// 	}
+// 	return *sCs
+// }
 
 func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 	cm := lC.Ekara().ComponentManager()
@@ -115,18 +108,15 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 			continue
 		}
 
-		// Provider setup exchange folder
-		setupProviderEf := lC.Ef().Input.Children["setup_provider_"+p.Name]
-		// We check if we have a buffer corresponding to the provider setup output
-		buffer := rC.getBuffer(setupProviderEf.Output)
+		// Create a new buffer
+		buffer := ansible.CreateBuffer()
 
 		// Prepare parameters
-		bp := BuildBaseParam(lC, n.Name, p.Name) // TODO : review if provider name is ok
+		bp := BuildBaseParam(lC, n.Name)
 		bp.AddInt("instances", n.Instances)
 		bp.AddInterface("labels", n.Labels)
 		bp.AddNamedMap("params", p.Parameters)
-		bp.AddInterface("volumes", n.Volumes.AsArray())
-		bp.AddBuffer(buffer)
+		bp.AddInterface("proxy", p.Proxy)
 
 		// Prepare environment variables
 		env := ansible.BuildEnvVars()
@@ -166,12 +156,6 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		}
 
 		if ko := saveBaseParams(bp, lC, nodeCreateEf.Input, &sc); ko {
-			sCs.Add(sc)
-			continue
-		}
-
-		// Prepare components map
-		if ko := saveComponentMap(lC, nodeCreateEf.Input, &sc); ko {
 			sCs.Add(sc)
 			continue
 		}
@@ -221,21 +205,21 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func fconsumecreate(lC LaunchContext, rC *runtimeContext) StepResults {
-	sCs := InitStepResults()
-	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
-		sc := InitCodeStepResult("Consuming the create phase", n, NoCleanUpRequired)
-		lC.Log().Printf("Consume create for node %s", n.Name)
-		nodeCreateEf := lC.Ef().Input.Children["create_"+n.Name].Output
-		buffer, err := ansible.GetBuffer(nodeCreateEf, lC.Log(), "node:"+n.Name)
-		// Keep a reference on the buffer based on the output folder
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the buffer"), nil)
-			sCs.Add(sc)
-			continue
-		}
-		rC.buffer[nodeCreateEf.Path()] = buffer
-		sCs.Add(sc)
-	}
-	return *sCs
-}
+// func fconsumecreate(lC LaunchContext, rC *runtimeContext) StepResults {
+// 	sCs := InitStepResults()
+// 	for _, n := range lC.Ekara().ComponentManager().Environment().NodeSets {
+// 		sc := InitCodeStepResult("Consuming the create phase", n, NoCleanUpRequired)
+// 		lC.Log().Printf("Consume create for node %s", n.Name)
+// 		nodeCreateEf := lC.Ef().Input.Children["create_"+n.Name].Output
+// 		buffer, err := ansible.GetBuffer(nodeCreateEf, lC.Log(), "node:"+n.Name)
+// 		// Keep a reference on the buffer based on the output folder
+// 		if err != nil {
+// 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the buffer"), nil)
+// 			sCs.Add(sc)
+// 			continue
+// 		}
+// 		rC.buffer[nodeCreateEf.Path()] = buffer
+// 		sCs.Add(sc)
+// 	}
+// 	return *sCs
+// }

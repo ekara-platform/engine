@@ -56,7 +56,7 @@ qualifier: QualifierContent
 	assert.NotNil(t, env)
 
 	sc := InitCodeStepResult("DummyStep", nil, NoCleanUpRequired)
-	bp := BuildBaseParam(c, "nodeId", "providerName")
+	bp := BuildBaseParam(c, "nodeId")
 	ko := saveBaseParams(bp, c, ef.Input, &sc)
 	assert.False(t, ko)
 
