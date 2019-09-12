@@ -62,17 +62,31 @@ func runHooks(cm *component.ComponentManager, hooks []model.TaskRef, lC LaunchCo
 		exv := ansible.BuildExtraVars("", *ef.Input, *ef.Output, ctx.buffer)
 
 		runTask(cm, lC, rC, t, ctx.target, sc, r, ef, exv, ctx.envVar)
-		// TODO Consume hook buffer here
+		r.Add(fconsumeHookResult(lC, rC, ctx.target, repName, ef))
 	}
 }
 
+func fconsumeHookResult(lC LaunchContext, rC *runtimeContext, target model.Describable, repName string, ef *util.ExchangeFolder) StepResult {
+	sc := InitCodeStepResult("Consuming the hook result", target, NoCleanUpRequired)
+	lC.Log().Printf("Consume the hook result %s", target.DescName())
+	efOut := ef.Output
+	buffer, err := ansible.GetBuffer(efOut, lC.Log(), "hook:"+repName)
+	if err != nil {
+		FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the buffer"), nil)
+		return sc
+	}
+	// Keep a reference on the buffer based on the output folder
+	rC.buffer[efOut.Path()] = buffer
+	return sc
+}
+
 func runTask(cm *component.ComponentManager, lC LaunchContext, rC *runtimeContext, task model.Task, target model.Describable, sc StepResult, r *StepResults, ef *util.ExchangeFolder, exv ansible.ExtraVars, env ansible.EnvVars) {
-	usable, err := cm.Use(task)
+	usable, err := cm.Use(task, rC.data)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable task", nil)
 	}
 	defer usable.Release()
-	code, err := lC.Ekara().AnsibleManager().Execute(usable, task.Playbook, exv, env)
+	code, err := lC.Ekara().AnsibleManager().Execute(usable, task.Playbook, exv, env, rC.data)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  task.Playbook,

@@ -29,8 +29,8 @@ func TestDebugDemo(t *testing.T) {
 		},
 	})
 	mainPath := "./testdata/gittest/descriptor"
-	tc := model.CreateContext(p)
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
@@ -41,7 +41,7 @@ func TestDebugDemo(t *testing.T) {
   qualifier: dev
   
   ekara:
-    distribution:
+    parent:
       repository: ekara-platform/distribution
     components:
       visualizer:

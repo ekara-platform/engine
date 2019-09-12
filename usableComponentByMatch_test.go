@@ -18,7 +18,7 @@ templates:
 templates:
   - "{{ .Vars.templateDef }}"
 `
-	byMatchDistContent = `
+	byMatchParentContent = `
 ekara:
   components:
     comp1:
@@ -65,9 +65,8 @@ func TestByMatchNoMatchOnSearch(t *testing.T) {
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})
-	tc := model.CreateContext(p)
 
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
@@ -79,14 +78,14 @@ func TestByMatchNoMatchOnSearch(t *testing.T) {
 	comp1 := env.Orchestrator
 	comp2 := env.Providers["p1"]
 
-	matches := cm.ContainsFile("dummy.file")
+	matches := cm.ContainsFile("dummy.file", tester.context.engine.Context().data)
 	assert.NotNil(t, matches)
 	assert.Equal(t, 0, matches.Count())
 
 	//Nothing found the no template folder have been created
 	assert.Equal(t, cptComp, tester.countComponent())
 
-	matches = cm.ContainsFile("dummy.file", comp1, comp2)
+	matches = cm.ContainsFile("dummy.file", tester.context.engine.Context().data, comp1, comp2)
 	assert.NotNil(t, matches)
 	assert.Equal(t, 0, matches.Count())
 
@@ -103,9 +102,8 @@ func TestByMatchOneMatchOnSearch(t *testing.T) {
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})
-	tc := model.CreateContext(p)
 
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
@@ -121,12 +119,12 @@ func TestByMatchOneMatchOnSearch(t *testing.T) {
 	checker := checkByMatch(t, tester, cptComp)
 
 	// 2 matches but only 1 (comp2) templated
-	matches := cm.ContainsFile("search2.file")
+	matches := cm.ContainsFile("search2.file", tester.context.engine.Context().data)
 	releaseCheck := checker(matches, 2, 1, comp2)
 	checkByMatchContent(t, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
 	releaseCheck()
 
-	matches = cm.ContainsFile("search2.file", comp1, comp2, comp3)
+	matches = cm.ContainsFile("search2.file", tester.context.engine.Context().data, comp1, comp2, comp3)
 	releaseCheck = checker(matches, 2, 1, comp2)
 	checkByMatchContent(t, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
 	releaseCheck()
@@ -141,9 +139,8 @@ func TestByMatchTwoMatchesOnSearch(t *testing.T) {
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})
-	tc := model.CreateContext(p)
 
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
@@ -159,13 +156,13 @@ func TestByMatchTwoMatchesOnSearch(t *testing.T) {
 	checker := checkByMatch(t, tester, cptComp)
 
 	// 3 matches but only 2 (comp1,comp2) templated
-	matches := cm.ContainsFile("search1.file")
+	matches := cm.ContainsFile("search1.file", tester.context.engine.Context().data)
 	releaseCheck := checker(matches, 3, 2, comp1, comp2)
 	checkByMatchContent(t, matches, comp1, "templateTarget1.yaml", "templateContentFromCli")
 	checkByMatchContent(t, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
 	releaseCheck()
 
-	matches = cm.ContainsFile("search1.file", comp1, comp2, comp3)
+	matches = cm.ContainsFile("search1.file", tester.context.engine.Context().data, comp1, comp2, comp3)
 	releaseCheck = checker(matches, 3, 2, comp1, comp2)
 	checkByMatchContent(t, matches, comp1, "templateTarget1.yaml", "templateContentFromCli")
 	checkByMatchContent(t, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
@@ -211,7 +208,7 @@ func hasBeenTemplated(t *testing.T, ps component.MatchingPaths, r model.Componen
 }
 
 func writecheckByMatchCommon(t *testing.T, tester *tester, d string) {
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	repComp3 := tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp3")
@@ -229,7 +226,7 @@ func writecheckByMatchCommon(t *testing.T, tester *tester, d string) {
 	repComp3.writeCommit(t, "search1.file", "")
 	repComp3.writeCommit(t, "search2.file", "")
 
-	repDist.writeCommit(t, "ekara.yaml", byMatchDistContent)
+	repParent.writeCommit(t, "ekara.yaml", byMatchParentContent)
 	repDesc.writeCommit(t, "ekara.yaml", byMatchDescContent)
 }
 

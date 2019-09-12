@@ -125,7 +125,6 @@ func TestReadReport(t *testing.T) {
 		},
 	})
 	mainPath := "./testdata/gittest/descriptor"
-	tc := model.CreateContext(p)
 
 	ef, err := util.CreateExchangeFolder("./testdata/report", "")
 	assert.Nil(t, err)
@@ -134,7 +133,7 @@ func TestReadReport(t *testing.T) {
 
 	c := &MockLaunchContext{
 		locationContent:      mainPath,
-		templateContext:      tc,
+		data:                 p,
 		efolder:              ef,
 		logger:               log.New(ioutil.Discard, "Test", log.Ldate|log.Ltime|log.Lmicroseconds),
 		sshPublicKeyContent:  "sshPublicKey_content",

@@ -15,6 +15,7 @@ import (
 	"github.com/oklog/ulid"
 )
 
+// runTemplate runs the templates defined into a given component
 func runTemplate(ctx model.TemplateContext, componentPath string, patterns model.Patterns, resolver model.ComponentReferencer) (string, error) {
 	if len(patterns.Content) > 0 {
 		globs := make([]gl.Glob, 0, 0)
@@ -78,7 +79,7 @@ func runTemplate(ctx model.TemplateContext, componentPath string, patterns model
 				return "", err
 			}
 
-			t = template.Must(t.Option("missingkey=error"), err)
+			//t = template.Must(t.Option("missingkey=error"), err)
 
 			file, err := os.Create(f)
 			defer file.Close()

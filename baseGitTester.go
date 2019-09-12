@@ -39,18 +39,18 @@ func gitTester(t *testing.T, ctx *MockLaunchContext, withLog bool) *tester {
 		t:       t,
 		paths:   make([]string, 0, 0),
 	}
-	tester.context.engine = createGitEngine(ctx.TemplateContext(), withLog)
+	tester.context.engine = createGitEngine(withLog)
 	tester.clean()
 	return tester
 }
 
-func createGitEngine(data *model.TemplateContext, withLog bool) Engine {
+func createGitEngine(withLog bool) Engine {
 	var ekara Engine
 	var e error
 	if withLog {
-		ekara, e = Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/gitwork", data)
+		ekara, e = Create(log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime), "testdata/gitwork")
 	} else {
-		ekara, e = Create(log.New(ioutil.Discard, "TEST: ", log.Ldate|log.Ltime), "testdata/gitwork", data)
+		ekara, e = Create(log.New(ioutil.Discard, "TEST: ", log.Ldate|log.Ltime), "testdata/gitwork")
 	}
 
 	if e != nil {

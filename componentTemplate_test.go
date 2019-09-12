@@ -15,7 +15,7 @@ templates:
   - "*.yml"
 `
 
-	distContent := `
+	parentContent := `
 ekara:
   components:
     comp1:
@@ -51,19 +51,18 @@ nodes:
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})
-	tc := model.CreateContext(p)
 
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
 
 	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
-	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repParent.writeCommit(t, "ekara.yaml", parentContent)
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 
 	err := tester.initEngine()

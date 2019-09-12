@@ -53,12 +53,12 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 		}
 
 		// We launch the playbook
-		usable, err := cm.Use(p)
+		usable, err := cm.Use(p, rC.data)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 		}
 		defer usable.Release()
-		code, err := lC.Ekara().AnsibleManager().Execute(usable, "setup.yml", exv, env)
+		code, err := lC.Ekara().AnsibleManager().Execute(usable, "setup.yml", exv, env, rC.data)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "setup.yml",
@@ -95,6 +95,7 @@ func fsetup(lC LaunchContext, rC *runtimeContext) StepResults {
 
 func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 	cm := lC.Ekara().ComponentManager()
+
 	sCs := InitStepResults()
 	for _, n := range cm.Environment().NodeSets {
 		sc := InitPlaybookStepResult("Running the create phase", n, NoCleanUpRequired)
@@ -164,12 +165,12 @@ func fcreate(lC LaunchContext, rC *runtimeContext) StepResults {
 		exv := ansible.BuildExtraVars("", *nodeCreateEf.Input, *nodeCreateEf.Output, buffer)
 
 		// We launch the playbook
-		usable, err := cm.Use(p)
+		usable, err := cm.Use(p, rC.data)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 		}
 		defer usable.Release()
-		code, err := lC.Ekara().AnsibleManager().Execute(usable, "create.yml", exv, env)
+		code, err := lC.Ekara().AnsibleManager().Execute(usable, "create.yml", exv, env, rC.data)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "create.yml",

@@ -17,7 +17,7 @@ templates:
   - "{{ .Vars.templateDef }}"
 `
 
-	usableDistContent = `
+	usableParentContent = `
 ekara:
   components:
     comp1:
@@ -54,9 +54,8 @@ func TestUsableTemplateOneMatch(t *testing.T) {
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})
-	tc := model.CreateContext(p)
 
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
@@ -68,7 +67,7 @@ func TestUsableTemplateOneMatch(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp, err := cm.Use(env.Orchestrator)
+		usableComp, err := cm.Use(env.Orchestrator, tester.context.engine.Context().data)
 		assert.Nil(t, err)
 		assert.True(t, usableComp.Templated())
 		// Check the existence of the templated folder
@@ -95,9 +94,8 @@ func TestUsableTemplateMatch2Usable(t *testing.T) {
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})
-	tc := model.CreateContext(p)
-
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
@@ -110,14 +108,14 @@ func TestUsableTemplateMatch2Usable(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp1, err := cm.Use(env.Orchestrator)
+		usableComp1, err := cm.Use(env.Orchestrator, tester.context.engine.Context().data)
 		assert.Nil(t, err)
 		assert.True(t, usableComp1.Templated())
 		// Check the existence of the templated folder
 		assert.Equal(t, cptComp+1, tester.countComponent())
 		assert.True(t, tester.rootContainsComponent(usableComp1.RootPath()))
 
-		usableComp2, err := cm.Use(env.Orchestrator)
+		usableComp2, err := cm.Use(env.Orchestrator, tester.context.engine.Context().data)
 		assert.Nil(t, err)
 		assert.True(t, usableComp2.Templated())
 		// Check the existence of a new templated folder
@@ -145,9 +143,8 @@ func TestUsableTemplateDoubleMatch(t *testing.T) {
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget[12].yaml",
 	})
-	tc := model.CreateContext(p)
 
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
@@ -160,7 +157,7 @@ func TestUsableTemplateDoubleMatch(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp, err := cm.Use(env.Orchestrator)
+		usableComp, err := cm.Use(env.Orchestrator, tester.context.engine.Context().data)
 		assert.Nil(t, err)
 		assert.True(t, usableComp.Templated())
 		// Check the existence of the templated folder
@@ -185,9 +182,8 @@ func TestUsableTemplateNoMatch(t *testing.T) {
 	p, _ := model.CreateParameters(map[string]interface{}{
 		"templateDef": "/noMatchinTarget.yaml",
 	})
-	tc := model.CreateContext(p)
-
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
@@ -200,7 +196,7 @@ func TestUsableTemplateNoMatch(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp, err := cm.Use(env.Orchestrator)
+		usableComp, err := cm.Use(env.Orchestrator, tester.context.engine.Context().data)
 		assert.Nil(t, err)
 		assert.False(t, usableComp.Templated())
 		// Check that no templated folder has been created
@@ -217,14 +213,14 @@ func TestUsableTemplateNoMatch(t *testing.T) {
 }
 
 func writecheckUsableCommon(t *testing.T, tester *tester, d string) {
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repDesc := tester.createRep(d)
 
 	repComp1.writeCommit(t, "ekara.yaml", usableComp1Content)
 	repComp1.writeCommit(t, "templateTarget1.yaml", `{{ .Vars.templateContent }}`)
 	repComp1.writeCommit(t, "templateTarget2.yaml", `{{ .Vars.templateContent }}`)
-	repDist.writeCommit(t, "ekara.yaml", usableDistContent)
+	repParent.writeCommit(t, "ekara.yaml", usableParentContent)
 	repDesc.writeCommit(t, "ekara.yaml", usableDescContent)
 
 }

@@ -13,7 +13,8 @@ import (
 
 //Engine  represents the Ekara engine in charge of dealing with the environment
 type Engine interface {
-	Init(c LaunchContext) error
+	Init(l LaunchContext) error
+	Context() *runtimeContext
 	Logger() *log.Logger
 	BaseDir() string
 	ComponentManager() *component.ComponentManager
@@ -25,6 +26,7 @@ type context struct {
 	// Base attributes
 	logger    *log.Logger
 	directory string
+	runtime   *runtimeContext
 
 	// Subsystems
 	componentManager *component.ComponentManager
@@ -41,8 +43,7 @@ type context struct {
 //		logger: the logger
 //		baseDir: the directory where the environment will take place among its
 //				 inclusions and related components
-//		data: the user data for templating the environment descriptor
-func Create(logger *log.Logger, workDir string, data *model.TemplateContext) (Engine, error) {
+func Create(logger *log.Logger, workDir string) (Engine, error) {
 	absWorkDir, err := filepath.Abs(workDir)
 	if err != nil {
 		return nil, err
@@ -53,7 +54,7 @@ func Create(logger *log.Logger, workDir string, data *model.TemplateContext) (En
 		directory: absWorkDir,
 	}
 
-	ctx.componentManager = component.CreateComponentManager(ctx.logger, data, absWorkDir)
+	ctx.componentManager = component.CreateComponentManager(ctx.logger, absWorkDir)
 	ctx.referenceManager = component.CreateReferenceManager(ctx.componentManager)
 	ctx.ansibleManager = ansible.CreateAnsibleManager(ctx.logger, *ctx.componentManager)
 	ctx.actionManager = CreateActionManager()
@@ -71,34 +72,35 @@ func repositoryFlavor(url string) (string, string) {
 	return url, ""
 }
 
-func (ctx *context) Init(c LaunchContext) (err error) {
-	repo, ref := repositoryFlavor(c.Location())
+func (ctx *context) Init(l LaunchContext) (err error) {
+	ctx.runtime = CreateRuntimeContext(l)
+	repo, ref := repositoryFlavor(l.Location())
 	wdURL, err := model.GetCurrentDirectoryURL(ctx.logger)
 	if err != nil {
 		return
 	}
 
 	// Register main component
-	mainRep, err := model.CreateRepository(model.Base{Url: wdURL}, repo, ref, c.Name())
+	mainRep, err := model.CreateRepository(model.Base{Url: wdURL}, repo, ref, l.Name())
 	if err != nil {
 		return
 	}
-	u := c.User()
+	u := l.User()
 	if u != "" {
 		auth := make(map[string]interface{})
 		auth["method"] = "basic"
 		auth["user"] = u
-		auth["password"] = c.Password()
+		auth["password"] = l.Password()
 		mainRep.Authentication = auth
 	}
 
 	mainComponent := model.CreateComponent(model.MainComponentId, mainRep)
 	// Parse upward all the references composing the environment
-	err = ctx.referenceManager.Init(mainComponent)
+	err = ctx.referenceManager.Init(mainComponent, ctx.runtime.data)
 	if err != nil {
 		return
 	}
-	err = ctx.ReferenceManager().Ensure()
+	err = ctx.ReferenceManager().Ensure(ctx.runtime.data)
 	if err != nil {
 		return
 	}
@@ -123,4 +125,8 @@ func (ctx *context) ReferenceManager() *component.ReferenceManager {
 
 func (ctx *context) AnsibleManager() ansible.AnsibleManager {
 	return ctx.ansibleManager
+}
+
+func (ctx *context) Context() *runtimeContext {
+	return ctx.runtime
 }

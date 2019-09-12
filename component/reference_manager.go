@@ -25,7 +25,7 @@ type (
 	}
 
 	ParentRef struct {
-		Component            model.Component
+		Comp                 model.Component
 		ReferencedComponents *model.ReferencedComponents
 	}
 )
@@ -44,7 +44,7 @@ func CreateReferenceManager(cm *ComponentManager) *ReferenceManager {
 	}
 }
 
-func (rm *ReferenceManager) Init(c model.Component) error {
+func (rm *ReferenceManager) Init(c model.Component, data *model.TemplateContext) error {
 	rm.l.Println("Parsing the main descriptor")
 	rm.rootComponent = c
 	fComp, err := fetch(rm.cm, c)
@@ -52,7 +52,7 @@ func (rm *ReferenceManager) Init(c model.Component) error {
 		return err
 	}
 	rm.cm.Paths[c.Id] = fComp
-	refs, err := model.ParseYamlDescriptorReferences(fComp.DescriptorUrl, rm.cm.data)
+	refs, err := model.ParseYamlDescriptorReferences(fComp.DescriptorUrl, data)
 	if err != nil {
 		return err
 	}
@@ -88,12 +88,12 @@ func (rm *ReferenceManager) Init(c model.Component) error {
 	if err != nil {
 		return err
 	}
-	err = rm.parseParent(parentC)
+	err = rm.parseParent(parentC, data)
 
 	return err
 }
 
-func (rm *ReferenceManager) parseParent(p model.Component) error {
+func (rm *ReferenceManager) parseParent(p model.Component, data *model.TemplateContext) error {
 	rm.l.Printf("Parsing parent %s", p.Repository)
 
 	p.Id = fmt.Sprintf("%s%d", p.Id, len(rm.Parents)+1)
@@ -105,7 +105,7 @@ func (rm *ReferenceManager) parseParent(p model.Component) error {
 		return err
 	}
 
-	refs, err := model.ParseYamlDescriptorReferences(fComp.DescriptorUrl, rm.cm.data)
+	refs, err := model.ParseYamlDescriptorReferences(fComp.DescriptorUrl, data)
 	if err != nil {
 		rm.l.Printf("error parsing the parent references %s", err.Error())
 		return err
@@ -122,7 +122,7 @@ func (rm *ReferenceManager) parseParent(p model.Component) error {
 	}
 
 	pRef := ParentRef{
-		Component:            p,
+		Comp:                 p,
 		ReferencedComponents: model.CreateReferencedComponents(),
 	}
 	// Keep only the references of the new declaration of compoments
@@ -152,32 +152,22 @@ func (rm *ReferenceManager) parseParent(p model.Component) error {
 		if err != nil {
 			return err
 		}
-		return rm.parseParent(parentC)
+		return rm.parseParent(parentC, data)
 	}
 	return nil
 }
 
-func (rm *ReferenceManager) Ensure() error {
-	rm.l.Printf("Reference manager ensuring, main descriptor %s", rm.rootComponent.Id)
-	// Root component is the main descriptor
-	err := rm.callEnsure(rm.rootComponent)
-	if err != nil {
-		return err
-	}
+func (rm *ReferenceManager) Ensure(data *model.TemplateContext) error {
 	// All the parents must be processed
-	for _, p := range rm.Parents {
-		rm.l.Printf("Reference manager, ensuring parent %s", p.Component.Id)
-		err := rm.callEnsure(p.Component)
-		if err != nil {
-			return err
-		}
+	for i := len(rm.Parents) - 1; i >= 0; i-- {
+		p := rm.Parents[i]
 
 		// Once a parent has been processed	we must process its declared
 		// components in alphabetical order
 		for _, c := range p.ReferencedComponents.Sorted() {
 			rm.l.Printf("Reference manager, ensuring parent component %s", c.Id)
 			if rm.UsedReferences.IdUsed(c.Id) {
-				err := rm.callEnsure(c)
+				err := rm.callEnsure(c, data)
 				if err != nil {
 					return err
 				}
@@ -185,14 +175,22 @@ func (rm *ReferenceManager) Ensure() error {
 				rm.l.Printf("Reference manager: unused parent component %s", c.Id)
 			}
 		}
+
+		rm.l.Printf("Reference manager, ensuring parent %s", p.Comp.Id)
+		err := rm.callEnsure(p.Comp, data)
+		if err != nil {
+			return err
+		}
+
 	}
+
 	// Once all the parents have been processed we must process
 	// all the components declared into the main descriptor, this
 	// is alo done in alphabetical order
 	for _, c := range rm.rootComponents.Sorted() {
 		rm.l.Printf("Reference manager, ensuring descriptor component %s", c.Id)
 		if rm.UsedReferences.IdUsed(c.Id) {
-			err := rm.callEnsure(c)
+			err := rm.callEnsure(c, data)
 			if err != nil {
 				return err
 			}
@@ -200,15 +198,33 @@ func (rm *ReferenceManager) Ensure() error {
 			rm.l.Printf("Reference manager: unused descriptor component %s", c.Id)
 		}
 	}
+
+	rm.l.Printf("Reference manager ensuring, main descriptor %s", rm.rootComponent.Id)
+	// Root component is the main descriptor
+	err := rm.callEnsure(rm.rootComponent, data)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (rm *ReferenceManager) callEnsure(c model.Component) error {
+func (rm *ReferenceManager) callEnsure(c model.Component, data *model.TemplateContext) error {
 	rm.cm.Environment().Platform().AddComponent(c)
-	err := rm.cm.EnsureOneComponent(c)
+	err := rm.cm.EnsureOneComponent(c, data)
 	if err != nil {
 		return err
 	}
 	rm.SortedFetchedComponents = append(rm.SortedFetchedComponents, c.Id)
 	return nil
+}
+
+//Component returns the referenced component
+func (p ParentRef) Component() (model.Component, error) {
+	return p.Comp, nil
+}
+
+//ComponentName returns the referenced component name
+func (p ParentRef) ComponentName() string {
+	return p.Comp.Id
 }

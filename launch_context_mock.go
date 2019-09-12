@@ -20,7 +20,7 @@ type (
 		name                 string
 		user                 string
 		password             string
-		templateContext      *model.TemplateContext
+		data                 model.Parameters
 		ekaraError           error
 	}
 )
@@ -80,12 +80,12 @@ func (lC MockLaunchContext) SSHPrivateKey() string {
 	return lC.sshPrivateKeyContent
 }
 
-//TemplateContext simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) TemplateContext() *model.TemplateContext {
-	return lC.templateContext
-}
-
 //Error simulates the corresponding method in LaunchContext for testing purposes
 func (lC MockLaunchContext) Error() error {
 	return lC.ekaraError
+}
+
+//ParamsFile simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) ParamsFile() model.Parameters {
+	return lC.data
 }

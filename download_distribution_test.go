@@ -10,7 +10,7 @@ import (
 
 // when the descriptor doesn't define its own specific parent then
 // the defaulted one should be used
-func TestDownloadDefaultParent2(t *testing.T) {
+func TestDownloadDefaultParent(t *testing.T) {
 	p, _ := model.CreateParameters(map[string]interface{}{
 		"ek": map[interface{}]interface{}{
 			"aws": map[interface{}]interface{}{
@@ -23,8 +23,8 @@ func TestDownloadDefaultParent2(t *testing.T) {
 		},
 	})
 	mainPath := "./testdata/gittest/descriptor"
-	tc := model.CreateContext(p)
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
@@ -65,7 +65,7 @@ nodes:
 
 	assert.Len(t, refM.Parents, 1)
 	// Check that the parent has been renamed base on its position
-	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Component.Id)
+	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Comp.Id)
 
 	// Check the referenced components has been cleaned
 	refM.ReferencedComponents.Clean(*refM.UsedReferences)
@@ -86,22 +86,35 @@ nodes:
 	assert.Contains(t, cpnts, "ek-swarm")
 	assert.Contains(t, cpnts, "ek-aws")
 	assert.Contains(t, cpnts, "ek-core")
+
+	// Looking for the availability of a deploy_compose1.yaml
+
+	cm := c.Ekara().ComponentManager()
+	rm := c.Ekara().ReferenceManager()
+	referencers := make([]model.ComponentReferencer, 0, 0)
+	for _, p := range rm.Parents {
+		referencers = append(referencers, p)
+	}
+
+	mPaths := cm.ContainsFile("deploy_compose.yaml", &model.TemplateContext{}, referencers...)
+	assert.True(t, len(mPaths.Paths) > 0)
+	assert.Equal(t, mPaths.Paths[0].Component().Name(), model.EkaraComponentId+"1")
 }
 
 func TestDownloadCustomParent(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
 
-	distContent := `
+	parentContent := `
 ekara:
   components:
     comp1:
@@ -109,7 +122,7 @@ ekara:
     comp2:
       repository: ./testdata/gittest/comp2
 `
-	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repParent.writeCommit(t, "ekara.yaml", parentContent)
 
 	descContent := `
 name: ekara-demo-var
@@ -148,7 +161,7 @@ nodes:
 
 	assert.Len(t, refM.Parents, 1)
 	// Check that the parent has been renamed base on its position
-	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Component.Id)
+	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Comp.Id)
 
 	// Check the referenced components has not been cleaned
 	refM.ReferencedComponents.Clean(*refM.UsedReferences)
@@ -174,19 +187,19 @@ func TestDownloadFTwoParents(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist1 := tester.createRep("./testdata/gittest/parent1")
-	repDist2 := tester.createRep("./testdata/gittest/parent2")
+	repParent1 := tester.createRep("./testdata/gittest/parent1")
+	repParent2 := tester.createRep("./testdata/gittest/parent2")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp3")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp4")
 	repDesc := tester.createRep(mainPath)
 
-	distContent1 := `
+	parentContent1 := `
 ekara:
   parent:
     repository: ./testdata/gittest/parent2
@@ -196,9 +209,9 @@ ekara:
     comp2:
       repository: ./testdata/gittest/comp2
 `
-	repDist1.writeCommit(t, "ekara.yaml", distContent1)
+	repParent1.writeCommit(t, "ekara.yaml", parentContent1)
 
-	distContent2 := `
+	parentContent2 := `
 ekara:
   components:
     comp3:
@@ -206,7 +219,7 @@ ekara:
     comp4:
       repository: ./testdata/gittest/comp4
 `
-	repDist2.writeCommit(t, "ekara.yaml", distContent2)
+	repParent2.writeCommit(t, "ekara.yaml", parentContent2)
 
 	descContent := `
 name: ekara-demo-var
@@ -246,8 +259,8 @@ nodes:
 	assert.True(t, refM.ReferencedComponents.IdReferenced("comp4"))
 	assert.Len(t, refM.Parents, 2)
 	// Check that the parents has been renamed base on their position
-	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Component.Id)
-	assert.Equal(t, model.EkaraComponentId+"2", refM.Parents[1].Component.Id)
+	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Comp.Id)
+	assert.Equal(t, model.EkaraComponentId+"2", refM.Parents[1].Comp.Id)
 
 	// Check the referenced components has been cleaned
 	refM.ReferencedComponents.Clean(*refM.UsedReferences)

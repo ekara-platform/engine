@@ -23,7 +23,6 @@ func TestSaveBaseParamOk(t *testing.T) {
 		},
 	})
 	mainPath := "./testdata/gittest/descriptor"
-	tc := model.CreateContext(p)
 
 	ef, e := util.CreateExchangeFolder("./", "testFolder")
 	assert.Nil(t, e)
@@ -32,7 +31,7 @@ func TestSaveBaseParamOk(t *testing.T) {
 
 	c := &MockLaunchContext{
 		locationContent:      mainPath,
-		templateContext:      tc,
+		data:                 p,
 		efolder:              ef,
 		logger:               log.New(ioutil.Discard, "Test", log.Ldate|log.Ltime|log.Lmicroseconds),
 		sshPublicKeyContent:  "sshPublicKey_content",

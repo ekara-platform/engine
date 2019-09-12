@@ -12,18 +12,18 @@ func TestDownloadOnlyUsedComponents(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp3")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp4")
 	repDesc := tester.createRep(mainPath)
 
-	distContent := `
+	parentContent := `
 ekara:
   components:
     comp1:
@@ -31,7 +31,7 @@ ekara:
     comp2:
       repository: ./testdata/gittest/comp2
 `
-	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repParent.writeCommit(t, "ekara.yaml", parentContent)
 
 	descContent := `
 name: ekara-demo-var
@@ -69,7 +69,7 @@ ekara:
       repository: ./testdata/gittest/comp2
 `
 
-	distContent := `
+	parentContent := `
 ekara:
   components:
     comp1:
@@ -97,17 +97,17 @@ nodes:
       name: p1
 `
 	mainPath := "./testdata/gittest/descriptor"
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
 
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
-	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repParent.writeCommit(t, "ekara.yaml", parentContent)
 	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
 
 	err := tester.initEngine()
@@ -127,13 +127,13 @@ nodes:
 
 func TestDonwloadTwoParents(t *testing.T) {
 
-	dist2Content := `
+	parent2Content := `
 ekara:
   components:
     comp2:
       repository: ./testdata/gittest/comp2
 `
-	dist1Content := `
+	parent1Content := `
 ekara:
   parent:
     repository: ./testdata/gittest/parent2
@@ -163,18 +163,18 @@ nodes:
       name: p1
 `
 	mainPath := "./testdata/gittest/descriptor"
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist1 := tester.createRep("./testdata/gittest/parent1")
-	repDist2 := tester.createRep("./testdata/gittest/parent2")
+	repParent1 := tester.createRep("./testdata/gittest/parent1")
+	repParent2 := tester.createRep("./testdata/gittest/parent2")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
 
-	repDist1.writeCommit(t, "ekara.yaml", dist1Content)
-	repDist2.writeCommit(t, "ekara.yaml", dist2Content)
+	repParent1.writeCommit(t, "ekara.yaml", parent1Content)
+	repParent2.writeCommit(t, "ekara.yaml", parent2Content)
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 
 	err := tester.initEngine()
@@ -194,7 +194,7 @@ nodes:
 
 func TestDonwloadTwoParentsUpperUsed(t *testing.T) {
 
-	dist2Content := `
+	parent2Content := `
 ekara:
   components:
     comp2:
@@ -205,7 +205,7 @@ providers:
   p1:
     component: comp1  
 `
-	dist1Content := `
+	parent1Content := `
 ekara:
   parent:
     repository: ./testdata/gittest/parent2
@@ -229,18 +229,18 @@ nodes:
       name: p1
 `
 	mainPath := "./testdata/gittest/descriptor"
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist1 := tester.createRep("./testdata/gittest/parent1")
-	repDist2 := tester.createRep("./testdata/gittest/parent2")
+	repParent1 := tester.createRep("./testdata/gittest/parent1")
+	repParent2 := tester.createRep("./testdata/gittest/parent2")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
 
-	repDist1.writeCommit(t, "ekara.yaml", dist1Content)
-	repDist2.writeCommit(t, "ekara.yaml", dist2Content)
+	repParent1.writeCommit(t, "ekara.yaml", parent1Content)
+	repParent2.writeCommit(t, "ekara.yaml", parent2Content)
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 
 	err := tester.initEngine()
@@ -269,7 +269,7 @@ providers:
       env_1: value_1
 `
 
-	distContent := `
+	parentContent := `
 ekara:
   components:
     comp1:
@@ -280,22 +280,22 @@ providers:
   p1:
     component: comp1
 `
-	CheckDonwloadSplitted(t, comp1Content, distContent)
+	CheckDonwloadSplitted(t, comp1Content, parentContent)
 }
 
-func CheckDonwloadSplitted(t *testing.T, comp1Content, distContent string) {
+func CheckDonwloadSplitted(t *testing.T, comp1Content, parentContent string) {
 
 	mainPath := "./testdata/gittest/descriptor"
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, templateContext: tester.context.engine.Context().data}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	tester.createRepDefaultDescriptor(t,"./testdata/gittest/comp2")
 	repDesc := tester.createRep(mainPath)
 
-	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repParent.writeCommit(t, "ekara.yaml", parentContent)
 	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
 
 	descContent := `

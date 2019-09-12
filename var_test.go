@@ -19,8 +19,7 @@ func TestTemplateOnMainVars(t *testing.T) {
 		"value2": "value2.from.cli_value",
 	})
 	mainPath := "./testdata/gittest/descriptor"
-	tc := model.CreateContext(p)
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
@@ -66,14 +65,18 @@ nodes:
 
 	// Check if the descriptor has been templated
 	assert.Equal(t, len(env.Vars), 2)
+	//Original value defined into the descriptor
 	cp(t, env.Vars, "key1_descriptor", "val1_descriptor")
+	//Value templated using the parameter file
 	cp(t, env.Vars, "key2_descriptor", "value1.from.cli_value")
 
 	assert.Equal(t, len(env.Providers["p1"].Parameters), 3)
+	//Value templated using a value defined into the descriptor
 	cp(t, env.Providers["p1"].Parameters, "param1", "val1_descriptor")
+	//Value templated using a value previously templated into the descriptor
 	cp(t, env.Providers["p1"].Parameters, "param2", "value1.from.cli_value")
+	//Value templated using the parameter file
 	cp(t, env.Providers["p1"].Parameters, "param3", "value2.from.cli_value")
-
 }
 
 func TestTemplateOnParentVars(t *testing.T) {
@@ -82,40 +85,41 @@ func TestTemplateOnParentVars(t *testing.T) {
 		"value1": map[interface{}]interface{}{
 			"from": map[interface{}]interface{}{
 				"cli": map[interface{}]interface{}{
-					"to_parent": "value_from_cli_to_parent",
-					"to_comp1":  "value_from_cli_to_comp1",
+					"to_parent":     "value_from_cli_to_parent",
+					"to_comp1":      "value_from_cli_to_comp1",
+					"to_descriptor": "value_from_cli_to_descriptor",
 				},
 			},
 		},
 	})
 	mainPath := "./testdata/gittest/descriptor"
-	tc := model.CreateContext(p)
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
-	tester := gitTester(t, c, false)
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
+	tester := gitTester(t, c, true)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
-
-	distContent := `
-ekara:
-vars:
-  key1_parent: val1_parent
-  key2_parent: "{{ .Vars.value1.from.cli.to_parent }}"
-  key3_parent: "{{ .Vars.key1_environment }}"
-`
-	repDist.writeCommit(t, "ekara.yaml", distContent)
 
 	comp1Content := `
 vars:
   key1_comp1: val1_comp1
-  key2_comp1: "{{ .Vars.key1_parent }}"
-  key3_comp1: "{{ .Vars.key2_parent }}"
-  key4_comp1: "{{ .Vars.value1.from.cli.to_comp1 }}"
-  key5_comp1: "{{ .Vars.key1_environment }}"
+  key2_comp1: "{{ .Vars.value1.from.cli.to_comp1 }}"
 `
 	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
+
+	parentContent := `
+ekara:
+  components:
+    comp1:
+      repository: ./testdata/gittest/comp1	
+vars:
+  key1_parent: val1_parent
+  key2_parent: "{{ .Vars.value1.from.cli.to_parent }}"
+  key3_parent: "{{ .Vars.key1_comp1 }}"
+`
+	repParent.writeCommit(t, "ekara.yaml", parentContent)
+
 	descContent := `
 name: ekara-demo-var
 qualifier: dev
@@ -123,11 +127,13 @@ qualifier: dev
 ekara:
   parent:
     repository: ./testdata/gittest/parent
-  components:
-    comp1:
-      repository: ./testdata/gittest/comp1	
 vars:
-  key1_environment: val1_environment
+  key1_descriptor: val1_descriptor
+  key2_descriptor: "{{ .Vars.value1.from.cli.to_descriptor }}"
+  key3_descriptor: "{{ .Vars.key1_comp1 }}"
+  key4_descriptor: "{{ .Vars.key2_comp1 }}"
+  key5_descriptor: "{{ .Vars.key1_parent }}"
+  key6_descriptor: "{{ .Vars.key2_parent }}"
 providers:
   comp1:
     component: comp1
@@ -147,13 +153,27 @@ nodes:
 
 	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
-	assert.Equal(t, len(tc.Vars), 10)
-	cp(t, tc.Vars, "key1_comp1", "val1_comp1")
-	cp(t, tc.Vars, "key2_comp1", "val1_parent")
-	cp(t, tc.Vars, "key3_comp1", "value_from_cli_to_parent")
-	cp(t, tc.Vars, "key4_comp1", "value_from_cli_to_comp1")
-	cp(t, tc.Vars, "key5_comp1", "val1_environment")
-	cp(t, tc.Vars, "key3_parent", "val1_environment")
+	rc := tester.context.engine.Context()
+	assert.Equal(t, len(rc.data.Vars), 12)
+	cp(t, rc.data.Vars, "key1_comp1", "val1_comp1")
+	// Should be templated with the cli params content
+	cp(t, rc.data.Vars, "key2_comp1", "value_from_cli_to_comp1")
+	cp(t, rc.data.Vars, "key1_parent", "val1_parent")
+	// Should be templated with the cli params content
+	cp(t, rc.data.Vars, "key2_parent", "value_from_cli_to_parent")
+	// Should be templated from comp1 parameter
+	cp(t, rc.data.Vars, "key3_parent", "val1_comp1")
+	cp(t, rc.data.Vars, "key1_descriptor", "val1_descriptor")
+	// Should be templated with the cli params content
+	cp(t, rc.data.Vars, "key2_descriptor", "value_from_cli_to_descriptor")
+	// Should be templated from comp1 parameter
+	cp(t, rc.data.Vars, "key3_descriptor", "val1_comp1")
+	// Should be templated from comp1 parameter
+	cp(t, rc.data.Vars, "key4_descriptor", "value_from_cli_to_comp1")
+	// Should be templated from parent parameter
+	cp(t, rc.data.Vars, "key5_descriptor", "val1_parent")
+	// Should be templated from parent parameter
+	cp(t, rc.data.Vars, "key6_descriptor", "value_from_cli_to_parent")
 }
 
 func cp(t *testing.T, p model.Parameters, key, value string) {
@@ -166,7 +186,7 @@ func cp(t *testing.T, p model.Parameters, key, value string) {
 func TestVarsPrecedence(t *testing.T) {
 
 	p, _ := model.CreateParameters(map[string]interface{}{
-		"key1": "value1.from.cli",
+		"keyCli": "value4.from.cli",
 	})
 
 	comp1Content := `
@@ -174,19 +194,18 @@ vars:
   key1: val1_comp1
   key2: val2_comp1
   key3: val3_comp1
-  keyY: val4_comp1
+  key4: val4_comp1
 `
 
-	distContent := `
+	parentContent := `
 ekara:
   components:
     comp1:
       repository: ./testdata/gittest/comp1
 vars:
-  key1: val1_parent
   key2: val2_parent
   key3: val3_parent
-  keyX: val4_parent
+  key4: val4_parent
 `
 	descContent := `
 name: ekara-demo-var
@@ -196,8 +215,8 @@ ekara:
   parent:
     repository: ./testdata/gittest/parent
 vars:
-  key1: val1_descriptor					
-  key3: val3_descriptor					
+  key3: val3_descriptor
+  key4: "{{ .Vars.keyCli }}"
 # Following content just to force the download of comp1 and comp2
 orchestrator:
   component: comp1
@@ -213,35 +232,32 @@ nodes:
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	tc := model.CreateContext(p)
-
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: tc}
-	tester := gitTester(t, c, false)
+	c := &MockLaunchContext{locationContent: mainPath, data: p}
+	tester := gitTester(t, c, true)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
 
 	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
-	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repParent.writeCommit(t, "ekara.yaml", parentContent)
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
+
 	env := tester.env()
 	assert.NotNil(t, env)
 
 	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
-	assert.Equal(t, len(tc.Vars), 5)
-	// Cli var has precedence over descriptor/parent/comp1
-	cp(t, tc.Vars, "key1", "value1.from.cli")
-	// Descriptor var has precedence over parent
-	cp(t, tc.Vars, "key3", "val3_descriptor")
-	// Parent var has precedence over comp1
-	cp(t, tc.Vars, "key2", "val2_parent")
-	// Test accumation of vars from parent and its components
-	cp(t, tc.Vars, "keyY", "val4_comp1")
-	cp(t, tc.Vars, "keyX", "val4_parent")
+	rc := tester.context.engine.Context()
+
+	assert.Equal(t, len(rc.data.Vars), 5)
+	cp(t, rc.data.Vars, "key1", "val1_comp1")
+	cp(t, rc.data.Vars, "key2", "val2_parent")
+	cp(t, rc.data.Vars, "key3", "val3_descriptor")
+	cp(t, rc.data.Vars, "key4", "value4.from.cli")
+
 }

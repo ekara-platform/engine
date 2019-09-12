@@ -11,7 +11,7 @@ import (
 
 func TestStackFromDesciptorAndParent(t *testing.T) {
 
-	distContent := `
+	parentContent := `
 ekara:
   components:
     comp1:
@@ -20,17 +20,17 @@ stacks:
   parentStack:
 `
 	mainPath := "./testdata/gittest/descriptor"
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
 
-	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repParent.writeCommit(t, "ekara.yaml", parentContent)
 	// write the compose/playbook content into the parent component
-	repDist.writeCommit(t, "docker_compose.yml", "parent docker compose content")
+	repParent.writeCommit(t, "docker_compose.yml", "parent docker compose content")
 
 	descContent := `
 name: ekara-demo-var
@@ -70,8 +70,8 @@ stacks:
 
 		cm := c.Ekara().ComponentManager()
 		assert.NotNil(t, cm)
-		checkStack(t, env, cm, model.MainComponentId, "descriptorStack", "descriptor docker compose content")
-		checkStack(t, env, cm, model.EkaraComponentId+"1", "parentStack", "parent docker compose content")
+		checkStack(t, tester, env, cm, model.MainComponentId, "descriptorStack", "descriptor docker compose content")
+		checkStack(t, tester, env, cm, model.EkaraComponentId+"1", "parentStack", "parent docker compose content")
 	}
 }
 
@@ -82,25 +82,25 @@ stacks:
   comp1Stack:
 `
 
-	distContent := `
+	parentContent := `
 ekara:
   components:
     comp1:
       repository: ./testdata/gittest/comp1
 `
 	mainPath := "./testdata/gittest/descriptor"
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	repComp1 := tester.createRep("./testdata/gittest/comp1")
 	// write the compose/playbook content into the comp1 component
 	repComp1.writeCommit(t, "docker_compose.yml", "comp1 docker compose content")
 	repDesc := tester.createRep(mainPath)
 
 	repComp1.writeCommit(t, "ekara.yaml", comp1Content)
-	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repParent.writeCommit(t, "ekara.yaml", parentContent)
 
 	descContent := `
 name: ekara-demo-var
@@ -142,18 +142,18 @@ stacks:
   comp2Stack:
 `
 
-	distContent := `
+	parentContent := `
 ekara:
   components:
     comp1:
       repository: ./testdata/gittest/comp1
 `
 	mainPath := "./testdata/gittest/descriptor"
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	repComp2 := tester.createRep("./testdata/gittest/comp2")
 	// write the compose/playbook content into the comp2 component
@@ -161,7 +161,7 @@ ekara:
 	repDesc := tester.createRep(mainPath)
 
 	repComp2.writeCommit(t, "ekara.yaml", comp2Content)
-	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repParent.writeCommit(t, "ekara.yaml", parentContent)
 
 	descContent := `
 name: ekara-demo-var
@@ -200,7 +200,7 @@ nodes:
 	assert.Equal(t, 0, len(env.Stacks))
 }
 
-func checkStack(t *testing.T, env model.Environment, cm *component.ComponentManager, holder, stackName, compose string) {
+func checkStack(t *testing.T, te *tester, env model.Environment, cm *component.ComponentManager, holder, stackName, compose string) {
 	stack, ok := env.Stacks[stackName]
 	if assert.True(t, ok) {
 		//Check that the self contained stack has been well built
@@ -211,7 +211,7 @@ func checkStack(t *testing.T, env model.Environment, cm *component.ComponentMana
 		assert.Equal(t, holder, stackC.Id)
 
 		// Check that the stack is usable and returns the correct component
-		usableStack, err := cm.Use(stack)
+		usableStack, err := cm.Use(stack, te.context.engine.Context().data)
 		defer usableStack.Release()
 		assert.Nil(t, err)
 		assert.NotNil(t, usableStack)

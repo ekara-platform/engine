@@ -37,8 +37,8 @@ type (
 		//SSHPrivateKey the private key used by the engine during the process execution to
 		// connect the created nodes
 		SSHPrivateKey() string
-		//TemplateContext the parameters provided by the user to fill the environment descriptor as a template
-		TemplateContext() *model.TemplateContext
+		//ParamsFile returns the content the parameters provided by the user to fill the environment descriptor as a template
+		ParamsFile() model.Parameters
 		//Error if any, the error which has broken the process
 		Error() error
 	}

@@ -26,7 +26,6 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 
 	// Prepare parameters
 	bp := BuildBaseParam(lC, "")
-	bp.AddNamedMap("docker", o.Docker)
 	bp.AddNamedMap("params", o.Parameters)
 	if ko := saveBaseParams(bp, lC, setupOrchestratorEf.Input, &sc); ko {
 		sCs.Add(sc)
@@ -47,12 +46,12 @@ func fsetuporchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 	exv := ansible.BuildExtraVars("", *setupOrchestratorEf.Input, *setupOrchestratorEf.Output, buffer)
 
 	// We launch the playbook
-	usable, err := cm.Use(o)
+	usable, err := cm.Use(o, rC.data)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 	}
 	defer usable.Release()
-	code, err := lC.Ekara().AnsibleManager().Execute(usable, "setup.yml", exv, env)
+	code, err := lC.Ekara().AnsibleManager().Execute(usable, "setup.yml", exv, env, rC.data)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  "setup.yml",
@@ -123,7 +122,6 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		// Prepare parameters
 		bp := BuildBaseParam(lC, n.Name)
 		bp.AddInterface("labels", n.Labels)
-		bp.AddNamedMap("docker", o.Docker)
 		bp.AddNamedMap("params", o.Parameters)
 		bp.AddInterface("proxy", p.Proxy)
 		if ko := saveBaseParams(bp, lC, installOrchestratorEf.Input, &sc); ko {
@@ -145,12 +143,12 @@ func forchestrator(lC LaunchContext, rC *runtimeContext) StepResults {
 		exv := ansible.BuildExtraVars("", *installOrchestratorEf.Input, *installOrchestratorEf.Output, buffer)
 
 		// We launch the playbook
-		usable, err := cm.Use(o)
+		usable, err := cm.Use(o, rC.data)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 		}
 		defer usable.Release()
-		code, err := lC.Ekara().AnsibleManager().Execute(usable, "install.yml", exv, env)
+		code, err := lC.Ekara().AnsibleManager().Execute(usable, "install.yml", exv, env, rC.data)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  "install.yml",

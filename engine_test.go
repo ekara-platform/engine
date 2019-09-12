@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	refDistContent = `
+	refparentContent = `
 ekara:
   components:
 `
@@ -41,12 +41,12 @@ ekara:
 
 func TestEngineLocalWithBranchRef(t *testing.T) {
 
-	c := &MockLaunchContext{locationContent: "./testdata/gittest/descriptor@newBranch", templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: "./testdata/gittest/descriptor@newBranch", data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
-	repDist.writeCommit(t, "ekara.yaml", refDistContent)
+	repParent := tester.createRep("./testdata/gittest/parent")
+	repParent.writeCommit(t, "ekara.yaml", refparentContent)
 
 	repDesc := tester.createRep("./testdata/gittest/descriptor")
 	// Commit the master
@@ -67,12 +67,12 @@ func TestEngineLocalWithBranchRef(t *testing.T) {
 
 func TestEngineLocalWithTagRef(t *testing.T) {
 
-	c := &MockLaunchContext{locationContent: "./testdata/gittest/descriptor@newTag1", templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: "./testdata/gittest/descriptor@newTag1", data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
-	repDist.writeCommit(t, "ekara.yaml", refDistContent)
+	repParent := tester.createRep("./testdata/gittest/parent")
+	repParent.writeCommit(t, "ekara.yaml", refparentContent)
 
 	repDesc := tester.createRep("./testdata/gittest/descriptor")
 	// Commit the master

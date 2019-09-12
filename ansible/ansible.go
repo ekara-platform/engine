@@ -10,6 +10,7 @@ import (
 
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
+	"github.com/ekara-platform/model"
 )
 
 type (
@@ -22,8 +23,9 @@ type (
 		//		playbook: the name of the playbook to launch
 		//		extraVars: the extra vars passed to the playbook
 		//		envars: the environment variables set before launching the playbook
+		//		data: the template context required to template a used component
 		//
-		Execute(cr component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars) (int, error)
+		Execute(cr component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars, data *model.TemplateContext) (int, error)
 	}
 
 	context struct {
@@ -40,7 +42,7 @@ func CreateAnsibleManager(logger *log.Logger, componentManager component.Compone
 		componentManager: componentManager}
 }
 
-func (ctx context) Execute(uc component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars) (int, error) {
+func (ctx context) Execute(uc component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars, data *model.TemplateContext) (int, error) {
 
 	ok, playBookPath := uc.ContainsFile(playbook)
 
@@ -55,7 +57,7 @@ func (ctx context) Execute(uc component.UsableComponent, playbook string, extraV
 	ctx.logger.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
 
 	var args = []string{playbook}
-	modulePaths := ctx.componentManager.ContainsDirectory(util.ComponentModuleFolder)
+	modulePaths := ctx.componentManager.ContainsDirectory(util.ComponentModuleFolder, data)
 	defer modulePaths.Release()
 	if modulePaths.Count() > 0 {
 		pathsStrings := modulePaths.JoinAbsolutePaths(":")
@@ -65,7 +67,7 @@ func (ctx context) Execute(uc component.UsableComponent, playbook string, extraV
 		ctx.logger.Printf("No playbook module")
 	}
 
-	inventoryPaths := ctx.componentManager.ContainsDirectory(util.InventoryModuleFolder)
+	inventoryPaths := ctx.componentManager.ContainsDirectory(util.InventoryModuleFolder, data)
 	defer inventoryPaths.Release()
 	if inventoryPaths.Count() > 0 {
 		asArgs := inventoryPaths.PrefixPaths("-i")

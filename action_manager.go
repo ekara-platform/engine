@@ -2,8 +2,6 @@ package engine
 
 import (
 	"fmt"
-
-	"github.com/ekara-platform/engine/ansible"
 )
 
 type (
@@ -39,14 +37,11 @@ func (am ActionManager) get(id ActionID) (Action, error) {
 
 //Run launches the action corresponding to the given id.
 //The method will panic if the required action is missing.
-func (am ActionManager) Run(id ActionID, lC LaunchContext) {
+func (am ActionManager) Run(id ActionID, lC LaunchContext, rC *runtimeContext) {
 	a, e := am.get(id)
 	if e != nil {
 		panic(e)
 	}
-	// Initialization of the runtime context
-	rC := &runtimeContext{}
-	rC.buffer = make(map[string]ansible.Buffer)
 
 	lC.Log().Printf(LogLaunchingAction, a.name)
 	report, e := a.run(am, lC, rC)

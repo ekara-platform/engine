@@ -10,7 +10,7 @@ import (
 
 func TestParentSelfStackNoComponent(t *testing.T) {
 
-	distContent := `
+	parentContent := `
 ekara:
   components:
     comp1:
@@ -21,11 +21,11 @@ stacks:
       myStack_param_key1: myStack_param_key1_value
       myStack_param_key2: myStack_param_key1_value
 `
-	checkSelfStackParent(t, distContent)
+	checkSelfStackParent(t, parentContent)
 }
 
 func TestParentSelfStackLowDash(t *testing.T) {
-	distContent := `
+	parentContent := `
 ekara:
   components:
     comp1:
@@ -37,21 +37,21 @@ stacks:
       myStack_param_key1: myStack_param_key1_value
       myStack_param_key2: myStack_param_key1_value
 `
-	checkSelfStackParent(t, distContent)
+	checkSelfStackParent(t, parentContent)
 }
 
-func checkSelfStackParent(t *testing.T, distContent string) {
+func checkSelfStackParent(t *testing.T, parentContent string) {
 
 	mainPath := "./testdata/gittest/descriptor"
-	c := &MockLaunchContext{locationContent: mainPath, templateContext: &model.TemplateContext{}}
+	c := &MockLaunchContext{locationContent: mainPath, data: model.Parameters{}}
 	tester := gitTester(t, c, false)
 	defer tester.clean()
 
-	repDist := tester.createRep("./testdata/gittest/parent")
+	repParent := tester.createRep("./testdata/gittest/parent")
 	tester.createRepDefaultDescriptor(t, "./testdata/gittest/comp1")
 	repDesc := tester.createRep(mainPath)
 
-	repDist.writeCommit(t, "ekara.yaml", distContent)
+	repParent.writeCommit(t, "ekara.yaml", parentContent)
 
 	descContent := `
 name: ekara-demo-var
@@ -80,7 +80,7 @@ stacks:
 `
 	repDesc.writeCommit(t, "ekara.yaml", descContent)
 	// write the compose/playbook content into the parent component
-	repDist.writeCommit(t, "docker_compose.yml", "docker compose content")
+	repParent.writeCommit(t, "docker_compose.yml", "docker compose content")
 
 	err := tester.initEngine()
 	assert.Nil(t, err)
@@ -105,7 +105,7 @@ stacks:
 			assert.Equal(t, model.EkaraComponentId+"1", stackC.Id)
 
 			// Check that the stack is usable and returns the environent as component
-			usableStack, err := cm.Use(stack)
+			usableStack, err := cm.Use(stack, tester.context.engine.Context().data)
 			defer usableStack.Release()
 			assert.Nil(t, err)
 			assert.NotNil(t, usableStack)
