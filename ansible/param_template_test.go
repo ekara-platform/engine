@@ -9,7 +9,7 @@ import (
 
 func TestParseParamSimple(t *testing.T) {
 	path := "./testdata/params-template1.yaml"
-	pt, err := ParseParams(path)
+	pt, err := model.ParseParameters(path)
 	assert.NotNil(t, pt)
 	assert.Nil(t, err)
 	checkContent(t, pt, "value1")
@@ -17,7 +17,7 @@ func TestParseParamSimple(t *testing.T) {
 
 func TestParseParamLeadingSpaces(t *testing.T) {
 	path := "./testdata/params-template2.yaml"
-	pt, err := ParseParams(path)
+	pt, err := model.ParseParameters(path)
 	assert.NotNil(t, pt)
 	assert.Nil(t, err)
 	checkContent(t, pt, "  value1")
@@ -25,7 +25,7 @@ func TestParseParamLeadingSpaces(t *testing.T) {
 
 func TestParseParamTrailingSpaces(t *testing.T) {
 	path := "./testdata/params-template3.yaml"
-	pt, err := ParseParams(path)
+	pt, err := model.ParseParameters(path)
 	assert.NotNil(t, pt)
 	assert.Nil(t, err)
 	checkContent(t, pt, "value1  ")
@@ -33,7 +33,7 @@ func TestParseParamTrailingSpaces(t *testing.T) {
 
 func TestParseParamSpaces(t *testing.T) {
 	path := "./testdata/params-template4.yaml"
-	pt, err := ParseParams(path)
+	pt, err := model.ParseParameters(path)
 	assert.NotNil(t, pt)
 	assert.Nil(t, err)
 	checkContent(t, pt, "  value1  ")

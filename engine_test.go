@@ -3,7 +3,9 @@ package engine
 import (
 	"testing"
 
-	"github.com/ekara-platform/model"
+	"github.com/ekara-platform/engine/util"
+
+	"github.com/ekara-platform/engine/component"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -40,26 +42,25 @@ ekara:
 )
 
 func TestEngineLocalWithBranchRef(t *testing.T) {
+	c := util.CreateMockLaunchContext("./testdata/gittest/descriptor@newBranch", false)
+	tester := component.CreateComponentTester(t, c)
+	defer tester.Clean()
 
-	c := &MockLaunchContext{locationContent: "./testdata/gittest/descriptor@newBranch", data: model.Parameters{}}
-	tester := gitTester(t, c, false)
-	defer tester.clean()
+	repParent := tester.CreateRep("./testdata/gittest/parent")
+	repParent.WriteCommit("ekara.yaml", refparentContent)
 
-	repParent := tester.createRep("./testdata/gittest/parent")
-	repParent.writeCommit(t, "ekara.yaml", refparentContent)
-
-	repDesc := tester.createRep("./testdata/gittest/descriptor")
+	repDesc := tester.CreateRep("./testdata/gittest/descriptor")
 	// Commit the master
-	repDesc.writeCommit(t, "ekara.yaml", refMaster+refDescContent)
+	repDesc.WriteCommit("ekara.yaml", refMaster+refDescContent)
 
 	// Commit the new branch
-	repDesc.createBranch(t, "newBranch")
-	repDesc.writeCommit(t, "ekara.yaml", refBranch+refDescContent)
-	repDesc.checkout(t, "master")
+	repDesc.CreateBranch("newBranch")
+	repDesc.WriteCommit("ekara.yaml", refBranch+refDescContent)
+	repDesc.Checkout("master")
 
-	err := tester.initEngine()
+	err := tester.Init()
 	assert.Nil(t, err)
-	env := tester.env()
+	env := tester.Env()
 	assert.NotNil(t, env)
 	//TODO Fix this
 	//assert.Equal(t, "newBranch", env.Qualifier)
@@ -67,32 +68,32 @@ func TestEngineLocalWithBranchRef(t *testing.T) {
 
 func TestEngineLocalWithTagRef(t *testing.T) {
 
-	c := &MockLaunchContext{locationContent: "./testdata/gittest/descriptor@newTag1", data: model.Parameters{}}
-	tester := gitTester(t, c, false)
-	defer tester.clean()
+	c := util.CreateMockLaunchContext("./testdata/gittest/descriptor@newTag1", false)
+	tester := component.CreateComponentTester(t, c)
+	defer tester.Clean()
 
-	repParent := tester.createRep("./testdata/gittest/parent")
-	repParent.writeCommit(t, "ekara.yaml", refparentContent)
+	repParent := tester.CreateRep("./testdata/gittest/parent")
+	repParent.WriteCommit("ekara.yaml", refparentContent)
 
-	repDesc := tester.createRep("./testdata/gittest/descriptor")
+	repDesc := tester.CreateRep("./testdata/gittest/descriptor")
 	// Commit the master
-	repDesc.writeCommit(t, "ekara.yaml", refMaster+refDescContent)
+	repDesc.WriteCommit("ekara.yaml", refMaster+refDescContent)
 
 	// Commit the new branch
-	repDesc.createBranch(t, "newBranch")
-	repDesc.writeCommit(t, "ekara.yaml", refBranch+refDescContent)
-	repDesc.checkout(t, "master")
+	repDesc.CreateBranch("newBranch")
+	repDesc.WriteCommit("ekara.yaml", refBranch+refDescContent)
+	repDesc.Checkout("master")
 
 	// Commit a tag content
-	repDesc.writeCommit(t, "ekara.yaml", refTag1+refDescContent)
+	repDesc.WriteCommit("ekara.yaml", refTag1+refDescContent)
 	// Creating the tag
-	repDesc.tag(t, "newTag1")
+	repDesc.Tag("newTag1")
 	// Content has change after the tag creation
-	repDesc.writeCommit(t, "ekara.yaml", refTag2+refDescContent)
+	repDesc.WriteCommit("ekara.yaml", refTag2+refDescContent)
 
-	err := tester.initEngine()
+	err := tester.Init()
 	assert.Nil(t, err)
-	env := tester.env()
+	env := tester.Env()
 	assert.NotNil(t, env)
 	//TODO Fix this
 	//assert.Equal(t, "newTag1", env.Qualifier)
@@ -100,19 +101,19 @@ func TestEngineLocalWithTagRef(t *testing.T) {
 
 func TestRepositoryFlavor(t *testing.T) {
 
-	a, b := repositoryFlavor("aaa")
+	a, b := util.RepositoryFlavor("aaa")
 	assert.Equal(t, a, "aaa")
 	assert.Equal(t, b, "")
 
-	a, b = repositoryFlavor("aaa@bbb")
+	a, b = util.RepositoryFlavor("aaa@bbb")
 	assert.Equal(t, a, "aaa")
 	assert.Equal(t, b, "bbb")
 
-	a, b = repositoryFlavor("aaa@")
+	a, b = util.RepositoryFlavor("aaa@")
 	assert.Equal(t, a, "aaa")
 	assert.Equal(t, b, "")
 
-	a, b = repositoryFlavor("aaa@bbb@willbeignored")
+	a, b = util.RepositoryFlavor("aaa@bbb@willbeignored")
 	assert.Equal(t, a, "aaa")
 	assert.Equal(t, b, "bbb")
 }
