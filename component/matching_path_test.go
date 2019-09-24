@@ -35,7 +35,7 @@ func TestBuildInventoriesAsParam(t *testing.T) {
 	})
 	prefix := "-i"
 	strs := ps.PrefixPaths(prefix)
-	assert.Equal(t, 6, len(strs))
+	assert.Len(t, strs, 6)
 	assert.Equal(t, prefix, strs[0])
 	assert.Equal(t, "path1", strs[1])
 	assert.Equal(t, prefix, strs[2])

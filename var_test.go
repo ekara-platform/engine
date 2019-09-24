@@ -64,13 +64,13 @@ nodes:
 	assert.NotNil(t, env)
 
 	// Check if the descriptor has been templated
-	assert.Equal(t, len(env.Vars), 2)
+	assert.Len(t, env.Vars, 2)
 	//Original value defined into the descriptor
 	cp(t, env.Vars, "key1_descriptor", "val1_descriptor")
 	//Value templated using the parameter file
 	cp(t, env.Vars, "key2_descriptor", "value1.from.cli_value")
 
-	assert.Equal(t, len(env.Providers["p1"].Parameters), 3)
+	assert.Len(t, env.Providers["p1"].Parameters, 3)
 	//Value templated using a value defined into the descriptor
 	cp(t, env.Providers["p1"].Parameters, "param1", "val1_descriptor")
 	//Value templated using a value previously templated into the descriptor
@@ -94,7 +94,7 @@ func TestTemplateOnParentVars(t *testing.T) {
 	})
 	mainPath := "./testdata/gittest/descriptor"
 	c := &MockLaunchContext{locationContent: mainPath, data: p}
-	tester := gitTester(t, c, true)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repParent := tester.createRep("./testdata/gittest/parent")
@@ -154,7 +154,7 @@ nodes:
 	tester.assertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	rc := tester.context.engine.Context()
-	assert.Equal(t, len(rc.data.Vars), 12)
+	assert.Len(t, rc.data.Vars, 12)
 	cp(t, rc.data.Vars, "key1_comp1", "val1_comp1")
 	// Should be templated with the cli params content
 	cp(t, rc.data.Vars, "key2_comp1", "value_from_cli_to_comp1")
@@ -178,6 +178,13 @@ nodes:
 
 func cp(t *testing.T, p model.Parameters, key, value string) {
 	v, ok := p[key]
+	if assert.True(t, ok) {
+		assert.Equal(t, value, v)
+	}
+}
+
+func cev(t *testing.T, env model.EnvVars, key, value string) {
+	v, ok := env[key]
 	if assert.True(t, ok) {
 		assert.Equal(t, value, v)
 	}
@@ -233,7 +240,7 @@ nodes:
 	mainPath := "./testdata/gittest/descriptor"
 
 	c := &MockLaunchContext{locationContent: mainPath, data: p}
-	tester := gitTester(t, c, true)
+	tester := gitTester(t, c, false)
 	defer tester.clean()
 
 	repParent := tester.createRep("./testdata/gittest/parent")
@@ -254,7 +261,7 @@ nodes:
 
 	rc := tester.context.engine.Context()
 
-	assert.Equal(t, len(rc.data.Vars), 5)
+	assert.Len(t, rc.data.Vars, 5)
 	cp(t, rc.data.Vars, "key1", "val1_comp1")
 	cp(t, rc.data.Vars, "key2", "val2_parent")
 	cp(t, rc.data.Vars, "key3", "val3_descriptor")

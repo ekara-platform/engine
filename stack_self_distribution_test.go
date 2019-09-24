@@ -90,7 +90,7 @@ stacks:
 	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	// Chect that the environment has one self contained stack
-	if assert.Equal(t, 1, len(env.Stacks)) {
+	if assert.Len(t, env.Stacks, 1) {
 
 		cm := c.Ekara().ComponentManager()
 		assert.NotNil(t, cm)
@@ -114,7 +114,7 @@ stacks:
 			checkFile(t, usableStack, "docker_compose.yml", "docker compose content")
 
 			//check the stack parameters inheritance
-			if assert.Equal(t, 3, len(stack.Parameters)) {
+			if assert.Len(t, stack.Parameters,3) {
 				assert.Contains(t, stack.Parameters, "myStack_param_key1", "myStack_param_key1_value")
 				assert.Contains(t, stack.Parameters, "myStack_param_key2", "myStack_param_key2_value_overwritten")
 				assert.Contains(t, stack.Parameters, "myStack_param_key3", "myStack_param_key3_value")

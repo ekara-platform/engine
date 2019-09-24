@@ -11,7 +11,7 @@ func TestParseParamValues(t *testing.T) {
 	m, err := ParseParamValues(path)
 	assert.NotNil(t, m)
 	assert.Nil(t, err)
-	assert.Equal(t, 15, len(m))
+	assert.Len(t, m, 15)
 
 	val, ok := m["aws.params_pack1.params_pack1_key1"]
 	assert.True(t, ok)

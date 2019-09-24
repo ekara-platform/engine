@@ -14,7 +14,7 @@ func TestTemplate(t *testing.T) {
 	params, err := ansible.ParseParams(path)
 	assert.Nil(t, err)
 	assert.NotNil(t, params)
-	vars := model.CreateContext(params)
+	vars := model.CreateTemplateContext(params)
 
 	url, err := model.CreateUrl("./testdata/template/descriptor.yaml")
 	assert.Nil(t, err)
@@ -44,7 +44,7 @@ func TestTemplateNoDot(t *testing.T) {
 	params, err := ansible.ParseParams(path)
 	assert.Nil(t, err)
 	assert.NotNil(t, params)
-	vars := model.CreateContext(params)
+	vars := model.CreateTemplateContext(params)
 
 	url, err := model.CreateUrl("./testdata/template/descriptor_no_dot.yaml")
 	assert.Nil(t, err)

@@ -40,7 +40,7 @@ func TestParseParamSpaces(t *testing.T) {
 }
 
 func checkContent(t *testing.T, pt model.Parameters, wanted string) {
-	assert.Equal(t, 1, len(pt))
+	assert.Len(t, pt, 1)
 
 	val, ok := pt["key1"]
 	if assert.True(t, ok) {
@@ -49,7 +49,7 @@ func checkContent(t *testing.T, pt model.Parameters, wanted string) {
 
 		switch x := val.(type) {
 		case map[interface{}]interface{}:
-			assert.Equal(t, 1, len(x))
+			assert.Len(t, x, 1)
 			val2, ok := x["key2"]
 			assert.True(t, ok)
 			assert.Equal(t, wanted, val2)

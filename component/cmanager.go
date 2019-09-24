@@ -74,17 +74,21 @@ func (cm *ComponentManager) EnsureOneComponent(c model.Component, data *model.Te
 			return err
 		}
 
-		// Merge or keep the resulting environment into the global one
+		// Customize or keep the resulting environment into the global one
+		cm.Logger.Println("prepare partial environment customization")
 		if cm.environment == nil {
 			cm.environment = cEnv
+			cm.Logger.Println("no customization required, it's the first built environment ")
 		} else {
-			// We don't want to merge the templates defined into the environment
+			// We don't want to customization the templates defined into the environment
 			// But instead we want to keep them into the component
 			cm.environment.Platform().KeepTemplates(c, cEnv.Templates)
 			cEnv.Templates = model.Patterns{}
-			err = cm.environment.Merge(cEnv)
+			cm.Logger.Println("partial environment should used for customization")
+			err = cm.environment.Customize(cEnv)
 
 			if err != nil {
+				cm.Logger.Printf("error customizing the environment %s", err.Error())
 				return err
 			}
 		}

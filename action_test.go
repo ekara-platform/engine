@@ -14,7 +14,7 @@ func TestManagerInitialGrossContent(t *testing.T) {
 
 	// Check actions preloaded into the manager
 	assert.False(t, am.empty())
-	assert.Equal(t, len(am.actions), 7)
+	assert.Len(t, am.actions, 7)
 
 	v, err := am.get(ActionFailID)
 	assert.Nil(t, err)

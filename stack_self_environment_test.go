@@ -91,7 +91,7 @@ ekara:
 	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	// Chect that the environment has one self contained stack
-	if assert.Equal(t, 1, len(env.Stacks)) {
+	if assert.Len(t, env.Stacks, 1) {
 
 		cm := c.Ekara().ComponentManager()
 		assert.NotNil(t, cm)

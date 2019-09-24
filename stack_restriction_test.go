@@ -66,7 +66,7 @@ stacks:
 	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
 	// Chect that the environment has two stacks
-	if assert.Equal(t, 2, len(env.Stacks)) {
+	if assert.Len(t, env.Stacks, 2) {
 
 		cm := c.Ekara().ComponentManager()
 		assert.NotNil(t, cm)
@@ -131,8 +131,8 @@ nodes:
 	// comp1 should be downloaded because it's used as orchestrator and provider
 	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
-	// Chect that the environment has no stacks
-	assert.Equal(t, 0, len(env.Stacks))
+	// Check that the environment has no stacks
+	assert.Len(t, env.Stacks, 0)
 }
 
 func TestIgnoredStackThroughComponent(t *testing.T) {
@@ -197,7 +197,7 @@ nodes:
 	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2")
 
 	// Chect that the environment has no stacks
-	assert.Equal(t, 0, len(env.Stacks))
+	assert.Len(t, env.Stacks, 0)
 }
 
 func checkStack(t *testing.T, te *tester, env model.Environment, cm *component.ComponentManager, holder, stackName, compose string) {

@@ -158,12 +158,12 @@ func (rm *ReferenceManager) parseParent(p model.Component, data *model.TemplateC
 }
 
 func (rm *ReferenceManager) Ensure(data *model.TemplateContext) error {
-	// All the parents must be processed
+	// The parents content must be processed fist
 	for i := len(rm.Parents) - 1; i >= 0; i-- {
 		p := rm.Parents[i]
 
-		// Once a parent has been processed	we must process its declared
-		// components in alphabetical order
+		// we must process the parent's declared components before the parent itself
+		// this will be done based on the alphabetical order of the component names
 		for _, c := range p.ReferencedComponents.Sorted() {
 			rm.l.Printf("Reference manager, ensuring parent component %s", c.Id)
 			if rm.UsedReferences.IdUsed(c.Id) {
@@ -176,6 +176,7 @@ func (rm *ReferenceManager) Ensure(data *model.TemplateContext) error {
 			}
 		}
 
+		//Once the declared components have been processed we can process the parent
 		rm.l.Printf("Reference manager, ensuring parent %s", p.Comp.Id)
 		err := rm.callEnsure(p.Comp, data)
 		if err != nil {

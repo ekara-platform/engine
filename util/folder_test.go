@@ -134,7 +134,7 @@ func TestChildren(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, ok)
 
-	// Physical creation of the parent
+	// Physical deletion of the parent
 	// This is supposed to also delete the children
 	err = ef.Delete()
 	assert.Nil(t, err)

@@ -90,21 +90,22 @@ nodes:
 
 	// Check that all vars have been accumulated
 	// From the descriptor
-	assert.Equal(t, len(rc.data.Vars), 9)
-	// From comp2
-	cp(t, rc.data.Vars, "key1_comp2", "val1_comp2")
-	cp(t, rc.data.Vars, "key2_comp2", "val2_comp2")
-	// From comp1
-	cp(t, rc.data.Vars, "key1_comp1", "val1_comp1")
-	cp(t, rc.data.Vars, "key2_comp1", "val2_comp1")
-	// From parent
-	cp(t, rc.data.Vars, "key1_parent", "val1_parent")
-	cp(t, rc.data.Vars, "key2_parent", "val2_parent")
-	// From descriptor
-	cp(t, rc.data.Vars, "key1_descriptor", "val1_descriptor")
-	cp(t, rc.data.Vars, "key2_descriptor", "val2_descriptor")
-	// From the client
-	_, ok := rc.data.Vars["value1"]
-	assert.True(t, ok)
+	if assert.Len(t, rc.data.Vars, 9) {
+		// From comp2
+		cp(t, rc.data.Vars, "key1_comp2", "val1_comp2")
+		cp(t, rc.data.Vars, "key2_comp2", "val2_comp2")
+		// From comp1
+		cp(t, rc.data.Vars, "key1_comp1", "val1_comp1")
+		cp(t, rc.data.Vars, "key2_comp1", "val2_comp1")
+		// From parent
+		cp(t, rc.data.Vars, "key1_parent", "val1_parent")
+		cp(t, rc.data.Vars, "key2_parent", "val2_parent")
+		// From descriptor
+		cp(t, rc.data.Vars, "key1_descriptor", "val1_descriptor")
+		cp(t, rc.data.Vars, "key2_descriptor", "val2_descriptor")
+		// From the client
+		_, ok := rc.data.Vars["value1"]
+		assert.True(t, ok)
+	}
 
 }
