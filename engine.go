@@ -1,38 +1,32 @@
 package engine
 
 import (
-	"log"
-	"path/filepath"
-	"strings"
-
+	"github.com/ekara-platform/engine/action"
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
+	"github.com/ekara-platform/engine/util"
+	"path/filepath"
 
 	"github.com/ekara-platform/model"
 )
 
 //Engine  represents the Ekara engine in charge of dealing with the environment
 type Engine interface {
-	Init(l LaunchContext) error
-	Context() *runtimeContext
-	Logger() *log.Logger
-	BaseDir() string
-	ComponentManager() *component.ComponentManager
-	ReferenceManager() *component.ReferenceManager
+	Init() error
+	ComponentManager() component.ComponentManager
 	AnsibleManager() ansible.AnsibleManager
+	ActionManager() action.ActionManager
 }
 
-type context struct {
-	// Base attributes
-	logger    *log.Logger
+type engine struct {
+	lC        util.LaunchContext
+	tplC      *model.TemplateContext
 	directory string
-	runtime   *runtimeContext
 
 	// Subsystems
-	componentManager *component.ComponentManager
-	referenceManager *component.ReferenceManager
+	componentManager component.ComponentManager
 	ansibleManager   ansible.AnsibleManager
-	actionManager    ActionManager
+	actionManager    action.ActionManager
 }
 
 // Create creates an environment descriptor based on the provided location.
@@ -40,93 +34,73 @@ type context struct {
 // The location can be an URL over http or https or even a file system location.
 //
 //	Parameters:
-//		logger: the logger
-//		baseDir: the directory where the environment will take place among its
-//				 inclusions and related components
-func Create(logger *log.Logger, workDir string) (Engine, error) {
+//		lC: the launch context
+//		workDir: the directory where the engine will do its work
+func Create(lC util.LaunchContext, workDir string) (Engine, error) {
 	absWorkDir, err := filepath.Abs(workDir)
 	if err != nil {
 		return nil, err
 	}
 
-	ctx := &context{
-		logger:    logger,
+	// TODO : pass launch context to managers + let templateContext be in the componentManager only
+	eng := &engine{
+		lC:        lC,
 		directory: absWorkDir,
 	}
 
-	ctx.componentManager = component.CreateComponentManager(ctx.logger, absWorkDir)
-	ctx.referenceManager = component.CreateReferenceManager(ctx.componentManager)
-	ctx.ansibleManager = ansible.CreateAnsibleManager(ctx.logger, *ctx.componentManager)
-	ctx.actionManager = CreateActionManager()
-	return ctx, nil
+	eng.componentManager = component.CreateComponentManager(lC, absWorkDir)
+	eng.ansibleManager = ansible.CreateAnsibleManager(lC, eng.componentManager)
+	eng.actionManager = action.CreateActionManager(lC, eng.componentManager, eng.ansibleManager)
+	return eng, nil
 }
 
-//repositoryFlavor returns the repository flavor, branchn tag ..., based on the
-// presence of '@' into the given url
-func repositoryFlavor(url string) (string, string) {
 
-	if strings.Contains(url, "@") {
-		s := strings.Split(url, "@")
-		return s[0], s[1]
-	}
-	return url, ""
-}
-
-func (ctx *context) Init(l LaunchContext) (err error) {
-	ctx.runtime = CreateRuntimeContext(l)
-	repo, ref := repositoryFlavor(l.Location())
-	wdURL, err := model.GetCurrentDirectoryURL(ctx.logger)
+func (eng *engine) Init() (err error) {
+	// Get CWD in case the descriptor is local
+	repo, ref := util.RepositoryFlavor(eng.lC.Location())
+	wdURL, err := model.GetCurrentDirectoryURL(eng.lC.Log())
 	if err != nil {
 		return
 	}
 
-	// Register main component
-	mainRep, err := model.CreateRepository(model.Base{Url: wdURL}, repo, ref, l.Name())
+	// Create main component
+	mainRep, err := model.CreateRepository(model.Base{Url: wdURL}, repo, ref, eng.lC.Name())
 	if err != nil {
 		return
 	}
-	u := l.User()
+	u := eng.lC.User()
 	if u != "" {
 		auth := make(map[string]interface{})
 		auth["method"] = "basic"
 		auth["user"] = u
-		auth["password"] = l.Password()
+		auth["password"] = eng.lC.Password()
 		mainRep.Authentication = auth
 	}
-
 	mainComponent := model.CreateComponent(model.MainComponentId, mainRep)
-	// Parse upward all the references composing the environment
-	err = ctx.referenceManager.Init(mainComponent, ctx.runtime.data)
+
+	// Discover components starting from the main one
+	err = eng.componentManager.Init(mainComponent)
 	if err != nil {
 		return
 	}
-	err = ctx.ReferenceManager().Ensure(ctx.runtime.data)
+
+	// Then ensure all effectively used components are fetched
+	err = eng.componentManager.Ensure()
 	if err != nil {
 		return
 	}
+
 	return
 }
 
-func (ctx *context) Logger() *log.Logger {
-	return ctx.logger
+func (eng *engine) ComponentManager() component.ComponentManager {
+	return eng.componentManager
 }
 
-func (ctx *context) BaseDir() string {
-	return ctx.directory
+func (eng *engine) AnsibleManager() ansible.AnsibleManager {
+	return eng.ansibleManager
 }
 
-func (ctx *context) ComponentManager() *component.ComponentManager {
-	return ctx.componentManager
-}
-
-func (ctx *context) ReferenceManager() *component.ReferenceManager {
-	return ctx.referenceManager
-}
-
-func (ctx *context) AnsibleManager() ansible.AnsibleManager {
-	return ctx.ansibleManager
-}
-
-func (ctx *context) Context() *runtimeContext {
-	return ctx.runtime
+func (eng *engine) ActionManager() action.ActionManager {
+	return eng.actionManager
 }

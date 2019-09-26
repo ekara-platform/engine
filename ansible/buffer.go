@@ -59,7 +59,7 @@ func CreateBuffer() Buffer {
 //  InventoryYamlFileName
 //  ParamYamlFileName
 //
-func GetBuffer(f *util.FolderPath, logger *log.Logger, location string) (buffer Buffer, err error) {
+func GetBuffer(f util.FolderPath, logger *log.Logger, location string) (buffer Buffer, err error) {
 	buffer = CreateBuffer()
 
 	var ok bool
