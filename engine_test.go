@@ -16,21 +16,21 @@ ekara:
 `
 
 	refMaster = `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: master
 `
 
 	refBranch = `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: newBranch
 `
 
 	refTag1 = `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: newTag1
 `
 	refTag2 = `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: newTag2
 `
 
