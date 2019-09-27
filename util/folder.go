@@ -18,23 +18,22 @@ import (
 type ExchangeFolder struct {
 	RootFolder string
 	// Root location of the exchange folder
-	Location *FolderPath
+	Location FolderPath
 	// Input data passed to the container
-	Input *FolderPath
+	Input FolderPath
 	// Output data produced by the container
-	Output *FolderPath
+	Output FolderPath
 }
 
 // FolderPath holds the location of a folder and its eventual children
 type FolderPath struct {
 	path     string
-	Children map[string]*ExchangeFolder
+	Children map[string]ExchangeFolder
 }
 
 // Create creates physically the ExchangeFolder.
 // If the ExchangeFolder already exist  it will remain untouched
 func (f ExchangeFolder) Create() error {
-
 	if _, err := os.Stat(f.RootFolder); os.IsNotExist(err) {
 		log.Printf("Creating exchange folder root %s", f.RootFolder)
 		e := os.Mkdir(f.RootFolder, 0777)
@@ -42,7 +41,6 @@ func (f ExchangeFolder) Create() error {
 			return e
 		}
 	}
-
 	e := f.Location.create()
 	if e != nil {
 		return e
@@ -161,11 +159,10 @@ func (f FolderPath) Copy(content string, destination FolderPath) error {
 
 // AddChildExchangeFolder creates a child of type ExchangeFolder having
 // this folder as root location
-func (f *FolderPath) AddChildExchangeFolder(childName string) (*ExchangeFolder, error) {
+func (f *FolderPath) AddChildExchangeFolder(childName string) (ExchangeFolder, error) {
 	child, err := CreateExchangeFolder(f.Path(), childName)
-
 	if err != nil {
-		return &ExchangeFolder{}, err
+		return ExchangeFolder{}, err
 	}
 	f.Children[childName] = child
 	return child, nil
@@ -216,18 +213,18 @@ func CreateFolderPath(path string) FolderPath {
 
 //CreateExchangeFolder creates an ExchangeFolder at the provided location
 // and with the give name
-func CreateExchangeFolder(location string, folderName string) (*ExchangeFolder, error) {
+func CreateExchangeFolder(location string, folderName string) (ExchangeFolder, error) {
 	r := ExchangeFolder{}
 	var err error
 	r.RootFolder, err = filepath.Abs(location)
 	if err != nil {
-		return &r, err
+		return r, err
 	}
 
-	r.Location = &FolderPath{path: JoinPaths(r.RootFolder, folderName), Children: make(map[string]*ExchangeFolder)}
-	r.Output = &FolderPath{path: JoinPaths(r.RootFolder, folderName, "output"), Children: make(map[string]*ExchangeFolder)}
-	r.Input = &FolderPath{path: JoinPaths(r.RootFolder, folderName, "input"), Children: make(map[string]*ExchangeFolder)}
-	return &r, nil
+	r.Location = FolderPath{path: JoinPaths(r.RootFolder, folderName), Children: make(map[string]ExchangeFolder)}
+	r.Output = FolderPath{path: JoinPaths(r.RootFolder, folderName, "output"), Children: make(map[string]ExchangeFolder)}
+	r.Input = FolderPath{path: JoinPaths(r.RootFolder, folderName, "input"), Children: make(map[string]ExchangeFolder)}
+	return r, nil
 }
 
 //JoinPaths joins the provided paths as a string

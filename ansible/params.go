@@ -185,18 +185,3 @@ func readMap(cKv chan keyValue, exit chan bool, location string, m map[interface
 		exit <- true
 	}
 }
-
-//ParseParams parses a yaml file into a map of "string:interface{}"
-func ParseParams(path string) (model.Parameters, error) {
-	r := make(model.Parameters)
-
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return r, err
-	}
-	err = yaml.Unmarshal(b, &r)
-	if err != nil {
-		return r, err
-	}
-	return r, nil
-}

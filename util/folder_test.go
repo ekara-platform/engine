@@ -173,7 +173,7 @@ func TestContent(t *testing.T) {
 	ok = ef.Output.Contains("test.txt")
 	assert.False(t, ok)
 
-	err = ef.Input.Copy("test.txt", *ef.Output)
+	err = ef.Input.Copy("test.txt", ef.Output)
 	assert.Nil(t, err)
 
 	ok = ef.Output.Contains("test.txt")
