@@ -26,7 +26,7 @@ func TestFetchOrderedAlphabetical(t *testing.T) {
 	tester.CreateRepDefaultDescriptor("./testdata/gittest/comp6")
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -225,7 +225,7 @@ vars:
 	c6Rep.WriteCommit("ekara.yaml", comp6Content)
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:

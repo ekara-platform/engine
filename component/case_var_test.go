@@ -30,7 +30,7 @@ func TestTemplateOnMainVars(t *testing.T) {
 	repDesc := tester.CreateRep(mainPath)
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -123,7 +123,7 @@ vars:
 	repParent.WriteCommit("ekara.yaml", parentContent)
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -203,7 +203,7 @@ vars:
   key4: val4_parent
 `
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:

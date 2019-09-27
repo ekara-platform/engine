@@ -35,7 +35,7 @@ ekara:
 	repDesc := tester.CreateRep(mainPath)
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:

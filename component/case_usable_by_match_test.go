@@ -30,7 +30,7 @@ ekara:
       repository: ./testdata/gittest/comp3
 `
 	byMatchDescContent = `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:

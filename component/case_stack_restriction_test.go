@@ -34,7 +34,7 @@ stacks:
 	repParent.WriteCommit("docker_compose.yml", "parent docker compose content")
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -104,7 +104,7 @@ ekara:
 	repParent.WriteCommit("ekara.yaml", parentContent)
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -165,7 +165,7 @@ ekara:
 	repParent.WriteCommit("ekara.yaml", parentContent)
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:

@@ -24,7 +24,7 @@ func TestTemplateOnReadOnlyModel(t *testing.T) {
 	   	repStack.writeCommit(t, "template.txt", "{{.Model.QualifiedName}}")
 
 	   	descContent := `
-	   name: ekara-demo-var
+	   name: ekaraDemoVar
 	   qualifier: dev
 
 	   ekara:
@@ -58,13 +58,13 @@ func TestTemplateOnReadOnlyModel(t *testing.T) {
 	   	assert.NotNil(t, env)
 
 	   	tEnvironment := c.TemplateContext().Model
-	   	assert.Equal(t, "ekara-demo-var", env.Name)
+	   	assert.Equal(t, "ekaraDemoVar", env.Name)
 	   	assert.Equal(t, "dev", env.Qualifier)
 
 	   	assert.NotNil(t, tEnvironment)
-	   	assert.Equal(t, "ekara-demo-var", tEnvironment.Name())
+	   	assert.Equal(t, "ekaraDemoVar", tEnvironment.Name())
 	   	assert.Equal(t, "dev", tEnvironment.Qualifier())
-	   	assert.Equal(t, "ekara-demo-var_dev", tEnvironment.QualifiedName())
+	   	assert.Equal(t, "ekaraDemoVar_dev", tEnvironment.QualifiedName())
 
 	   	tester.assertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "stack1")
 	   	if assert.Equal(t, 1, len(env.Stacks)) {
@@ -83,7 +83,7 @@ func TestTemplateOnReadOnlyModel(t *testing.T) {
 
 	   			b, err := ioutil.ReadFile(path.Join(usableStack.RootPath(), "template.txt"))
 	   			assert.Nil(t, err)
-	   			assert.Equal(t, "ekara-demo-var_dev", string(b))
+	   			assert.Equal(t, "ekaraDemoVar_dev", string(b))
 	   		}
 	   	}
 	*/

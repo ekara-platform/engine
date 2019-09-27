@@ -35,7 +35,7 @@ ekara:
 	repParent.WriteCommit("ekara.yaml", parentContent)
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -79,7 +79,7 @@ orchestrator:
   component: comp1 
 `
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -143,7 +143,7 @@ ekara:
       repository: ./testdata/gittest/comp1
 `
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -215,7 +215,7 @@ ekara:
       repository: ./testdata/gittest/comp1
 `
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -286,7 +286,7 @@ ekara:
 `
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -371,7 +371,7 @@ ekara:
 `
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:

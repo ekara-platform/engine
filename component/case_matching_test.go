@@ -22,7 +22,7 @@ ekara:
 `
 
 	matchDescContent = `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:

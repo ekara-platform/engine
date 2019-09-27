@@ -13,7 +13,7 @@ import (
 func TestEnvironmentSelfStackNoComponent(t *testing.T) {
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -39,7 +39,7 @@ stacks:
 func TestEnvironmentSelfStackLowDash(t *testing.T) {
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:

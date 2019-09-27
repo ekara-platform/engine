@@ -26,7 +26,7 @@ ekara:
       repository: ./testdata/gittest/comp2	  
 `
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:

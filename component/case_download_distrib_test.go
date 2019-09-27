@@ -32,7 +32,7 @@ func TestDownloadDefaultParent(t *testing.T) {
 	repDesc := tester.CreateRep(mainPath)
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 # Following content just to force the download of ek-swam and ek-aws
@@ -126,7 +126,7 @@ ekara:
 	repParent.WriteCommit("ekara.yaml", parentContent)
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -223,7 +223,7 @@ ekara:
 	repParent2.WriteCommit("ekara.yaml", parentContent2)
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:

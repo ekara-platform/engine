@@ -35,7 +35,7 @@ ekara:
 	repComp1Overwritten.WriteCommit("content.txt", "comp content overwriten in descriptor")
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:
@@ -112,7 +112,7 @@ ekara:
 	repComp1Overwritten.WriteCommit("content.txt", "comp content overwriten in descriptor")
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 ekara:
   parent:

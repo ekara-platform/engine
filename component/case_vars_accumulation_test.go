@@ -57,7 +57,7 @@ vars:
 	repParent.WriteCommit("ekara.yaml", parentContent)
 
 	descContent := `
-name: ekara-demo-var
+name: ekaraDemoVar
 qualifier: dev
 
 ekara:

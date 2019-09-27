@@ -38,7 +38,7 @@ func TestDebugDemo(t *testing.T) {
 	repDesc := tester.CreateRep(mainPath)
 
 	descContent := `
-  name: ekara-demo-al3
+  name: ekaraDemoVar
   qualifier: dev
   
   ekara:
@@ -104,7 +104,6 @@ func TestDebugDemo(t *testing.T) {
 	_, err = yaml.Marshal(env)
 	assert.Nil(t, err)
 	refM := tester.cM.referenceManager
-	//assert.Equal(t, len(refM.UsedReferences.Refs), 2)
 	assert.True(t, refM.UsedReferences.IdUsed("ek-aws"))
 	assert.True(t, refM.UsedReferences.IdUsed("ek-swarm"))
 	assert.True(t, refM.UsedReferences.IdUsed("ek-core"))
