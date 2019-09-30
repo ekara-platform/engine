@@ -10,12 +10,11 @@ import (
 
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
-	"github.com/ekara-platform/model"
 )
 
 type (
 	// A AnsibleManager is capable of executing an ansible playbook
-	AnsibleManager interface {
+	Manager interface {
 		// Execute runs a playbook within a component
 		//
 		// Parameters:
@@ -25,25 +24,25 @@ type (
 		//		envars: the environment variables set before launching the playbook
 		//		data: the template context required to template a used component
 		//
-		Execute(cr component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars, data *model.TemplateContext) (int, error)
+		Execute(cr component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars) (int, error)
 	}
 
-	ansibleManager struct {
+	manager struct {
 		lC               util.LaunchContext
-		componentManager component.ComponentManager
+		componentManager component.Manager
 	}
 )
 
 //CreateAnsibleManager returns a new AnsibleManager, able to launch playbook
 //holded by the given component manager
-func CreateAnsibleManager(lC util.LaunchContext, componentManager component.ComponentManager) AnsibleManager {
-	return &ansibleManager{
+func CreateAnsibleManager(lC util.LaunchContext, componentManager component.Manager) Manager {
+	return &manager{
 		lC:               lC,
 		componentManager: componentManager,
 	}
 }
 
-func (aM ansibleManager) Execute(uc component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars, data *model.TemplateContext) (int, error) {
+func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars) (int, error) {
 
 	ok, playBookPath := uc.ContainsFile(playbook)
 
@@ -58,7 +57,7 @@ func (aM ansibleManager) Execute(uc component.UsableComponent, playbook string, 
 	aM.lC.Log().Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
 
 	var args = []string{playbook}
-	modulePaths := aM.componentManager.ContainsDirectory(util.ComponentModuleFolder, data)
+	modulePaths := aM.componentManager.ContainsDirectory(util.ComponentModuleFolder)
 	defer modulePaths.Release()
 	if modulePaths.Count() > 0 {
 		pathsStrings := modulePaths.JoinAbsolutePaths(":")
@@ -68,7 +67,7 @@ func (aM ansibleManager) Execute(uc component.UsableComponent, playbook string, 
 		aM.lC.Log().Printf("No playbook module")
 	}
 
-	inventoryPaths := aM.componentManager.ContainsDirectory(util.InventoryModuleFolder, data)
+	inventoryPaths := aM.componentManager.ContainsDirectory(util.InventoryModuleFolder)
 	defer inventoryPaths.Release()
 	if inventoryPaths.Count() > 0 {
 		asArgs := inventoryPaths.PrefixPaths("-i")

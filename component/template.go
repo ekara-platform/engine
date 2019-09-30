@@ -16,7 +16,7 @@ import (
 )
 
 // runTemplate runs the templates defined into a given component
-func runTemplate(ctx model.TemplateContext, componentPath string, patterns model.Patterns, resolver model.ComponentReferencer) (string, error) {
+func runTemplate(ctx *model.TemplateContext, componentPath string, patterns model.Patterns, resolver model.ComponentReferencer) (string, error) {
 	if len(patterns.Content) > 0 {
 		globs := make([]gl.Glob, 0, 0)
 		files := make([]string, 0, 0)
@@ -88,7 +88,7 @@ func runTemplate(ctx model.TemplateContext, componentPath string, patterns model
 				return "", err
 			}
 
-			err = t.Execute(file, ctx)
+			err = t.Execute(file, *ctx)
 			if err != nil {
 				os.RemoveAll(tmpPath)
 				return "", err

@@ -67,8 +67,8 @@ func TestInitCodeStep(t *testing.T) {
 	assert.NotNil(t, sc.cleanUp)
 	checkNoError(t, sc)
 
-	a := sc.Array()
-	assert.Equal(t, len(a.Results), 1)
+	a := sc.Build()
+	assert.Equal(t, len(a.Status), 1)
 
 }
 
@@ -83,8 +83,8 @@ func TestInitDescriptorStep(t *testing.T) {
 	assert.NotNil(t, sc.cleanUp)
 	checkNoError(t, sc)
 
-	a := sc.Array()
-	assert.Equal(t, len(a.Results), 1)
+	a := sc.Build()
+	assert.Equal(t, len(a.Status), 1)
 
 }
 
@@ -99,8 +99,8 @@ func TestInitParamStep(t *testing.T) {
 	assert.NotNil(t, sc.cleanUp)
 	checkNoError(t, sc)
 
-	a := sc.Array()
-	assert.Equal(t, len(a.Results), 1)
+	a := sc.Build()
+	assert.Equal(t, len(a.Status), 1)
 
 }
 
@@ -115,8 +115,8 @@ func TestInitPlaybookStep(t *testing.T) {
 	assert.NotNil(t, sc.cleanUp)
 	checkNoError(t, sc)
 
-	a := sc.Array()
-	assert.Equal(t, len(a.Results), 1)
+	a := sc.Build()
+	assert.Equal(t, len(a.Status), 1)
 
 }
 
@@ -133,11 +133,11 @@ func checkNoError(t *testing.T, sc StepResult) {
 func TestInitResults(t *testing.T) {
 
 	s := InitStepResults()
-	assert.Equal(t, len(s.Results), 0)
+	assert.Equal(t, len(s.Status), 0)
 	s.Add(InitCodeStepResult("stepName1", nil, NoCleanUpRequired))
-	assert.Equal(t, len(s.Results), 1)
+	assert.Equal(t, len(s.Status), 1)
 	s.Add(InitCodeStepResult("stepName2", nil, NoCleanUpRequired))
-	assert.Equal(t, len(s.Results), 2)
+	assert.Equal(t, len(s.Status), 2)
 
 }
 
@@ -148,11 +148,11 @@ func TestLaunchSteps(t *testing.T) {
 			fStepMock2,
 			fStepMock3,
 		}}
-	rep := action.launch(mockRuntimeContext())
+	rep, _ := action.launch(mockRuntimeContext())
 	assert.NotNil(t, rep)
 	assert.Nil(t, rep.Error)
-	srs := rep.Steps.Results
-	assert.Equal(t, len(srs), 3)
+	srs := rep.Steps.Status
+	assert.Equal(t, 3, len(srs))
 
 	// Check the order of the executed steps
 	assert.Equal(t, srs[0].StepName, "Dummy step 1")
@@ -168,10 +168,10 @@ func TestLaunchStepsError(t *testing.T) {
 			fStepMock3,
 			fStepMockError,
 		}}
-	rep := action.launch(mockRuntimeContext())
+	rep, _ := action.launch(mockRuntimeContext())
 	assert.NotNil(t, rep)
 	assert.NotNil(t, rep.Error)
-	srs := rep.Steps.Results
+	srs := rep.Steps.Status
 	assert.Equal(t, len(srs), 4)
 
 	// Check the order of the executed steps
@@ -190,12 +190,12 @@ func TestLaunchStepsError2(t *testing.T) {
 			fStepMockError,
 			fStepMock3,
 		}}
-	rep := action.launch(mockRuntimeContext())
+	rep, _ := action.launch(mockRuntimeContext())
 	assert.NotNil(t, rep)
 	assert.NotNil(t, rep.Error)
 	// Because fStepMockError throws an error fStepMock3 is not invoked and
 	// then it is never returned into the report
-	srs := rep.Steps.Results
+	srs := rep.Steps.Status
 	assert.Equal(t, len(srs), 3)
 
 	// Check the order of the executed steps
@@ -213,10 +213,10 @@ func TestLaunchStepsMultiples(t *testing.T) {
 			fStepMock3,
 			fStepMockMultipleContext,
 		}}
-	rep := action.launch(mockRuntimeContext())
+	rep, _ := action.launch(mockRuntimeContext())
 	assert.NotNil(t, rep)
 	assert.Nil(t, rep.Error)
-	scs := rep.Steps.Results
+	scs := rep.Steps.Status
 	assert.Equal(t, len(scs), 6)
 	// Check the order of the executed steps
 	assert.Equal(t, scs[0].StepName, "Dummy step 1")
@@ -227,33 +227,33 @@ func TestLaunchStepsMultiples(t *testing.T) {
 	assert.Equal(t, scs[5].StepName, "Dummy step, multiple 3")
 }
 
-func fStepMock1(rC *runtimeContext) StepResults {
+func fStepMock1(rC *runtimeContext) (StepResults, Result) {
 	sc := InitCodeStepResult("Dummy step 1", nil, NoCleanUpRequired)
-	return sc.Array()
+	return sc.Build(), nil
 }
 
-func fStepMock2(rC *runtimeContext) StepResults {
+func fStepMock2(rC *runtimeContext) (StepResults, Result) {
 	sc := InitCodeStepResult("Dummy step 2", nil, NoCleanUpRequired)
-	return sc.Array()
+	return sc.Build(), nil
 }
 
-func fStepMock3(rC *runtimeContext) StepResults {
+func fStepMock3(rC *runtimeContext) (StepResults, Result) {
 	sc := InitCodeStepResult("Dummy step 3", nil, NoCleanUpRequired)
-	return sc.Array()
+	return sc.Build(), nil
 }
 
-func fStepMockError(rC *runtimeContext) StepResults {
+func fStepMockError(rC *runtimeContext) (StepResults, Result) {
 	sc := InitCodeStepResult("Dummy step on error", nil, NoCleanUpRequired)
 	sc.error = fmt.Errorf("Dummy error")
-	return sc.Array()
+	return sc.Build(), nil
 }
 
-func fStepMockMultipleContext(rC *runtimeContext) StepResults {
+func fStepMockMultipleContext(rC *runtimeContext) (StepResults, Result) {
 	srs := InitStepResults()
 	srs.Add(InitCodeStepResult("Dummy step, multiple 1", nil, NoCleanUpRequired))
 	srs.Add(InitCodeStepResult("Dummy step, multiple 2", nil, NoCleanUpRequired))
 	srs.Add(InitCodeStepResult("Dummy step, multiple 3", nil, NoCleanUpRequired))
-	return *srs
+	return *srs, nil
 }
 
 func mockRuntimeContext() *runtimeContext {

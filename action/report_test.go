@@ -25,7 +25,7 @@ func TestReportContentSingleStep(t *testing.T) {
 	assert.Nil(t, err)
 
 	sc := InitCodeStepResult("DUMMY_STEP", nil, NoCleanUpRequired)
-	r.Steps = sc.Array()
+	r.Steps = sc.Build()
 	_, err = r.Content()
 	assert.Nil(t, err)
 
@@ -39,7 +39,7 @@ func TestReportContentSingleStepInstaller(t *testing.T) {
 
 	sc := InitCodeStepResult("DUMMY_STEP", nil, NoCleanUpRequired)
 	FailsOnCode(&sc, fmt.Errorf("DUMMY_ERROR"), "", nil)
-	r.Steps = sc.Array()
+	r.Steps = sc.Build()
 	_, err = r.Content()
 	assert.Nil(t, err)
 
@@ -53,7 +53,7 @@ func TestReportContentSingleStepInstallerNilError(t *testing.T) {
 
 	sc := InitCodeStepResult("DUMMY_STEP", nil, NoCleanUpRequired)
 	FailsOnCode(&sc, nil, "", nil)
-	r.Steps = sc.Array()
+	r.Steps = sc.Build()
 	_, err = r.Content()
 	assert.Nil(t, err)
 
@@ -67,7 +67,7 @@ func TestReportContentSingleStepDescriptor(t *testing.T) {
 
 	sc := InitCodeStepResult("DUMMY_STEP", nil, NoCleanUpRequired)
 	FailsOnDescriptor(&sc, fmt.Errorf("DUMMY_ERROR"), "", nil)
-	r.Steps = sc.Array()
+	r.Steps = sc.Build()
 	_, err = r.Content()
 	assert.Nil(t, err)
 
@@ -81,7 +81,7 @@ func TestReportContentSingleStepDescriptorNilError(t *testing.T) {
 
 	sc := InitCodeStepResult("DUMMY_STEP", nil, NoCleanUpRequired)
 	FailsOnDescriptor(&sc, nil, "", nil)
-	r.Steps = sc.Array()
+	r.Steps = sc.Build()
 	_, err = r.Content()
 	assert.Nil(t, err)
 

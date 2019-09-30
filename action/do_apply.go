@@ -24,7 +24,7 @@ var (
 	}
 )
 
-func providerSetup(rC *runtimeContext) StepResults {
+func providerSetup(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 	for _, p := range rC.cM.Environment().Providers {
 		sc := InitPlaybookStepResult("Running the setup phase", p, NoCleanUpRequired)
@@ -37,7 +37,7 @@ func providerSetup(rC *runtimeContext) StepResults {
 		setupProviderEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "setup_provider_"+p.Name, &sc)
 		if ko {
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 
 		setupProviderEfIn := setupProviderEf.Input
@@ -51,7 +51,7 @@ func providerSetup(rC *runtimeContext) StepResults {
 		bp.AddNamedMap("params", p.Parameters)
 		if ko := saveBaseParams(bp, setupProviderEfIn, &sc); ko {
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 
 		// Prepare extra vars
@@ -68,12 +68,12 @@ func providerSetup(rC *runtimeContext) StepResults {
 		}
 
 		// We launch the playbook
-		usable, err := rC.cM.Use(p, rC.cM.TemplateContext())
+		usable, err := rC.cM.Use(p)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 		}
 		defer usable.Release()
-		code, err := rC.aM.Execute(usable, setupPlaybook, exv, env, rC.cM.TemplateContext())
+		code, err := rC.aM.Execute(usable, setupPlaybook, exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  setupPlaybook,
@@ -82,14 +82,14 @@ func providerSetup(rC *runtimeContext) StepResults {
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 		sCs.Add(sc)
 	}
-	return *sCs
+	return *sCs, nil
 }
 
-func providerCreate(rC *runtimeContext) StepResults {
+func providerCreate(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 	for _, n := range rC.cM.Environment().NodeSets {
 		sc := InitPlaybookStepResult("Running the create phase", n, NoCleanUpRequired)
@@ -100,7 +100,7 @@ func providerCreate(rC *runtimeContext) StepResults {
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 
 		// Create a new buffer
@@ -145,26 +145,26 @@ func providerCreate(rC *runtimeContext) StepResults {
 		nodeCreateEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "create_"+n.Name, &sc)
 		if ko {
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 
 		if ko := saveBaseParams(bp, nodeCreateEf.Input, &sc); ko {
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 
 		// Prepare extra vars
 		exv := ansible.BuildExtraVars("", nodeCreateEf.Input, nodeCreateEf.Output, buffer)
 
 		// Make the component usable
-		usable, err := rC.cM.Use(p, rC.cM.TemplateContext())
+		usable, err := rC.cM.Use(p)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 		}
 		defer usable.Release()
 
 		// Launch the playbook
-		code, err := rC.aM.Execute(usable, createPlaybook, exv, env, rC.cM.TemplateContext())
+		code, err := rC.aM.Execute(usable, createPlaybook, exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  createPlaybook,
@@ -173,7 +173,7 @@ func providerCreate(rC *runtimeContext) StepResults {
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 		sCs.Add(sc)
 
@@ -195,10 +195,10 @@ func providerCreate(rC *runtimeContext) StepResults {
 			NoCleanUpRequired,
 		)
 	}
-	return *sCs
+	return *sCs, nil
 }
 
-func setupOrchestrator(rC *runtimeContext) StepResults {
+func setupOrchestrator(rC *runtimeContext) (StepResults, Result) {
 	o := rC.cM.Environment().Orchestrator
 	sCs := InitStepResults()
 	sc := InitPlaybookStepResult("Running the orchestrator setup phase", o, NoCleanUpRequired)
@@ -210,7 +210,7 @@ func setupOrchestrator(rC *runtimeContext) StepResults {
 	setupOrchestratorEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "setup_orchestrator", &sc)
 	if ko {
 		sCs.Add(sc)
-		return *sCs
+		return *sCs, nil
 	}
 
 	// Prepare parameters
@@ -218,7 +218,7 @@ func setupOrchestrator(rC *runtimeContext) StepResults {
 	bp.AddNamedMap("params", o.Parameters)
 	if ko := saveBaseParams(bp, setupOrchestratorEf.Input, &sc); ko {
 		sCs.Add(sc)
-		return *sCs
+		return *sCs, nil
 	}
 
 	// Prepare environment variables
@@ -235,14 +235,14 @@ func setupOrchestrator(rC *runtimeContext) StepResults {
 	exv := ansible.BuildExtraVars("", setupOrchestratorEf.Input, setupOrchestratorEf.Output, buffer)
 
 	// Make the component usable
-	usable, err := rC.cM.Use(o, rC.cM.TemplateContext())
+	usable, err := rC.cM.Use(o)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 	}
 	defer usable.Release()
 
 	// We launch the playbook
-	code, err := rC.aM.Execute(usable, setupPlaybook, exv, env, rC.cM.TemplateContext())
+	code, err := rC.aM.Execute(usable, setupPlaybook, exv, env)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  setupPlaybook,
@@ -251,14 +251,14 @@ func setupOrchestrator(rC *runtimeContext) StepResults {
 		}
 		FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 		sCs.Add(sc)
-		return *sCs
+		return *sCs, nil
 	}
 
 	sCs.Add(sc)
-	return *sCs
+	return *sCs, nil
 }
 
-func installOrchestrator(rC *runtimeContext) StepResults {
+func installOrchestrator(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 
 	for _, n := range rC.cM.Environment().NodeSets {
@@ -270,7 +270,7 @@ func installOrchestrator(rC *runtimeContext) StepResults {
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 
 		// Resolve the orchestrator
@@ -278,7 +278,7 @@ func installOrchestrator(rC *runtimeContext) StepResults {
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the orchestrator reference"), nil)
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 
 		// Create a new buffer
@@ -288,7 +288,7 @@ func installOrchestrator(rC *runtimeContext) StepResults {
 		installOrchestratorEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "install_orchestrator_"+n.Name, &sc)
 		if ko {
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 
 		// Prepare parameters
@@ -298,7 +298,7 @@ func installOrchestrator(rC *runtimeContext) StepResults {
 		bp.AddInterface("proxy", p.Proxy)
 		if ko := saveBaseParams(bp, installOrchestratorEf.Input, &sc); ko {
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 
 		// Prepare environment variables
@@ -315,14 +315,14 @@ func installOrchestrator(rC *runtimeContext) StepResults {
 		exv := ansible.BuildExtraVars("", installOrchestratorEf.Input, installOrchestratorEf.Output, buffer)
 
 		// Make the component usable
-		usable, err := rC.cM.Use(o, rC.cM.TemplateContext())
+		usable, err := rC.cM.Use(o)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 		}
 		defer usable.Release()
 
 		// Launch the playbook
-		code, err := rC.aM.Execute(usable, installPlaybook, exv, env, rC.cM.TemplateContext())
+		code, err := rC.aM.Execute(usable, installPlaybook, exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  installPlaybook,
@@ -331,14 +331,14 @@ func installOrchestrator(rC *runtimeContext) StepResults {
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
-			continue
+			return *sCs, nil
 		}
 		sCs.Add(sc)
 	}
-	return *sCs
+	return *sCs, nil
 }
 
-func deployStacks(rC *runtimeContext) StepResults {
+func deployStacks(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 	for _, st := range rC.cM.Environment().Stacks {
 		sc := InitPlaybookStepResult("Deploying stack", st, NoCleanUpRequired)
@@ -350,7 +350,7 @@ func deployStacks(rC *runtimeContext) StepResults {
 		stackEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, fName, &sc)
 		if ko {
 			sCs.Add(sc)
-			return *sCs
+			return *sCs, nil
 		}
 
 		// Create a new buffer
@@ -361,7 +361,7 @@ func deployStacks(rC *runtimeContext) StepResults {
 		bp.AddNamedMap("params", st.Parameters)
 		if ko := saveBaseParams(bp, stackEf.Input, &sc); ko {
 			sCs.Add(sc)
-			return *sCs
+			return *sCs, nil
 		}
 
 		// Prepare environment variables
@@ -396,7 +396,7 @@ func deployStacks(rC *runtimeContext) StepResults {
 		exv := ansible.BuildExtraVars("", stackEf.Input, stackEf.Output, buffer)
 
 		// Make the stack usable
-		ust, err := rC.cM.Use(st, rC.cM.TemplateContext())
+		ust, err := rC.cM.Use(st)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
 		}
@@ -405,7 +405,7 @@ func deployStacks(rC *runtimeContext) StepResults {
 		// If the stack is not self deployable, use the orchestrator deploy playbook
 		var target component.UsableComponent
 		if ok, _ := ust.ContainsFile(deployPlaybook); !ok {
-			o, err := rC.cM.Use(rC.cM.Environment().Orchestrator, rC.cM.TemplateContext())
+			o, err := rC.cM.Use(rC.cM.Environment().Orchestrator)
 			if err != nil {
 				FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 			}
@@ -416,7 +416,7 @@ func deployStacks(rC *runtimeContext) StepResults {
 		}
 
 		// Execute the playbook
-		code, err := rC.aM.Execute(target, deployPlaybook, exv, env, rC.cM.TemplateContext())
+		code, err := rC.aM.Execute(target, deployPlaybook, exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  deployPlaybook,
@@ -425,7 +425,7 @@ func deployStacks(rC *runtimeContext) StepResults {
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
-			return *sCs
+			return *sCs, nil
 		}
 
 		// Process hook : stack - deploy - after
@@ -448,8 +448,7 @@ func deployStacks(rC *runtimeContext) StepResults {
 
 		sCs.Add(sc)
 	}
-
-	return *sCs
+	return *sCs, nil
 }
 
 func buildBaseParam(rC *runtimeContext, nodeSetName string) ansible.BaseParam {

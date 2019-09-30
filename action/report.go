@@ -25,11 +25,6 @@ type (
 		Results []StepResult
 	}
 
-	//ReportFileContentNoTime is used to unmarshal the execution report
-	ReportFileContentNoTime struct {
-		Results []StepResultNoTime
-	}
-
 	//ReportFailures contains the steps who failed during the engine execution
 	ReportFailures struct {
 		playBookFailures []StepResult
@@ -61,7 +56,7 @@ func (er *ExecutionReport) aggregate(r ExecutionReport) {
 	res := make([]StepResult, 0)
 	var totalDuration time.Duration
 
-	for _, v := range er.Steps.Results {
+	for _, v := range er.Steps.Status {
 		i := int64(v.ExecutionTime / time.Millisecond)
 		if i == 0 {
 			v.ExecutionTime, _ = time.ParseDuration("1ms")
@@ -70,7 +65,7 @@ func (er *ExecutionReport) aggregate(r ExecutionReport) {
 		totalDuration = totalDuration + v.ExecutionTime
 	}
 
-	for _, v := range r.Steps.Results {
+	for _, v := range r.Steps.Status {
 		i := int64(v.ExecutionTime / time.Millisecond)
 		if i == 0 {
 			v.ExecutionTime, _ = time.ParseDuration("1ms")
@@ -85,7 +80,7 @@ func (er *ExecutionReport) aggregate(r ExecutionReport) {
 	}
 
 	er.Steps = StepResults{
-		Results:            res,
+		Status:             res,
 		TotalExecutionTime: totalDuration,
 	}
 }

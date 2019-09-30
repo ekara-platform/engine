@@ -88,18 +88,12 @@ nodes:
 	assert.Contains(t, cpnts, "ek-aws")
 	assert.Contains(t, cpnts, "ek-core")
 
-	// Looking for the availability of a deploy_compose1.yaml
-
+	// Looking for the availability of a deploy_compose.yaml
 	cm := tester.cM
-	rm := tester.cM.referenceManager
-	referencers := make([]model.ComponentReferencer, 0, 0)
-	for _, p := range rm.Parents {
-		referencers = append(referencers, p)
-	}
 
-	mPaths := cm.ContainsFile("deploy_compose.yaml", &model.TemplateContext{}, referencers...)
+	mPaths := cm.ContainsFile("deploy.yaml", cm.Environment().Orchestrator)
 	assert.True(t, len(mPaths.Paths) > 0)
-	assert.Equal(t, mPaths.Paths[0].Component().Name(), model.EkaraComponentId+"1")
+	assert.Equal(t, mPaths.Paths[0].Component().Name(), "ek-swarm")
 }
 
 func TestDownloadCustomParent(t *testing.T) {

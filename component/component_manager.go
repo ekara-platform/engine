@@ -15,18 +15,18 @@ var releaseNothing = func() {
 }
 
 type (
-	ComponentManager interface {
+	Manager interface {
 		Init(mainComponent model.Component) error
 		Ensure() error
 		Environment() *model.Environment
 		TemplateContext() *model.TemplateContext
-		ContainsFile(name string, data *model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths
-		ContainsDirectory(name string, data *model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths
-		Use(cr model.ComponentReferencer, data *model.TemplateContext) (UsableComponent, error)
+		ContainsFile(name string, in ...model.ComponentReferencer) MatchingPaths
+		ContainsDirectory(name string, in ...model.ComponentReferencer) MatchingPaths
+		Use(cr model.ComponentReferencer) (UsableComponent, error)
 	}
 
 	// ComponentManager downloads and keep track of ekara components on disk.
-	componentManager struct {
+	manager struct {
 		lC               util.LaunchContext
 		Directory        string
 		Paths            map[string]scm.FetchedComponent
@@ -38,33 +38,28 @@ type (
 	localRef struct {
 		component model.Component
 	}
-
-	// FileMap is used to Marshal the map of downloaded components
-	fileMap struct {
-		File map[string]string `yaml:"component_path"`
-	}
 )
 
 //CreateComponentManager creates a new component manager
-func CreateComponentManager(lC util.LaunchContext, baseDir string) ComponentManager {
-	c := &componentManager{
+func CreateComponentManager(lC util.LaunchContext, baseDir string) Manager {
+	c := &manager{
 		lC:          lC,
 		environment: nil,
 		Directory:   filepath.Join(baseDir, "components"),
 		Paths:       map[string]scm.FetchedComponent{},
-		tplC:        model.CreateTemplateContext(lC.ParamsFile()),
+		tplC:        model.CreateTemplateContext(lC.ExternalVars()),
 	}
 	c.environment = model.InitEnvironment()
 	c.referenceManager = CreateReferenceManager(c)
 	return c
 }
 
-func (cm *componentManager) isComponentFetched(id string) (val scm.FetchedComponent, present bool) {
+func (cm *manager) isComponentFetched(id string) (val scm.FetchedComponent, present bool) {
 	val, present = cm.Paths[id]
 	return
 }
 
-func (cm *componentManager) ensureOneComponent(c model.Component, data *model.TemplateContext) error {
+func (cm *manager) ensureOneComponent(c model.Component, data *model.TemplateContext) error {
 	cm.lC.Log().Printf("ensuring component: %s", c.Id)
 	path, fetched := cm.isComponentFetched(c.Id)
 	if !fetched {
@@ -112,37 +107,37 @@ func (cm *componentManager) ensureOneComponent(c model.Component, data *model.Te
 	return nil
 }
 
-func (cm *componentManager) Init(mainComponent model.Component) error {
+func (cm *manager) Init(mainComponent model.Component) error {
 	return cm.referenceManager.init(mainComponent)
 }
 
-func (cm *componentManager) Ensure() error {
+func (cm *manager) Ensure() error {
 	return cm.referenceManager.ensure()
 }
 
-func (cm *componentManager) Environment() *model.Environment {
+func (cm *manager) Environment() *model.Environment {
 	return cm.environment
 }
 
-func (cm *componentManager) TemplateContext() *model.TemplateContext {
+func (cm *manager) TemplateContext() *model.TemplateContext {
 	return cm.tplC
 }
 
-func (cm *componentManager) ContainsFile(name string, data *model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths {
-	return cm.contains(false, name, data, in...)
+func (cm *manager) ContainsFile(name string, in ...model.ComponentReferencer) MatchingPaths {
+	return cm.contains(false, name, in...)
 }
 
-func (cm *componentManager) ContainsDirectory(name string, data *model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths {
-	return cm.contains(true, name, data, in...)
+func (cm *manager) ContainsDirectory(name string, in ...model.ComponentReferencer) MatchingPaths {
+	return cm.contains(true, name, in...)
 }
 
-func (cm *componentManager) contains(isFolder bool, name string, data *model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths {
+func (cm *manager) contains(isFolder bool, name string, in ...model.ComponentReferencer) MatchingPaths {
 	res := MatchingPaths{
 		Paths: make([]MatchingPath, 0, 0),
 	}
 	if len(in) > 0 {
 		for _, v := range in {
-			uv, err := cm.Use(v, data)
+			uv, err := cm.Use(v)
 			if err != nil {
 				cm.lC.Log().Printf("An error occurred using the component %s : %s", v.ComponentName(), err.Error())
 			}
@@ -165,7 +160,7 @@ func (cm *componentManager) contains(isFolder bool, name string, data *model.Tem
 			lRef := localRef{
 				component: comp,
 			}
-			uv, err := cm.Use(lRef, data)
+			uv, err := cm.Use(lRef)
 			if err != nil {
 				cm.lC.Log().Printf("An error occurred using the component %s : %s", lRef.ComponentName(), err.Error())
 			}
@@ -192,10 +187,10 @@ func (cm *componentManager) contains(isFolder bool, name string, data *model.Tem
 //definition then the component will be duplicated and templated before
 // being returned as a UsableComponent.
 // Don't forget to Release the UsableComponent once is processing is over...
-func (cm *componentManager) Use(cr model.ComponentReferencer, data *model.TemplateContext) (UsableComponent, error) {
+func (cm *manager) Use(cr model.ComponentReferencer) (UsableComponent, error) {
 	c := cm.environment.Platform().Components[cr.ComponentName()]
 	if ok, patterns := c.Templatable(); ok {
-		path, err := runTemplate(*data, cm.Paths[cr.ComponentName()].LocalPath, patterns, cr)
+		path, err := runTemplate(cm.tplC, cm.Paths[cr.ComponentName()].LocalPath, patterns, cr)
 		if err != nil {
 			return usable{}, err
 		}

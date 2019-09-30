@@ -66,7 +66,7 @@ func TestUsableTemplateOneMatch(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp, err := cm.Use(env.Orchestrator, tester.cM.TemplateContext())
+		usableComp, err := cm.Use(env.Orchestrator)
 		assert.Nil(t, err)
 		assert.True(t, usableComp.Templated())
 		// Check the existence of the templated folder
@@ -107,14 +107,14 @@ func TestUsableTemplateMatch2Usable(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp1, err := cm.Use(env.Orchestrator, tester.cM.TemplateContext())
+		usableComp1, err := cm.Use(env.Orchestrator)
 		assert.Nil(t, err)
 		assert.True(t, usableComp1.Templated())
 		// Check the existence of the templated folder
 		assert.Equal(t, cptComp+1, tester.ComponentCount())
 		assert.True(t, tester.RootContainsComponent(usableComp1.RootPath()))
 
-		usableComp2, err := cm.Use(env.Orchestrator, tester.cM.TemplateContext())
+		usableComp2, err := cm.Use(env.Orchestrator)
 		assert.Nil(t, err)
 		assert.True(t, usableComp2.Templated())
 		// Check the existence of a new templated folder
@@ -156,7 +156,7 @@ func TestUsableTemplateDoubleMatch(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp, err := cm.Use(env.Orchestrator, tester.cM.TemplateContext())
+		usableComp, err := cm.Use(env.Orchestrator)
 		assert.Nil(t, err)
 		assert.True(t, usableComp.Templated())
 		// Check the existence of the templated folder
@@ -195,7 +195,7 @@ func TestUsableTemplateNoMatch(t *testing.T) {
 	assert.Nil(t, err)
 	ok, _ := oComp.Templatable()
 	if assert.True(t, ok) {
-		usableComp, err := cm.Use(env.Orchestrator, tester.cM.TemplateContext())
+		usableComp, err := cm.Use(env.Orchestrator)
 		assert.Nil(t, err)
 		assert.False(t, usableComp.Templated())
 		// Check that no templated folder has been created
@@ -224,7 +224,7 @@ func writecheckUsableCommon(t *testing.T, tester *ComponentTester, d string) {
 
 }
 
-func checkUsableCommon(t *testing.T, tester *ComponentTester, initialComp int) (model.Environment, ComponentManager) {
+func checkUsableCommon(t *testing.T, tester *ComponentTester, initialComp int) (model.Environment, Manager) {
 	err := tester.Init()
 	assert.Nil(t, err)
 	env := tester.Env()

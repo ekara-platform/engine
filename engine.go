@@ -10,12 +10,12 @@ import (
 	"github.com/ekara-platform/model"
 )
 
-//Engine  represents the Ekara engine in charge of dealing with the environment
-type Engine interface {
+//Ekara is the facade used to process environments.
+type Ekara interface {
 	Init() error
-	ComponentManager() component.ComponentManager
-	AnsibleManager() ansible.AnsibleManager
-	ActionManager() action.ActionManager
+	ComponentManager() component.Manager
+	AnsibleManager() ansible.Manager
+	ActionManager() action.Manager
 }
 
 type engine struct {
@@ -24,9 +24,9 @@ type engine struct {
 	directory string
 
 	// Subsystems
-	componentManager component.ComponentManager
-	ansibleManager   ansible.AnsibleManager
-	actionManager    action.ActionManager
+	componentManager component.Manager
+	ansibleManager   ansible.Manager
+	actionManager    action.Manager
 }
 
 // Create creates an environment descriptor based on the provided location.
@@ -36,7 +36,7 @@ type engine struct {
 //	Parameters:
 //		lC: the launch context
 //		workDir: the directory where the engine will do its work
-func Create(lC util.LaunchContext, workDir string) (Engine, error) {
+func Create(lC util.LaunchContext, workDir string) (Ekara, error) {
 	absWorkDir, err := filepath.Abs(workDir)
 	if err != nil {
 		return nil, err
@@ -54,7 +54,6 @@ func Create(lC util.LaunchContext, workDir string) (Engine, error) {
 	return eng, nil
 }
 
-
 func (eng *engine) Init() (err error) {
 	// Get CWD in case the descriptor is local
 	repo, ref := util.RepositoryFlavor(eng.lC.Location())
@@ -64,7 +63,7 @@ func (eng *engine) Init() (err error) {
 	}
 
 	// Create main component
-	mainRep, err := model.CreateRepository(model.Base{Url: wdURL}, repo, ref, eng.lC.Name())
+	mainRep, err := model.CreateRepository(model.Base{Url: wdURL}, repo, ref, eng.lC.DescriptorName())
 	if err != nil {
 		return
 	}
@@ -93,14 +92,14 @@ func (eng *engine) Init() (err error) {
 	return
 }
 
-func (eng *engine) ComponentManager() component.ComponentManager {
+func (eng *engine) ComponentManager() component.Manager {
 	return eng.componentManager
 }
 
-func (eng *engine) AnsibleManager() ansible.AnsibleManager {
+func (eng *engine) AnsibleManager() ansible.Manager {
 	return eng.ansibleManager
 }
 
-func (eng *engine) ActionManager() action.ActionManager {
+func (eng *engine) ActionManager() action.Manager {
 	return eng.actionManager
 }
