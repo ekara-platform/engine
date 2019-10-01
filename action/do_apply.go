@@ -401,6 +401,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 
 		// If the stack is not self deployable, use the orchestrator deploy playbook
 		var target component.UsableComponent
+		var deployExtraVars string
 		if ok, _ := ust.ContainsFile(deployPlaybook); !ok {
 			o, err := rC.cM.Use(rC.cM.Environment().Orchestrator)
 			if err != nil {
@@ -408,13 +409,14 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			}
 			defer o.Release()
 			target = o
+			deployExtraVars = fmt.Sprintf("component_path=%s stack_name=%s", ust.RootPath(), st.Name)
 		} else {
 			target = ust
 		}
 
-		// Prepare extra vars
+		// Prepare the extra vars
 		exv := ansible.BuildExtraVars(
-			fmt.Sprintf("component_path=%s stack_name=%s", target.RootPath(), st.Name),
+			deployExtraVars,
 			stackEf.Input,
 			stackEf.Output,
 			buffer)
