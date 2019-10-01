@@ -20,7 +20,7 @@ var (
 		ApplyActionID,
 		CheckActionID,
 		"Apply",
-		[]step{providerSetup, providerCreate, setupOrchestrator, installOrchestrator, deployStacks},
+		[]step{providerSetup, providerCreate, orchestratorSetup, orchestratorInstall, stackDeploy},
 	}
 )
 
@@ -198,7 +198,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 	return *sCs, nil
 }
 
-func setupOrchestrator(rC *runtimeContext) (StepResults, Result) {
+func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	o := rC.cM.Environment().Orchestrator
 	sCs := InitStepResults()
 	sc := InitPlaybookStepResult("Running the orchestrator setup phase", o, NoCleanUpRequired)
@@ -258,7 +258,7 @@ func setupOrchestrator(rC *runtimeContext) (StepResults, Result) {
 	return *sCs, nil
 }
 
-func installOrchestrator(rC *runtimeContext) (StepResults, Result) {
+func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 
 	for _, n := range rC.cM.Environment().NodeSets {
@@ -338,7 +338,7 @@ func installOrchestrator(rC *runtimeContext) (StepResults, Result) {
 	return *sCs, nil
 }
 
-func deployStacks(rC *runtimeContext) (StepResults, Result) {
+func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 	for _, st := range rC.cM.Environment().Stacks {
 		sc := InitPlaybookStepResult("Deploying stack", st, NoCleanUpRequired)
@@ -392,9 +392,6 @@ func deployStacks(rC *runtimeContext) (StepResults, Result) {
 			NoCleanUpRequired,
 		)
 
-		// Prepare extra vars
-		exv := ansible.BuildExtraVars("", stackEf.Input, stackEf.Output, buffer)
-
 		// Make the stack usable
 		ust, err := rC.cM.Use(st)
 		if err != nil {
@@ -414,6 +411,13 @@ func deployStacks(rC *runtimeContext) (StepResults, Result) {
 		} else {
 			target = ust
 		}
+
+		// Prepare extra vars
+		exv := ansible.BuildExtraVars(
+			fmt.Sprintf("component_path=%s stack_name=%s", target.RootPath(), st.Name),
+			stackEf.Input,
+			stackEf.Output,
+			buffer)
 
 		// Execute the playbook
 		code, err := rC.aM.Execute(target, deployPlaybook, exv, env)
