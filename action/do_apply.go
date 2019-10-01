@@ -409,7 +409,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			}
 			defer o.Release()
 			target = o
-			deployExtraVars = fmt.Sprintf("component_path=%s stack_name=%s", ust.RootPath(), st.Name)
+			deployExtraVars = fmt.Sprintf("stack_path=%s stack_name=%s", ust.RootPath(), st.Name)
 		} else {
 			target = ust
 		}
