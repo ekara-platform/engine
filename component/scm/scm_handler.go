@@ -88,7 +88,7 @@ func fetchThroughSccm(scm scmHandler, dir string, c model.Component, l *log.Logg
 		}
 		fc.LocalUrl = u
 
-		du, err := model.CreateUrl(filepath.Join(fc.LocalPath, fc.Descriptor))
+		du, err := model.CreateUrl(filepath.Join(fc.LocalUrl.AsFilePath(), fc.Descriptor))
 		if err != nil {
 			return fc, err
 		}

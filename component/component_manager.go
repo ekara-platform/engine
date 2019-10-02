@@ -94,11 +94,11 @@ func (cm *componentManager) ensureOneComponent(c model.Component, data *model.Te
 			cm.environment = cEnv
 			cm.lC.Log().Println("no customization required, it's the first built environment ")
 		} else {
-			// We don't want to customization the templates defined into the environment
+			// We don't want to customize the templates defined into the environment
 			// But instead we want to keep them into the component
 			cm.environment.Platform().KeepTemplates(c, cEnv.Templates)
 			cEnv.Templates = model.Patterns{}
-			cm.lC.Log().Println("partial environment should used for customization")
+			cm.lC.Log().Println("partial environment should be used for customization")
 			err = cm.environment.Customize(cEnv)
 
 			if err != nil {

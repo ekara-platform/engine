@@ -1,8 +1,9 @@
 package component
 
 import (
-	"github.com/ekara-platform/engine/util"
 	"testing"
+
+	"github.com/ekara-platform/engine/util"
 
 	"github.com/ekara-platform/model"
 
@@ -88,18 +89,11 @@ nodes:
 	assert.Contains(t, cpnts, "ek-aws")
 	assert.Contains(t, cpnts, "ek-core")
 
-	// Looking for the availability of a deploy_compose1.yaml
-
-	cm := tester.cM
-	rm := tester.cM.referenceManager
-	referencers := make([]model.ComponentReferencer, 0, 0)
-	for _, p := range rm.Parents {
-		referencers = append(referencers, p)
+	// Looking for the availability of a the deploy.yaml playbook
+	mPaths := tester.cM.ContainsFile("deploy.yaml", tester.cM.TemplateContext())
+	if assert.True(t, len(mPaths.Paths) > 0) {
+		assert.Equal(t, mPaths.Paths[0].Component().Name(), "ek-swarm")
 	}
-
-	mPaths := cm.ContainsFile("deploy_compose.yaml", &model.TemplateContext{}, referencers...)
-	assert.True(t, len(mPaths.Paths) > 0)
-	assert.Equal(t, mPaths.Paths[0].Component().Name(), model.EkaraComponentId+"1")
 }
 
 func TestDownloadCustomParent(t *testing.T) {
