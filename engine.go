@@ -1,11 +1,12 @@
 package engine
 
 import (
+	"path/filepath"
+
 	"github.com/ekara-platform/engine/action"
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
-	"path/filepath"
 
 	"github.com/ekara-platform/model"
 )
@@ -53,7 +54,6 @@ func Create(lC util.LaunchContext, workDir string) (Engine, error) {
 	eng.actionManager = action.CreateActionManager(lC, eng.componentManager, eng.ansibleManager)
 	return eng, nil
 }
-
 
 func (eng *engine) Init() (err error) {
 	// Get CWD in case the descriptor is local
