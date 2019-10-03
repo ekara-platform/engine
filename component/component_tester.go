@@ -25,7 +25,7 @@ type (
 		paths   []string
 		context util.LaunchContext
 		t       *testing.T
-		cM      *componentManager
+		cM      *manager
 	}
 
 	testRepo struct {
@@ -43,7 +43,7 @@ func CreateComponentTester(t *testing.T, lC util.LaunchContext) *ComponentTester
 		paths:   make([]string, 0, 0),
 	}
 	tester.Clean()
-	tester.cM = CreateComponentManager(lC, tester.workdir).(*componentManager)
+	tester.cM = CreateComponentManager(lC, tester.workdir).(*manager)
 	return tester
 }
 
@@ -61,7 +61,7 @@ func (t *ComponentTester) Init() error {
 		return err
 	}
 	repo, ref := util.RepositoryFlavor(t.context.Location())
-	mainRep, err := model.CreateRepository(model.Base{Url: wdURL}, repo, ref, t.context.Name())
+	mainRep, err := model.CreateRepository(model.Base{Url: wdURL}, repo, ref, t.context.DescriptorName())
 	if err != nil {
 		return err
 	}
@@ -294,7 +294,7 @@ func (t *ComponentTester) CheckStack(holder, stackName, compose string) {
 		assert.Equal(t.t, holder, stackC.Id)
 
 		// Check that the stack is usable and returns the correct component
-		usableStack, err := t.cM.Use(stack, t.cM.TemplateContext())
+		usableStack, err := t.cM.Use(stack)
 		defer usableStack.Release()
 		assert.Nil(t.t, err)
 		assert.NotNil(t.t, usableStack)

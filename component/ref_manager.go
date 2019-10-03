@@ -10,7 +10,7 @@ import (
 type (
 	ReferenceManager struct {
 		l  *log.Logger
-		cm *componentManager
+		cm *manager
 		//usedReferences stores the references of all components used
 		// into the parsed descriptors and all its parents
 		UsedReferences *model.UsedReferences
@@ -31,7 +31,7 @@ type (
 )
 
 //CreateReferenceManager creates a new references manager
-func CreateReferenceManager(cm *componentManager) *ReferenceManager {
+func CreateReferenceManager(cm *manager) *ReferenceManager {
 	return &ReferenceManager{
 		cm:                      cm,
 		UsedReferences:          model.CreateUsedReferences(),

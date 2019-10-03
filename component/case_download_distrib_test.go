@@ -90,7 +90,7 @@ nodes:
 	assert.Contains(t, cpnts, "ek-core")
 
 	// Looking for the availability of a the deploy.yaml playbook
-	mPaths := tester.cM.ContainsFile("deploy.yaml", tester.cM.TemplateContext())
+	mPaths := tester.cM.ContainsFile("deploy.yaml")
 	if assert.True(t, len(mPaths.Paths) > 0) {
 		assert.Equal(t, mPaths.Paths[0].Component().Name(), "ek-swarm")
 	}

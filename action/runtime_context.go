@@ -9,8 +9,8 @@ import (
 type (
 	runtimeContext struct {
 		lC util.LaunchContext
-		cM component.ComponentManager
-		aM ansible.AnsibleManager
+		cM component.Manager
+		aM ansible.Manager
 
 		ekaraError error
 		report     ReportFileContent
@@ -18,7 +18,7 @@ type (
 	}
 )
 
-func CreateRuntimeContext(lC util.LaunchContext, cM component.ComponentManager, aM ansible.AnsibleManager) *runtimeContext {
+func CreateRuntimeContext(lC util.LaunchContext, cM component.Manager, aM ansible.Manager) *runtimeContext {
 	// Initialization of the runtime context
 	rC := &runtimeContext{
 		lC: lC,

@@ -29,10 +29,10 @@ func TestStepAddedExecutionTime(t *testing.T) {
 	time.Sleep(10 * time.Millisecond)
 	results.Add(sc)
 
-	execTime := results.Results[0].ExecutionTime
+	execTime := results.Status[0].ExecutionTime
 
 	//Adding the step into the result should define its execution time
-	assert.NotEqual(t, results.Results[0].ExecutionTime, time.Duration(0))
+	assert.NotEqual(t, results.Status[0].ExecutionTime, time.Duration(0))
 
 	// It also should define the total of the execution time for the whole result
 	assert.NotEqual(t, results.TotalExecutionTime, time.Duration(0))
@@ -59,9 +59,9 @@ func TestStepArrayExecutionTime(t *testing.T) {
 
 	time.Sleep(10 * time.Millisecond)
 	//Calling Array() on the step should define its execution time
-	results := sc.Array()
-	execTime := results.Results[0].ExecutionTime
-	assert.NotEqual(t, results.Results[0].ExecutionTime, time.Duration(0))
+	results := sc.Build()
+	execTime := results.Status[0].ExecutionTime
+	assert.NotEqual(t, results.Status[0].ExecutionTime, time.Duration(0))
 
 	// It also should define the total of the execution time for the whole result
 	assert.NotEqual(t, results.TotalExecutionTime, time.Duration(0))

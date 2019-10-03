@@ -3,7 +3,6 @@ package action
 import (
 	"fmt"
 
-	"github.com/ekara-platform/engine/util"
 	"github.com/ekara-platform/model"
 )
 
@@ -20,34 +19,52 @@ var (
 	}
 )
 
-func doValidate(rC *runtimeContext) StepResults {
+type ValidateResult struct {
+	vErrs model.ValidationErrors
+}
+
+func (v ValidateResult) IsSuccess() bool {
+	return !v.vErrs.HasErrors()
+}
+
+func (v ValidateResult) AsJson() (string, error) {
+	b, err := v.vErrs.JSonContent()
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprint(b), nil
+}
+
+func (v ValidateResult) AsYaml() (string, error) {
+	return v.AsJson()
+}
+
+func (v ValidateResult) AsPlainText() ([]string, error) {
+	errors := make([]string, 0)
+	warnings := make([]string, 0)
+	for _, vErr := range v.vErrs.Errors {
+		if vErr.ErrorType == model.Error {
+			errors = append(errors, "ERROR "+vErr.Message)
+		} else {
+			warnings = append(warnings, "WARN  "+vErr.Message)
+		}
+	}
+	return append(errors, warnings...), nil
+}
+
+func doValidate(rC *runtimeContext) (StepResults, Result) {
 	sc := InitCodeStepResult("Validating the environment content", nil, NoCleanUpRequired)
-	ve := rC.ekaraError
-	if ve != nil {
-		vErrs, ok := ve.(model.ValidationErrors)
+	err := rC.ekaraError
+	if err != nil {
+		vErrs, ok := err.(model.ValidationErrors)
 		// if the error is not a "validation error" then we return it
 		if !ok {
-			FailsOnDescriptor(&sc, ve, fmt.Sprintf(ErrorParsingEnvironment, ve.Error()), nil)
+			FailsOnDescriptor(&sc, err, fmt.Sprintf(ErrorParsingEnvironment, err.Error()), nil)
+			return sc.Build(), nil
 		} else {
-			rC.lC.Log().Printf("%s\n", ve.Error())
-			b, e := vErrs.JSonContent()
-			if e != nil {
-				FailsOnCode(&sc, e, fmt.Sprintf(ErrorGeneric, e), nil)
-			}
-			// Output errors and warnings into the validation file report file
-			path, err := util.SaveFile(rC.lC.Ef().Output, validationOutputFile, b)
-			if err != nil {
-				// in case of error writing the report file
-				FailsOnCode(&sc, err, fmt.Sprintf(ErrorCreatingReportFile, path), nil)
-			}
-
-			if vErrs.HasErrors() {
-				// in case of validation error we stop
-				FailsOnDescriptor(&sc, ve, fmt.Sprintf(ErrorParsingDescriptor, ve.Error()), nil)
-			}
+			return sc.Build(), ValidateResult{vErrs: vErrs}
 		}
 	} else {
-		rC.lC.Log().Printf(LogValidationSuccessful)
+		return sc.Build(), ValidateResult{}
 	}
-	return sc.Array()
 }

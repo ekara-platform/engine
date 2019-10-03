@@ -1,12 +1,11 @@
 package component
 
 import (
-
 	"github.com/ekara-platform/engine/component/scm"
 	"github.com/ekara-platform/model"
 )
 
-func fetch(cm *componentManager, c model.Component) (scm.FetchedComponent, error) {
+func fetch(cm *manager, c model.Component) (scm.FetchedComponent, error) {
 	h, err := scm.GetHandler(cm.lC.Log(), cm.Directory, c)
 	if err != nil {
 		return scm.FetchedComponent{}, err

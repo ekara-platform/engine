@@ -1,13 +1,12 @@
 package action
 
 import (
-	"strconv"
 	"time"
 )
 
 type (
 	// ActionID represents the id of an action available on an environment
-	ActionID int
+	ActionID string
 
 	//Action represents an action available on an environment
 	Action struct {
@@ -24,24 +23,22 @@ type (
 
 const (
 	// NilActionID identifies no action, used to indicate that an action depends on nothing
-	NilActionID ActionID = iota
+	NilActionID ActionID = "NIL"
 	// ValidateActionID identifies the action of validating an environment model.
-	ValidateActionID
+	ValidateActionID = "VALIDATE"
 	// CheckActionID identifies the action of returning the validation results of an environment model.
-	CheckActionID
+	CheckActionID = "CHECK"
 	// FailOnErrorActionID identifies the action of failing if the environment model has validation errors.
-	FailOnErrorActionID
-	// DumpActionID identifies the acion of dumping the effective environment model.
-	DumpActionID
+	FailOnErrorActionID = "FAIL"
+	// DumpActionID identifies the action of dumping the effective environment model.
+	DumpActionID = "DUMP"
 	// ApplyActionID identifies the action of applying a descriptor to reality
-	ApplyActionID
-	// DestroyActionID identifies the action of destroying an environment.
-	DestroyActionID
+	ApplyActionID = "APPLY"
 )
 
 // String returns the string representation of the action id
 func (a ActionID) String() string {
-	return strconv.Itoa(int(a))
+	return string(a)
 }
 
 func allActions() []Action {
@@ -54,51 +51,55 @@ func allActions() []Action {
 }
 
 // run runs an action for the given action manager and contexts
-func (a Action) run(am *actionManager) (*ExecutionReport, error) {
+func (a Action) run(am *actionManager) (*ExecutionReport, Result, error) {
 	r := &ExecutionReport{}
 
 	if a.dependsOn != NilActionID {
+		// Obtain the dependent action
 		d, e := am.get(a.dependsOn)
 		if e != nil {
-			return r, e
-		}
-		// Run the dependent action
-		rep, e := d.run(am)
-		if e != nil {
-			return r, e
-		}
-		r.aggregate(*rep)
-		if rep.Error != nil {
-			return r, nil
+			return r, nil, e
 		}
 
+		// Run the dependent action and aggregate its report (dropping the intermediate result)
+		rep, _, e := d.run(am)
+		if e != nil {
+			return r, nil, e
+		}
+		r.aggregate(*rep)
+
+		// If the report contains an error return it
+		if rep.Error != nil {
+			return r, nil, rep.Error
+		}
 	}
 
 	am.lC.Log().Printf(LogRunningAction, a.name)
 
-	// Run the actions steps
-	rep := a.launch(CreateRuntimeContext(am.lC, am.cM, am.aM))
+	// Run the final action and return its result
+	rep, res := a.launch(CreateRuntimeContext(am.lC, am.cM, am.aM))
 	r.aggregate(rep)
-	return r, nil
+	return r, res, nil
 }
 
 // launch runs a slice of step functions
 //
 // If one step in the slice returns an error then the launch process will stop and
 // the cleanup will be invoked on all previously launched steps
-func (a Action) launch(rC *runtimeContext) ExecutionReport {
+func (a Action) launch(rC *runtimeContext) (ExecutionReport, Result) {
 	r := ExecutionReport{}
 
 	cleanups := []Cleanup{}
+	var finalRes Result
 	for _, f := range a.steps {
-		ctx := f(rC)
-		for _, sr := range ctx.Results {
+		sCs, res := f(rC)
+		for _, sr := range sCs.Status {
 			i := int64(sr.ExecutionTime / time.Millisecond)
 			if i == 0 {
 				sr.ExecutionTime, _ = time.ParseDuration("1ms")
 			}
 
-			r.Steps.Results = append(r.Steps.Results, sr)
+			r.Steps.Status = append(r.Steps.Status, sr)
 			r.Steps.TotalExecutionTime = r.Steps.TotalExecutionTime + sr.ExecutionTime
 
 			if sr.cleanUp != nil {
@@ -109,10 +110,12 @@ func (a Action) launch(rC *runtimeContext) ExecutionReport {
 			if e != nil {
 				cleanLaunched(cleanups, rC.lC)
 				r.Error = e
-				return r
+				return r, nil
 			}
 		}
+		if res != nil {
+			finalRes = res
+		}
 	}
-
-	return r
+	return r, finalRes
 }

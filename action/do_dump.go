@@ -1,15 +1,11 @@
 package action
 
 import (
-	"fmt"
+	"encoding/json"
+	"github.com/ekara-platform/model"
+	"strings"
 
 	"gopkg.in/yaml.v2"
-
-	"github.com/ekara-platform/engine/util"
-)
-
-const (
-	dumpYamlFile = "dump.yaml"
 )
 
 var (
@@ -21,19 +17,39 @@ var (
 	}
 )
 
-func doDump(rC *runtimeContext) StepResults {
-	sc := InitCodeStepResult("Dumping the effective environment model in "+dumpYamlFile, nil, NoCleanUpRequired)
+type DumpResult struct {
+	env *model.Environment
+}
 
-	environmentYaml, err := yaml.Marshal(rC.cM.Environment())
+func (r DumpResult) IsSuccess() bool {
+	return r.env != nil
+}
+
+func (r DumpResult) AsJson() (string, error) {
+	envJson, err := json.MarshalIndent(r.env, "", "    ")
 	if err != nil {
-		FailsOnDescriptor(&sc, err, fmt.Sprintf("Error marshalling the environment YAML: %s", err.Error()), nil)
+		return "", err
 	}
+	return string(envJson), nil
+}
 
-	path, err := util.SaveFile(rC.lC.Ef().Output, dumpYamlFile, environmentYaml)
+func (r DumpResult) AsYaml() (string, error) {
+	envYaml, err := yaml.Marshal(r.env)
 	if err != nil {
-		// in case of error writing the yaml dump
-		FailsOnDescriptor(&sc, err, fmt.Sprintf(ErrorCreatingDumpFile, path), nil)
+		return "", err
 	}
+	return string(envYaml), nil
+}
 
-	return sc.Array()
+func (r DumpResult) AsPlainText() ([]string, error) {
+	yamlEnv, err := r.AsYaml()
+	if err != nil {
+		return []string{}, err
+	}
+	return strings.Split(yamlEnv, "\n"), nil
+}
+
+func doDump(rC *runtimeContext) (StepResults, Result) {
+	sc := InitCodeStepResult("Retrieving aggregated environment model", nil, NoCleanUpRequired)
+	return sc.Build(), DumpResult{env: rC.cM.Environment()}
 }

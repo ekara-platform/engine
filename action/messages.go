@@ -28,10 +28,8 @@ const (
 	LogProcessingNode string = "Processing node: %s\n"
 	//LogRunningSetupFor  indicates that a setup step is being processes
 	LogRunningSetupFor string = "Running setup for provider %s"
-	//LogLaunchingAction  indicates that an action is being launched
-	LogLaunchingAction string = "Engine, launching action %s\n"
 	//LogRunningAction  indicates that an action is running
-	LogRunningAction string = "Engine, running action %s\n"
+	LogRunningAction string = "Running %s action\n"
 	//LogProcessingStackPlaybook  indicates that a stack is being deploy using a playbook
 	LogProcessingStackPlaybook string = "Processing playbook for stack: %s on node: %s"
 	//LogProcessingStackCompose  indicates that a stack is being deploy using a docker compose file

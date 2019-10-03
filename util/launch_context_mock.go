@@ -11,17 +11,14 @@ import (
 type (
 	//MockLaunchContext simulates the LaunchContext for testing purposes
 	MockLaunchContext struct {
-		exFolder             ExchangeFolder
 		logger               *log.Logger
-		qualifiedName        string
-		locationContent      string
-		sshPublicKeyContent  string
-		sshPrivateKeyContent string
-		name                 string
+		ef                   ExchangeFolder
+		location             string
 		user                 string
 		password             string
-		parameters           model.Parameters
-		ekError              error
+		sshPublicKeyContent  string
+		sshPrivateKeyContent string
+		externalVars         model.Parameters
 	}
 )
 
@@ -40,9 +37,9 @@ func CreateMockLaunchContextWithData(mainPath string, params model.Parameters, w
 
 func CreateMockLaunchContextWithDataAndFolder(mainPath string, params model.Parameters, ef ExchangeFolder, withLog bool) LaunchContext {
 	c := MockLaunchContext{
-		locationContent: mainPath,
-		parameters:      params,
-		exFolder:        ef,
+		location:     mainPath,
+		externalVars: params,
+		ef:           ef,
 	}
 	if withLog {
 		c.logger = log.New(os.Stdout, "TEST: ", log.Ldate|log.Ltime)
@@ -52,9 +49,9 @@ func CreateMockLaunchContextWithDataAndFolder(mainPath string, params model.Para
 	return &c
 }
 
-//Name simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) Name() string {
-	return lC.name
+//User simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) DescriptorName() string {
+	return "ekara.yaml"
 }
 
 //User simulates the corresponding method in LaunchContext for testing purposes
@@ -74,17 +71,12 @@ func (lC MockLaunchContext) Log() *log.Logger {
 
 //Ef simulates the corresponding method in LaunchContext for testing purposes
 func (lC MockLaunchContext) Ef() ExchangeFolder {
-	return lC.exFolder
-}
-
-//QualifiedName simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) QualifiedName() string {
-	return lC.qualifiedName
+	return lC.ef
 }
 
 //Location simulates the corresponding method in LaunchContext for testing purposes
 func (lC MockLaunchContext) Location() string {
-	return lC.locationContent
+	return lC.location
 }
 
 //Proxy simulates the corresponding method in LaunchContext for testing purposes
@@ -102,12 +94,7 @@ func (lC MockLaunchContext) SSHPrivateKey() string {
 	return lC.sshPrivateKeyContent
 }
 
-//Error simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) Error() error {
-	return lC.ekError
-}
-
 //ParamsFile simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) ParamsFile() model.Parameters {
-	return lC.parameters
+func (lC MockLaunchContext) ExternalVars() model.Parameters {
+	return lC.externalVars
 }
