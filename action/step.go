@@ -29,9 +29,9 @@ type (
 		Status          stepStatus
 		Context         stepInfo
 		FailureCause    failureCause `json:",omitempty"`
-		ErrorMessage    string      `json:",omitempty"`
-		ReadableMessage string      `json:",omitempty"`
-		RawContent      interface{} `json:",omitempty"`
+		ErrorMessage    string       `json:",omitempty"`
+		ReadableMessage string       `json:",omitempty"`
+		RawContent      interface{}  `json:",omitempty"`
 		ExecutionTime   time.Duration
 		error           error
 		cleanUp         Cleanup
