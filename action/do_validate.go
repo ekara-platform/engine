@@ -54,17 +54,6 @@ func (v ValidateResult) AsPlainText() ([]string, error) {
 
 func doValidate(rC *runtimeContext) (StepResults, Result) {
 	sc := InitCodeStepResult("Validating the environment content", nil, NoCleanUpRequired)
-	err := rC.ekaraError
-	if err != nil {
-		vErrs, ok := err.(model.ValidationErrors)
-		// if the error is not a "validation error" then we return it
-		if !ok {
-			FailsOnDescriptor(&sc, err, fmt.Sprintf(ErrorParsingEnvironment, err.Error()), nil)
-			return sc.Build(), nil
-		} else {
-			return sc.Build(), ValidateResult{vErrs: vErrs}
-		}
-	} else {
-		return sc.Build(), ValidateResult{}
-	}
+	vErrs := rC.cM.Environment().Validate()
+	return sc.Build(), ValidateResult{vErrs: vErrs}
 }
