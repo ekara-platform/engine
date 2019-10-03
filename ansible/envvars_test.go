@@ -36,7 +36,7 @@ func TestOsEnvVars(t *testing.T) {
 	ev := BuildEnvVars()
 	ev.AddDefaultOsVars()
 
-	assert.Len(t, ev.Content,4)
+	assert.Len(t, ev.Content, 4)
 	val, ok := ev.Content["HOSTNAME"]
 	assert.True(t, ok)
 	assert.Equal(t, val, "1")
@@ -71,11 +71,11 @@ func TestProxyEnvVars(t *testing.T) {
 
 	ev.AddProxy(model.Proxy{})
 
-	val, ok = ev.Content["http_proxy"]
+	_, ok = ev.Content["http_proxy"]
 	assert.False(t, ok)
-	val, ok = ev.Content["https_proxy"]
+	_, ok = ev.Content["https_proxy"]
 	assert.False(t, ok)
-	val, ok = ev.Content["no_proxy"]
+	_, ok = ev.Content["no_proxy"]
 	assert.False(t, ok)
 }
 
