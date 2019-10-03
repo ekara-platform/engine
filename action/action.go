@@ -82,10 +82,7 @@ func (a Action) run(am *actionManager) (*ExecutionReport, Result, error) {
 	return r, res, nil
 }
 
-// launch runs a slice of step functions
-//
-// If one step in the slice returns an error then the launch process will stop and
-// the cleanup will be invoked on all previously launched steps
+// launch runs the action on the given contenxt
 func (a Action) launch(rC *runtimeContext) (ExecutionReport, Result) {
 	r := ExecutionReport{}
 
