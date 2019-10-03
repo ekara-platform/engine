@@ -69,6 +69,7 @@ nodes:
 	assert.NotNil(t, cm)
 
 	usableComp, err := cm.Use(env.Orchestrator)
+	assert.Nil(t, err)
 	defer usableComp.Release()
 	// Check that the comp1 used is the one defined into the main descriptor
 	tester.CheckFile(usableComp, "content.txt", "comp content overwriten in descriptor")
@@ -143,6 +144,7 @@ nodes:
 	assert.NotNil(t, cm)
 
 	usableComp, err := cm.Use(env.Orchestrator)
+	assert.Nil(t, err)
 	defer usableComp.Release()
 	// Check that the comp1 used is the one defined into the main descriptor
 	tester.CheckFile(usableComp, "content.txt", "comp content overwriten in descriptor")
