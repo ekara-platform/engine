@@ -16,7 +16,7 @@ type Result interface {
 }
 
 type (
-	//ActionManager is the manager of all action available into the engine
+	//Manager is the manager of all action available into the engine
 	Manager interface {
 		// Run executes an engine action
 		Run(id ActionID) (Result, error)
