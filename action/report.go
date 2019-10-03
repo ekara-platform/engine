@@ -97,7 +97,7 @@ func (rfc ReportFileContent) hasFailure() (bool, ReportFailures) {
 	r := ReportFailures{}
 
 	for _, v := range rfc.Results {
-		if v.Status == STEP_STATUS_FAILURE {
+		if v.Status == stepStatusFailure {
 
 			switch v.FailureCause {
 			case codeFailure, descriptorFailure:

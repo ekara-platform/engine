@@ -11,4 +11,3 @@ func RepositoryFlavor(url string) (string, string) {
 	}
 	return url, ""
 }
-

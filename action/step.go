@@ -44,36 +44,42 @@ type (
 
 const (
 
-	// Step execution successful
-	STEP_STATUS_FAILURE stepStatus = "Failure"
-	// Step execution failed
-	STEP_STATUS_SUCCESS stepStatus = "Success"
-	// The step belongs internally to Ekara
-	STEP_CONTEXT_CODE stepInfo = "Ekara execution"
-	// The step deals with the environment descriptor
-	STEP_CONTEXT_DESCRIPTOR stepInfo = "Environment descriptor content"
-	//The step deals with the parameter file used to fill descriptor variables
-	STEP_CONTEXT_PARAMETER_FILE stepInfo = "Environment parameter file"
-	//The step purpose is to launch an ansible playbook
-	STEP_CONTEXT_PLABOOK stepInfo = "Playbook execution"
-	// The step purpose is to launch a hook through an ansible playbook
-	STEP_CONTEXT_HOOK_PLABOOK stepInfo = "Hook execution"
+	//stepStatusFailure Step execution successful
+	stepStatusFailure stepStatus = "Failure"
+
+	//stepStatusSuccess Step execution failed
+	stepStatusSuccess stepStatus = "Success"
+
+	//stepContextCode The step belongs internally to Ekara
+	stepContextCode stepInfo = "Ekara execution"
+
+	//stepContextDescriptor The step deals with the environment descriptor
+	stepContextDescriptor stepInfo = "Environment descriptor content"
+
+	//stepContextParameterFIle The step deals with the parameter file used to fill descriptor variables
+	stepContextParameterFIle stepInfo = "Environment parameter file"
+
+	//stepContextPlaybook The step purpose is to launch an ansible playbook
+	stepContextPlaybook stepInfo = "Playbook execution"
+
+	//stepContextHookPlaybook The step purpose is to launch a hook through an ansible playbook
+	stepContextHookPlaybook stepInfo = "Hook execution"
 )
 
 // InitCodeStepResult initializes a step result to run Ekara code
-var InitCodeStepResult = initResult(STEP_CONTEXT_CODE)
+var InitCodeStepResult = initResult(stepContextCode)
 
 // InitDescriptorStepResult initializes a step result to process the environment descriptor
-var InitDescriptorStepResult = initResult(STEP_CONTEXT_DESCRIPTOR)
+var InitDescriptorStepResult = initResult(stepContextDescriptor)
 
 // InitParameterStepResult initializes a step results to process the parameter file
-var InitParameterStepResult = initResult(STEP_CONTEXT_PARAMETER_FILE)
+var InitParameterStepResult = initResult(stepContextParameterFIle)
 
 // InitPlaybookStepResult initializes a step results to execute an ansible playbook
-var InitPlaybookStepResult = initResult(STEP_CONTEXT_PLABOOK)
+var InitPlaybookStepResult = initResult(stepContextPlaybook)
 
 // InitHookStepResult initializes a step results to execute a hook through an ansible playbook
-var InitHookStepResult = initResult(STEP_CONTEXT_HOOK_PLABOOK)
+var InitHookStepResult = initResult(stepContextHookPlaybook)
 
 // initResult initializes a step results for the given context
 func initResult(o stepInfo) func(stepName string, appliedTo model.Describable, c Cleanup) StepResult {
@@ -87,12 +93,12 @@ func initResult(o stepInfo) func(stepName string, appliedTo model.Describable, c
 			result.AppliedToName = appliedTo.DescName()
 		}
 		result.cleanUp = c
-		result.Status = STEP_STATUS_SUCCESS
+		result.Status = stepStatusSuccess
 		return result
 	}
 }
 
-// Array() initializes an array with the step result
+// Build() initializes an array with the step result
 func (sr StepResult) Build() StepResults {
 	sr.ExecutionTime = time.Since(sr.startedAt)
 	i := int64(sr.ExecutionTime / time.Millisecond)
@@ -124,7 +130,7 @@ func InitStepResults() *StepResults {
 	return sRs
 }
 
-// Content returns the json representation of the report steps
+// MarshalJSON returns the json representation of the report steps
 func (sr *StepResults) MarshalJSON() (b []byte, e error) {
 	temp := struct {
 		Results            []StepResult
@@ -137,6 +143,7 @@ func (sr *StepResults) MarshalJSON() (b []byte, e error) {
 	return
 }
 
+// MarshalJSON returns the json representation of a report step
 func (sr *StepResult) MarshalJSON() (b []byte, e error) {
 	temp := struct {
 		StepName        string

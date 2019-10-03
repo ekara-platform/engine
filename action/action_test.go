@@ -63,7 +63,7 @@ func TestInitCodeStep(t *testing.T) {
 	assert.Equal(t, sc.StepName, "stepName")
 	assert.Equal(t, sc.AppliedToName, "")
 	assert.Equal(t, sc.AppliedToType, "")
-	assert.Equal(t, sc.Context, STEP_CONTEXT_CODE)
+	assert.Equal(t, sc.Context, stepContextCode)
 	assert.NotNil(t, sc.cleanUp)
 	checkNoError(t, sc)
 
@@ -79,7 +79,7 @@ func TestInitDescriptorStep(t *testing.T) {
 	assert.Equal(t, sc.StepName, "stepName")
 	assert.Equal(t, sc.AppliedToType, "")
 	assert.Equal(t, sc.AppliedToName, "")
-	assert.Equal(t, sc.Context, STEP_CONTEXT_DESCRIPTOR)
+	assert.Equal(t, sc.Context, stepContextDescriptor)
 	assert.NotNil(t, sc.cleanUp)
 	checkNoError(t, sc)
 
@@ -95,7 +95,7 @@ func TestInitParamStep(t *testing.T) {
 	assert.Equal(t, sc.StepName, "stepName")
 	assert.Equal(t, sc.AppliedToType, "")
 	assert.Equal(t, sc.AppliedToName, "")
-	assert.Equal(t, sc.Context, STEP_CONTEXT_PARAMETER_FILE)
+	assert.Equal(t, sc.Context, stepContextParameterFIle)
 	assert.NotNil(t, sc.cleanUp)
 	checkNoError(t, sc)
 
@@ -111,7 +111,7 @@ func TestInitPlaybookStep(t *testing.T) {
 	assert.Equal(t, sc.StepName, "stepName")
 	assert.Equal(t, sc.AppliedToType, "")
 	assert.Equal(t, sc.AppliedToName, "")
-	assert.Equal(t, sc.Context, STEP_CONTEXT_PLABOOK)
+	assert.Equal(t, sc.Context, stepContextPlaybook)
 	assert.NotNil(t, sc.cleanUp)
 	checkNoError(t, sc)
 
@@ -121,7 +121,7 @@ func TestInitPlaybookStep(t *testing.T) {
 }
 
 func checkNoError(t *testing.T, sc StepResult) {
-	assert.Equal(t, sc.Status, STEP_STATUS_SUCCESS)
+	assert.Equal(t, sc.Status, stepStatusSuccess)
 	assert.Equal(t, string(sc.FailureCause), "")
 	assert.Nil(t, sc.error)
 	assert.Equal(t, sc.ErrorMessage, "")

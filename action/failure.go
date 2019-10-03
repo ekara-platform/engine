@@ -51,7 +51,7 @@ func failOn(fc failureCause) func(sr *StepResult, err error, detail string, cont
 			sr.ErrorMessage = err.Error()
 		}
 		sr.ReadableMessage = detail
-		sr.Status = STEP_STATUS_FAILURE
+		sr.Status = stepStatusFailure
 		if content != nil {
 			bs, _ := json.Marshal(content)
 			sr.RawContent = string(bs)
