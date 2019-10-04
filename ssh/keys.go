@@ -9,6 +9,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+//Generate creates new public an private SSH keys
 func Generate() (public []byte, private []byte, err error) {
 	bitSize := 4096
 	privateKey, err := generatePrivateKey(bitSize)

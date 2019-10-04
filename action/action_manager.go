@@ -8,10 +8,15 @@ import (
 	"github.com/ekara-platform/engine/util"
 )
 
+//Result represents the result of an action
 type Result interface {
+	//IsSuccess returns true id the action execution was successful
 	IsSuccess() bool
+	//AsJson returns the action returned content as JSON
 	AsJson() (string, error)
+	//AsYaml returns the action returned content as YAML
 	AsYaml() (string, error)
+	//AsPlainText returns the action returned content as plain text
 	AsPlainText() ([]string, error)
 }
 
