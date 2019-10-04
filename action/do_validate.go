@@ -19,14 +19,17 @@ var (
 	}
 )
 
+//ValidateResult contains validation errors ready to be serialized
 type ValidateResult struct {
 	vErrs model.ValidationErrors
 }
 
+//IsSuccess returns true id the validate execution was successful
 func (v ValidateResult) IsSuccess() bool {
 	return !v.vErrs.HasErrors()
 }
 
+//AsJson returns the validation content as JSON
 func (v ValidateResult) AsJson() (string, error) {
 	b, err := v.vErrs.JSonContent()
 	if err != nil {
@@ -35,10 +38,12 @@ func (v ValidateResult) AsJson() (string, error) {
 	return fmt.Sprint(b), nil
 }
 
+//AsYaml returns the validation content as YAML
 func (v ValidateResult) AsYaml() (string, error) {
 	return v.AsJson()
 }
 
+//AsPlainText returns the validation content as plain text
 func (v ValidateResult) AsPlainText() ([]string, error) {
 	errors := make([]string, 0)
 	warnings := make([]string, 0)

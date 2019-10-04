@@ -2,8 +2,9 @@ package action
 
 import (
 	"encoding/json"
-	"github.com/ekara-platform/model"
 	"strings"
+
+	"github.com/ekara-platform/model"
 
 	"gopkg.in/yaml.v2"
 )
@@ -17,14 +18,17 @@ var (
 	}
 )
 
+//DumpResult contains the built environment ready to be serialized
 type DumpResult struct {
 	env *model.Environment
 }
 
+//IsSuccess returns true id the dump execution was successful
 func (r DumpResult) IsSuccess() bool {
 	return r.env != nil
 }
 
+//AsJson returns the dump content as JSON
 func (r DumpResult) AsJson() (string, error) {
 	envJson, err := json.MarshalIndent(r.env, "", "    ")
 	if err != nil {
@@ -33,6 +37,7 @@ func (r DumpResult) AsJson() (string, error) {
 	return string(envJson), nil
 }
 
+//AsYaml returns the dump content as YAML
 func (r DumpResult) AsYaml() (string, error) {
 	envYaml, err := yaml.Marshal(r.env)
 	if err != nil {
@@ -41,6 +46,7 @@ func (r DumpResult) AsYaml() (string, error) {
 	return string(envYaml), nil
 }
 
+//AsPlainText returns the dump content as plain text
 func (r DumpResult) AsPlainText() ([]string, error) {
 	yamlEnv, err := r.AsYaml()
 	if err != nil {

@@ -13,7 +13,7 @@ import (
 )
 
 type (
-	// A AnsibleManager is capable of executing an ansible playbook
+	//Manager executes an ansible playbook
 	Manager interface {
 		// Execute runs a playbook within a component
 		//
