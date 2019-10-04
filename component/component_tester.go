@@ -20,6 +20,7 @@ import (
 )
 
 type (
+	//ComponentTester is an helper user to run unit tests based on local GIT repositories
 	ComponentTester struct {
 		workdir string
 		paths   []string
@@ -35,6 +36,7 @@ type (
 	}
 )
 
+//CreateComponentTester creates a new ComponentTester
 func CreateComponentTester(t *testing.T, lC util.LaunchContext) *ComponentTester {
 	tester := &ComponentTester{
 		workdir: "testdata/gitwork",
@@ -47,6 +49,7 @@ func CreateComponentTester(t *testing.T, lC util.LaunchContext) *ComponentTester
 	return tester
 }
 
+//Clean deletes all the content created locally during a test
 func (t *ComponentTester) Clean() {
 	os.RemoveAll("./testdata/gittest/")
 	os.RemoveAll(t.workdir)
@@ -55,6 +58,8 @@ func (t *ComponentTester) Clean() {
 	}
 }
 
+//Init initializes the ComponentTester and build the environment
+// bases on the launch context used during the tester's creation.
 func (t *ComponentTester) Init() error {
 	wdURL, err := model.GetCurrentDirectoryURL(t.context.Log())
 	if err != nil {
@@ -76,30 +81,8 @@ func (t *ComponentTester) Init() error {
 	//t.context.templateContext.Model = t.Env()
 }
 
-func (t *ComponentTester) Env() model.Environment {
-	return *t.cM.Environment()
-}
-
-func (t *ComponentTester) AssertComponentsContainsExactly(paths ...string) bool {
-	files, _ := ioutil.ReadDir(t.workdir + "/components/")
-	assert.Equal(t.t, len(paths), len(files))
-	return t.AssertComponentsContains(paths...)
-}
-
-func (t *ComponentTester) AssertComponentsContains(paths ...string) bool {
-	for _, v := range paths {
-		_, err := os.Stat(filepath.Join(t.workdir, "components", v))
-		if err == nil {
-			continue
-		}
-		log.Println(err.Error())
-		if os.IsNotExist(err) {
-			return assert.Fail(t.t, fmt.Sprintf("workdir doesn't contains %s", v))
-		}
-	}
-	return true
-}
-
+//CreateRepDefaultDescriptor creates a new component folder corresponding
+// to the given path and write into it an empty descriptor
 func (t *ComponentTester) CreateRepDefaultDescriptor(path string) *testRepo {
 	t.paths = append(t.paths, path)
 	rep, err := git.PlainInit(path, false)
@@ -113,6 +96,8 @@ func (t *ComponentTester) CreateRepDefaultDescriptor(path string) *testRepo {
 	return res
 }
 
+//CreateRep creates a new component folder corresponding
+// to the given path
 func (t *ComponentTester) CreateRep(path string) *testRepo {
 	t.paths = append(t.paths, path)
 	rep, err := git.PlainInit(path, false)
@@ -124,24 +109,8 @@ func (t *ComponentTester) CreateRep(path string) *testRepo {
 	}
 }
 
-func (t *ComponentTester) ComponentCount() int {
-	files, _ := ioutil.ReadDir(filepath.Join(t.workdir, "components"))
-	res := 0
-	for _, f := range files {
-		if f.IsDir() {
-			res++
-		}
-	}
-	return res
-}
-
-func (t *ComponentTester) RootContainsComponent(path string) bool {
-	if info, err := os.Stat(path); os.IsNotExist(err) || !info.IsDir() {
-		return false
-	}
-	return true
-}
-
+//WriteCommit commit into the repo the given content into
+// a file named as the provided name
 func (r *testRepo) WriteCommit(name, content string) {
 	co := &git.CommitOptions{
 		Author: &object.Signature{
@@ -169,6 +138,8 @@ func (r *testRepo) WriteCommit(name, content string) {
 	}
 }
 
+//WriteCommit create the desired folder and then commit into it the given content into
+// a file named as the provided name
 func (r *testRepo) WriteFolderCommit(folder, name, content string) {
 	co := &git.CommitOptions{
 		Author: &object.Signature{
@@ -202,8 +173,8 @@ func (r *testRepo) WriteFolderCommit(folder, name, content string) {
 	}
 }
 
+//CreateBranch creates a branch into the repo
 func (r *testRepo) CreateBranch(branch string) {
-
 	branch = fmt.Sprintf("refs/heads/%s", branch)
 	bo := &git.CheckoutOptions{
 		Create: true,
@@ -221,8 +192,8 @@ func (r *testRepo) CreateBranch(branch string) {
 	}
 }
 
+//Checkout Switch to the desired branch
 func (r *testRepo) Checkout(branch string) {
-
 	branch = fmt.Sprintf("refs/heads/%s", branch)
 	bo := &git.CheckoutOptions{
 		Create: false,
@@ -240,6 +211,7 @@ func (r *testRepo) Checkout(branch string) {
 	}
 }
 
+//Tag creates a tag into the repo
 func (r *testRepo) Tag(tag string) {
 
 	to := &git.CreateTagOptions{
@@ -256,12 +228,65 @@ func (r *testRepo) Tag(tag string) {
 	}
 }
 
-func (t *ComponentTester) CheckFile(u UsableComponent, file, wanted string) {
-	b, err := ioutil.ReadFile(filepath.Join(u.RootPath(), file))
-	assert.Nil(t.t, err)
-	assert.Equal(t.t, wanted, string(b))
+//Env returns the environment built during the test
+func (t *ComponentTester) Env() model.Environment {
+	return *t.cM.Environment()
 }
 
+//AssertComponentsContainsExactly asserts that the fetched component folder
+// contains exactly the components identified by the provided ids
+func (t *ComponentTester) AssertComponentsContainsExactly(ids ...string) bool {
+	files, _ := ioutil.ReadDir(t.workdir + "/components/")
+	assert.Equal(t.t, len(ids), len(files))
+	return t.AssertComponentsContains(ids...)
+}
+
+//AssertComponentsContains asserts that the fetched component folder
+// contains at least the components identified by the provided ids
+func (t *ComponentTester) AssertComponentsContains(paths ...string) bool {
+	for _, v := range paths {
+		_, err := os.Stat(filepath.Join(t.workdir, "components", v))
+		if err == nil {
+			continue
+		}
+		log.Println(err.Error())
+		if os.IsNotExist(err) {
+			return assert.Fail(t.t, fmt.Sprintf("workdir doesn't contains %s", v))
+		}
+	}
+	return true
+}
+
+//ComponentCount returns the number of components fetched into the
+// component folder
+func (t *ComponentTester) ComponentCount() int {
+	files, _ := ioutil.ReadDir(filepath.Join(t.workdir, "components"))
+	res := 0
+	for _, f := range files {
+		if f.IsDir() {
+			res++
+		}
+	}
+	return res
+}
+
+//RootContainsComponent returns true the components tester contains
+// the given path
+func (t *ComponentTester) RootContainsComponent(path string) bool {
+	if info, err := os.Stat(path); os.IsNotExist(err) || !info.IsDir() {
+		return false
+	}
+	return true
+}
+
+//CheckFile asserts than a usable component contains a file with the desirec content
+func (t *ComponentTester) CheckFile(u UsableComponent, file, desiredContent string) {
+	b, err := ioutil.ReadFile(filepath.Join(u.RootPath(), file))
+	assert.Nil(t.t, err)
+	assert.Equal(t.t, desiredContent, string(b))
+}
+
+//CheckParameter asserts that the template context contains the given parameter
 func (t *ComponentTester) CheckParameter(key, value string) {
 	v, ok := t.cM.TemplateContext().Vars[key]
 	if assert.True(t.t, ok) {
@@ -269,6 +294,7 @@ func (t *ComponentTester) CheckParameter(key, value string) {
 	}
 }
 
+//CheckSpecificParameter asserts that a parameter contains the value
 func (t *ComponentTester) CheckSpecificParameter(p model.Parameters, key, value string) {
 	v, ok := p[key]
 	if assert.True(t.t, ok) {
@@ -276,6 +302,7 @@ func (t *ComponentTester) CheckSpecificParameter(p model.Parameters, key, value 
 	}
 }
 
+//CheckSpecificEnvVar asserts that an environment variable contains the value
 func (t *ComponentTester) CheckSpecificEnvVar(env model.EnvVars, key, value string) {
 	v, ok := env[key]
 	if assert.True(t.t, ok) {
@@ -283,7 +310,9 @@ func (t *ComponentTester) CheckSpecificEnvVar(env model.EnvVars, key, value stri
 	}
 }
 
-func (t *ComponentTester) CheckStack(holder, stackName, compose string) {
+// CheckStack asserts than the environment contains the stack, then check that the stack's component
+// is usable and finally check that the stack containts the provide compose content .
+func (t *ComponentTester) CheckStack(holder, stackName, composeContent string) {
 	stack, ok := t.cM.Environment().Stacks[stackName]
 	if assert.True(t.t, ok) {
 		//Check that the self contained stack has been well built
@@ -300,6 +329,6 @@ func (t *ComponentTester) CheckStack(holder, stackName, compose string) {
 		assert.NotNil(t.t, usableStack)
 		assert.False(t.t, usableStack.Templated())
 		// Check that the stacks contains the compose/playbook file
-		t.CheckFile(usableStack, "docker_compose.yml", compose)
+		t.CheckFile(usableStack, "docker_compose.yml", composeContent)
 	}
 }

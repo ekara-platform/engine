@@ -10,23 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// when the descriptor doesn't define its own specific parent then
-// the defaulted one should be used
-func TestDownloadDefaultParent(t *testing.T) {
-	p, _ := model.CreateParameters(map[string]interface{}{
-		"ek": map[interface{}]interface{}{
-			"aws": map[interface{}]interface{}{
-				"region": "dummy",
-				"accessKey": map[interface{}]interface{}{
-					"id":     "dummy",
-					"secret": "dummy",
-				},
-			},
-		},
-	})
+func TestDownloadNoParent(t *testing.T) {
+
 	mainPath := "./testdata/gittest/descriptor"
 
-	c := util.CreateMockLaunchContextWithData(mainPath, p, false)
+	c := util.CreateMockLaunchContextWithData(mainPath, model.Parameters{}, false)
 	tester := CreateComponentTester(t, c)
 	defer tester.Clean()
 
@@ -53,17 +41,71 @@ nodes:
 	assert.Nil(t, err)
 
 	refM := tester.cM.referenceManager
-	assert.Equal(t, len(refM.UsedReferences.Refs), 3)
+	assert.Equal(t, len(refM.UsedReferences.Refs), 1)
+	assert.True(t, refM.UsedReferences.IdUsed("ek-aws"))
+
+	assert.Equal(t, len(refM.ReferencedComponents.Refs), 0)
+
+	assert.Len(t, refM.Parents, 0)
+}
+
+// when the descriptor doesn't define its own specific parent then
+// the defaulted one should be used
+func TestDownloadDistribution(t *testing.T) {
+	p, _ := model.CreateParameters(map[string]interface{}{
+		"ek": map[interface{}]interface{}{
+			"aws": map[interface{}]interface{}{
+				"region": "dummy",
+				"accessKey": map[interface{}]interface{}{
+					"id":     "dummy",
+					"secret": "dummy",
+				},
+			},
+		},
+	})
+	mainPath := "./testdata/gittest/descriptor"
+
+	c := util.CreateMockLaunchContextWithData(mainPath, p, false)
+	tester := CreateComponentTester(t, c)
+	defer tester.Clean()
+
+	repDesc := tester.CreateRep(mainPath)
+
+	descContent := `
+name: ekaraDemoVar
+qualifier: dev
+
+ekara:
+  parent:
+    repository: ekara-platform/distribution
+    ref: v19.9
+
+# Following content just to force the download of ek-swam and ek-aws
+
+providers:
+  ek-aws:
+    component: ek-aws
+nodes:
+  node1:
+    instances: 1
+    provider:
+      name: ek-aws
+`
+	repDesc.WriteCommit("ekara.yaml", descContent)
+
+	err := tester.Init()
+	assert.Nil(t, err)
+
+	refM := tester.cM.referenceManager
+	assert.Equal(t, len(refM.UsedReferences.Refs), 2)
 
 	assert.True(t, refM.UsedReferences.IdUsed("ek-swarm"))
 	assert.True(t, refM.UsedReferences.IdUsed("ek-aws"))
-	assert.True(t, refM.UsedReferences.IdUsed("ek-core"))
 
-	assert.Equal(t, len(refM.ReferencedComponents.Refs), 4)
+	assert.Equal(t, len(refM.ReferencedComponents.Refs), 3)
 	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-swarm"))
 	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-aws"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-openstack"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-core"))
+	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-swarm-visualizer"))
 
 	assert.Len(t, refM.Parents, 1)
 	// Check that the parent has been renamed base on its position
@@ -71,23 +113,21 @@ nodes:
 
 	// Check the referenced components has been cleaned
 	refM.ReferencedComponents.Clean(*refM.UsedReferences)
-	assert.Equal(t, len(refM.ReferencedComponents.Refs), 3)
+	assert.Equal(t, len(refM.ReferencedComponents.Refs), 2)
 	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-swarm"))
 	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-aws"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-core"))
 
 	env := tester.Env()
 	assert.NotNil(t, env)
 	// The defaulted parent should comme with ek-aws as provider
 	// and ek-swarm as orchestrator
-	tester.AssertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "ek-swarm", "ek-aws", "ek-core")
+	tester.AssertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "ek-swarm", "ek-aws")
 	cpnts := env.Platform().Components
-	assert.Equal(t, len(cpnts), 5)
+	assert.Equal(t, len(cpnts), 4)
 	assert.Contains(t, cpnts, "__main__")
 	assert.Contains(t, cpnts, "__ekara__1")
 	assert.Contains(t, cpnts, "ek-swarm")
 	assert.Contains(t, cpnts, "ek-aws")
-	assert.Contains(t, cpnts, "ek-core")
 
 	// Looking for the availability of a the deploy.yaml playbook
 	mPaths := tester.cM.ContainsFile("deploy.yaml")

@@ -18,6 +18,7 @@ type (
 	}
 )
 
+//CreateRuntimeContext creates a new context for the runtime
 func CreateRuntimeContext(lC util.LaunchContext, cM component.Manager, aM ansible.Manager) *runtimeContext {
 	// Initialization of the runtime context
 	rC := &runtimeContext{

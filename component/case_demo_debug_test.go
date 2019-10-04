@@ -1,9 +1,10 @@
 package component
 
 import (
-	"github.com/ekara-platform/engine/util"
 	_ "log"
 	"testing"
+
+	"github.com/ekara-platform/engine/util"
 
 	"github.com/ekara-platform/model"
 
@@ -106,10 +107,9 @@ func TestDebugDemo(t *testing.T) {
 	refM := tester.cM.referenceManager
 	assert.True(t, refM.UsedReferences.IdUsed("ek-aws"))
 	assert.True(t, refM.UsedReferences.IdUsed("ek-swarm"))
-	assert.True(t, refM.UsedReferences.IdUsed("ek-core"))
 	assert.True(t, refM.UsedReferences.IdUsed("visualizer"))
 
 	// comp1 should be downloaded because it's used as orchestrator into the parent
 	// comp2 should not be downloaded because it's referenced by a component
-	tester.AssertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "ek-aws", "ek-swarm", "ek-core", "visualizer")
+	tester.AssertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "ek-aws", "ek-swarm", "visualizer")
 }

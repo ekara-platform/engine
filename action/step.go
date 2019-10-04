@@ -22,6 +22,7 @@ type (
 		TotalExecutionTime time.Duration
 	}
 
+	//StepResult represents an step execution results
 	StepResult struct {
 		StepName        string
 		AppliedToType   string `json:",omitempty"`
@@ -98,7 +99,7 @@ func initResult(o stepInfo) func(stepName string, appliedTo model.Describable, c
 	}
 }
 
-// Build() initializes an array with the step result
+// Build initializes an array with the step result
 func (sr StepResult) Build() StepResults {
 	sr.ExecutionTime = time.Since(sr.startedAt)
 	i := int64(sr.ExecutionTime / time.Millisecond)

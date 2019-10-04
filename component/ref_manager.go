@@ -79,18 +79,20 @@ func (rm *ReferenceManager) init(c model.Component) error {
 		rm.rootComponents.AddReference(v)
 	}
 
-	// We always parse the parent of the descriptor
-	parent, err := refs.Parent()
+	// if exists we parse the parent of the descriptor
+	parent, b, err := refs.Parent()
 	if err != nil {
 		return err
 	}
-	parentC, err := parent.Component()
-	if err != nil {
-		return err
-	}
-	err = rm.parseParent(parentC, rm.cm.TemplateContext())
 
-	return err
+	if b {
+		parentC, _ := parent.Component()
+		err = rm.parseParent(parentC, rm.cm.TemplateContext())
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (rm *ReferenceManager) parseParent(p model.Component, data *model.TemplateContext) error {
@@ -143,17 +145,16 @@ func (rm *ReferenceManager) parseParent(p model.Component, data *model.TemplateC
 	rm.Parents = append(rm.Parents, pRef)
 
 	// If the descriptor has a parent then we start fetching all the parents
-	if refs.Ekara.Parent.Repository != "" {
-		parent, err := refs.Parent()
-		if err != nil {
-			return err
-		}
-		parentC, err := parent.Component()
-		if err != nil {
-			return err
-		}
+	parent, b, err := refs.Parent()
+	if err != nil {
+		return err
+	}
+
+	if b {
+		parentC, _ := parent.Component()
 		return rm.parseParent(parentC, data)
 	}
+
 	return nil
 }
 
