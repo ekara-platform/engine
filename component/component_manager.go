@@ -15,6 +15,7 @@ var releaseNothing = func() {
 }
 
 type (
+	//Manager manages the fetch and the templating of components used into a descriptor
 	Manager interface {
 		Init(mainComponent model.Component) error
 		Ensure() error

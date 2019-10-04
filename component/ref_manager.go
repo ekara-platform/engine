@@ -8,6 +8,7 @@ import (
 )
 
 type (
+	//ReferenceManager manages all the components declared and used into a descriptor
 	ReferenceManager struct {
 		l  *log.Logger
 		cm *manager
@@ -23,7 +24,7 @@ type (
 		rootComponents          *model.ReferencedComponents
 		SortedFetchedComponents []string
 	}
-
+	//ParentRef defines the reference to the descriptor's parent
 	ParentRef struct {
 		Comp                 model.Component
 		ReferencedComponents *model.ReferencedComponents
