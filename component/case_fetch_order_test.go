@@ -90,7 +90,7 @@ nodes:
 
 	tester.AssertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2", "comp3", "comp4", "comp5", "comp6")
 
-	assert.Equal(t, len(tester.cM.referenceManager.SortedFetchedComponents), 8)
+	assert.Equal(t, len(tester.cM.referenceManager.sortedFetchedComponents), 8)
 	checkFetchOrder(tester, t, model.EkaraComponentId+"1", "comp1", "comp2", "comp3", "comp4", "comp5", "comp6", model.MainComponentId)
 }
 
@@ -284,7 +284,7 @@ nodes:
 
 	tester.AssertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", model.EkaraComponentId+"2", "comp1", "comp2", "comp3", "comp4", "comp5", "comp6")
 
-	assert.Equal(t, len(tester.cM.referenceManager.SortedFetchedComponents), 9)
+	assert.Equal(t, len(tester.cM.referenceManager.sortedFetchedComponents), 9)
 	// We need to fetch:
 	//- first the components referenced by parent2
 	//- then parent2 itself
@@ -312,6 +312,6 @@ nodes:
 
 func checkFetchOrder(tester *ComponentTester, t *testing.T, names ...string) {
 	for i, v := range names {
-		assert.Equal(t, tester.cM.referenceManager.SortedFetchedComponents[i], v)
+		assert.Equal(t, tester.cM.referenceManager.sortedFetchedComponents[i], v)
 	}
 }

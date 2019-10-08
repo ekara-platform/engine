@@ -45,7 +45,7 @@ func CreateComponentTester(t *testing.T, lC util.LaunchContext) *ComponentTester
 		paths:   make([]string, 0, 0),
 	}
 	tester.Clean()
-	tester.cM = CreateComponentManager(lC, tester.workdir).(*manager)
+	tester.cM = CreateComponentManager(lC.Log(), lC.ExternalVars(), tester.workdir).(*manager)
 	return tester
 }
 

@@ -49,8 +49,8 @@ func Create(lC util.LaunchContext, workDir string) (Ekara, error) {
 		directory: absWorkDir,
 	}
 
-	eng.componentManager = component.CreateComponentManager(lC, absWorkDir)
-	eng.ansibleManager = ansible.CreateAnsibleManager(lC, eng.componentManager)
+	eng.componentManager = component.CreateComponentManager(lC.Log(), lC.ExternalVars(), absWorkDir)
+	eng.ansibleManager = ansible.CreateAnsibleManager(lC.Log(), eng.componentManager)
 	eng.actionManager = action.CreateActionManager(lC, eng.componentManager, eng.ansibleManager)
 	return eng, nil
 }

@@ -56,7 +56,7 @@ ekara:
 	assert.NotNil(t, env)
 
 	refM := tester.cM.referenceManager
-	assert.Equal(t, len(refM.UsedReferences.Refs), 0)
+	assert.Equal(t, len(refM.usedReferences.Refs), 0)
 
 	// comp1, comp2, comp3 and comp4 shouldn't be downloaded because they are not used into the descriptor
 	tester.AssertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1")
@@ -118,9 +118,9 @@ nodes:
 	assert.NotNil(t, env)
 
 	refM := tester.cM.referenceManager
-	assert.Equal(t, len(refM.UsedReferences.Refs), 2)
-	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
-	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
+	assert.Equal(t, len(refM.usedReferences.Refs), 2)
+	assert.True(t, refM.usedReferences.IdUsed("comp1"))
+	assert.True(t, refM.usedReferences.IdUsed("comp2"))
 
 	// comp1 should be downloaded because it's used as orchestrator into the parent
 	// comp2 should not be downloaded because it's referenced by a component
@@ -185,9 +185,9 @@ nodes:
 	assert.NotNil(t, env)
 
 	refM := tester.cM.referenceManager
-	assert.Equal(t, len(refM.UsedReferences.Refs), 2)
-	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
-	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
+	assert.Equal(t, len(refM.usedReferences.Refs), 2)
+	assert.True(t, refM.usedReferences.IdUsed("comp1"))
+	assert.True(t, refM.usedReferences.IdUsed("comp2"))
 
 	// comp1 should be downloaded because it's used as orchestrator
 	// comp2 should be also downloaded because it's used as provider
@@ -251,9 +251,9 @@ nodes:
 	assert.NotNil(t, env)
 
 	refM := tester.cM.referenceManager
-	assert.Equal(t, len(refM.UsedReferences.Refs), 2)
-	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
-	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
+	assert.Equal(t, len(refM.usedReferences.Refs), 2)
+	assert.True(t, refM.usedReferences.IdUsed("comp1"))
+	assert.True(t, refM.usedReferences.IdUsed("comp2"))
 
 	// comp1 should be downloaded because it's used as orchestrator
 	// comp2 should be also downloaded because it's used as provider
@@ -331,9 +331,9 @@ nodes:
 	assert.NotNil(t, env)
 
 	refM := tester.cM.referenceManager
-	assert.Equal(t, len(refM.UsedReferences.Refs), 2)
-	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
-	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
+	assert.Equal(t, len(refM.usedReferences.Refs), 2)
+	assert.True(t, refM.usedReferences.IdUsed("comp1"))
+	assert.True(t, refM.usedReferences.IdUsed("comp2"))
 
 	// comp1 should be downloaded because it's used as orchestrator
 	// comp2 should be also downloaded because it's used as provider
@@ -413,10 +413,10 @@ nodes:
 	assert.NotNil(t, env)
 
 	refM := tester.cM.referenceManager
-	assert.Equal(t, len(refM.UsedReferences.Refs), 3)
-	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
-	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
-	assert.True(t, refM.UsedReferences.IdUsed("comp3"))
+	assert.Equal(t, len(refM.usedReferences.Refs), 3)
+	assert.True(t, refM.usedReferences.IdUsed("comp1"))
+	assert.True(t, refM.usedReferences.IdUsed("comp2"))
+	assert.True(t, refM.usedReferences.IdUsed("comp3"))
 
 	// comp1 should be downloaded because it's used as orchestrator
 	// comp2 should be also downloaded because it's used as provider

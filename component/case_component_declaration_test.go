@@ -67,12 +67,12 @@ nodes:
 	rm := tester.cM.referenceManager
 	assert.NotNil(t, rm)
 
-	assert.True(t, rm.ReferencedComponents.IdReferenced("comp2"))
+	assert.True(t, rm.referencedComponents.IdReferenced("comp2"))
 	//Comp1 must not be referenced because it's declared into another component
-	assert.False(t, rm.ReferencedComponents.IdReferenced("comp1"))
+	assert.False(t, rm.referencedComponents.IdReferenced("comp1"))
 
-	assert.True(t, rm.UsedReferences.IdUsed("comp2"))
+	assert.True(t, rm.usedReferences.IdUsed("comp2"))
 	//Comp1 must be referenced because it's used into the main descriptor
-	assert.True(t, rm.UsedReferences.IdUsed("comp1"))
+	assert.True(t, rm.usedReferences.IdUsed("comp1"))
 
 }

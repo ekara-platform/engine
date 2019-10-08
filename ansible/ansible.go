@@ -28,16 +28,16 @@ type (
 	}
 
 	manager struct {
-		lC               util.LaunchContext
+		l                *log.Logger
 		componentManager component.Manager
 	}
 )
 
 //CreateAnsibleManager returns a new AnsibleManager, able to launch playbook
 //holded by the given component manager
-func CreateAnsibleManager(lC util.LaunchContext, componentManager component.Manager) Manager {
+func CreateAnsibleManager(l *log.Logger, componentManager component.Manager) Manager {
 	return &manager{
-		lC:               lC,
+		l:                l,
 		componentManager: componentManager,
 	}
 }
@@ -50,28 +50,28 @@ func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVa
 		return 0, fmt.Errorf("The component \"%s\" does not contains the playbook : %s", uc.Name(), playbook)
 	}
 
-	aM.lC.Log().Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
-	aM.lC.Log().Println("* * * * * A N S I B L E - - P L A Y B O O K  * * * * ")
-	aM.lC.Log().Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
-	aM.lC.Log().Printf(util.LOG_STARTING_PLAYBOOK, playBookPath.RelativePath(), playBookPath.Component().RootPath())
-	aM.lC.Log().Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
+	aM.l.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
+	aM.l.Println("* * * * * A N S I B L E - - P L A Y B O O K  * * * * ")
+	aM.l.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
+	aM.l.Printf(util.LOG_STARTING_PLAYBOOK, playBookPath.RelativePath(), playBookPath.Component().RootPath())
+	aM.l.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
 
 	var args = []string{playbook}
 	modulePaths := aM.componentManager.ContainsDirectory(util.ComponentModuleFolder)
 	defer modulePaths.Release()
 	if modulePaths.Count() > 0 {
 		pathsStrings := modulePaths.JoinAbsolutePaths(":")
-		aM.lC.Log().Printf("Playbook modules directories: %s", pathsStrings)
+		aM.l.Printf("Playbook modules directories: %s", pathsStrings)
 		args = append(args, "--module-path", pathsStrings)
 	} else {
-		aM.lC.Log().Printf("No playbook module")
+		aM.l.Printf("No playbook module")
 	}
 
 	inventoryPaths := aM.componentManager.ContainsDirectory(util.InventoryModuleFolder)
 	defer inventoryPaths.Release()
 	if inventoryPaths.Count() > 0 {
 		asArgs := inventoryPaths.PrefixPaths("-i")
-		aM.lC.Log().Printf("Playbook inventory directories: %s", inventoryPaths.JoinAbsolutePaths(":"))
+		aM.l.Printf("Playbook inventory directories: %s", inventoryPaths.JoinAbsolutePaths(":"))
 		for _, v := range asArgs {
 			if v == "-i" {
 				continue
@@ -79,14 +79,14 @@ func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVa
 		}
 		args = append(args, asArgs...)
 	} else {
-		aM.lC.Log().Printf("No playbook inventory")
+		aM.l.Printf("No playbook inventory")
 	}
 
 	if extraVars.Bool {
-		aM.lC.Log().Printf("Playbook extra vars: %s", extraVars.String())
+		aM.l.Printf("Playbook extra vars: %s", extraVars.String())
 		args = append(args, "--extra-vars", extraVars.String())
 	} else {
-		aM.lC.Log().Printf("No playbook extra-vars")
+		aM.l.Printf("No playbook extra-vars")
 	}
 
 	cmd := exec.Command("ansible-playbook", args...)
@@ -96,22 +96,22 @@ func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVa
 		cmd.Env = append(cmd.Env, k+"="+v)
 	}
 	if len(cmd.Env) > 0 {
-		aM.lC.Log().Printf("Playbook environment vars: %s", cmd.Env)
+		aM.l.Printf("Playbook environment vars: %s", cmd.Env)
 	} else {
-		aM.lC.Log().Printf("No playbook environment vars")
+		aM.l.Printf("No playbook environment vars")
 	}
 
 	errReader, err := cmd.StderrPipe()
 	if err != nil {
 		return 0, err
 	}
-	logPipe(errReader, aM.lC.Log())
+	logPipe(errReader, aM.l)
 
 	outReader, err := cmd.StdoutPipe()
 	if err != nil {
 		return 0, err
 	}
-	logPipe(outReader, aM.lC.Log())
+	logPipe(outReader, aM.l)
 
 	err = cmd.Start()
 	if err != nil {
@@ -124,7 +124,7 @@ func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVa
 		if ok {
 			s := e.Sys().(syscall.WaitStatus)
 			code := s.ExitStatus()
-			aM.lC.Log().Printf("Ansible returned error code : %v\n", ReturnedError(code))
+			aM.l.Printf("Ansible returned error code : %v\n", ReturnedError(code))
 			return code, err
 		}
 		return 0, err

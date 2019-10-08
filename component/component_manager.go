@@ -1,12 +1,12 @@
 package component
 
 import (
+	"log"
 	"os"
 
 	"path/filepath"
 
 	"github.com/ekara-platform/engine/component/scm"
-	"github.com/ekara-platform/engine/util"
 	"github.com/ekara-platform/model"
 )
 
@@ -28,12 +28,13 @@ type (
 
 	// ComponentManager downloads and keep track of ekara components on disk.
 	manager struct {
-		lC               util.LaunchContext
-		Directory        string
-		Paths            map[string]scm.FetchedComponent
+		l                *log.Logger
+		directory        string
+		paths            map[string]scm.FetchedComponent
 		referenceManager *ReferenceManager
-		environment      *model.Environment
-		tplC             *model.TemplateContext
+
+		environment *model.Environment
+		tplC        *model.TemplateContext
 	}
 
 	localRef struct {
@@ -42,40 +43,41 @@ type (
 )
 
 //CreateComponentManager creates a new component manager
-func CreateComponentManager(lC util.LaunchContext, baseDir string) Manager {
+func CreateComponentManager(l *log.Logger, p model.Parameters, baseDir string) Manager {
 	c := &manager{
-		lC:          lC,
+		l:           l,
 		environment: nil,
-		Directory:   filepath.Join(baseDir, "components"),
-		Paths:       map[string]scm.FetchedComponent{},
-		tplC:        model.CreateTemplateContext(lC.ExternalVars()),
+		directory:   filepath.Join(baseDir, "components"),
+		paths:       map[string]scm.FetchedComponent{},
+		tplC:        model.CreateTemplateContext(p),
 	}
 	c.environment = model.InitEnvironment()
-	c.referenceManager = CreateReferenceManager(c)
+	c.referenceManager = CreateReferenceManager(l, c)
 	return c
 }
 
 func (cm *manager) isComponentFetched(id string) (val scm.FetchedComponent, present bool) {
-	val, present = cm.Paths[id]
+	val, present = cm.paths[id]
 	return
 }
 
 func (cm *manager) ensureOneComponent(c model.Component, data *model.TemplateContext) error {
-	cm.lC.Log().Printf("ensuring component: %s", c.Id)
+	cm.l.Printf("ensuring component: %s", c.Id)
 	path, fetched := cm.isComponentFetched(c.Id)
 	if !fetched {
-		fComp, err := fetch(cm, c)
+		fComp, err := fetch(cm.l, cm.directory, c)
 		if err != nil {
-			cm.lC.Log().Printf("error fetching the component: %s", err.Error())
+			cm.l.Printf("error fetching the component: %s", err.Error())
 			return err
 		}
+		cm.paths[c.Id] = fComp
 		path = fComp
 	}
 	if path.HasDescriptor() {
-		cm.lC.Log().Printf("creating partial environment based on component %s", c.Id)
+		cm.l.Printf("creating partial environment based on component %s", c.Id)
 		descriptorYaml, err := model.ParseYamlDescriptor(path.DescriptorUrl, data)
 		if err != nil {
-			cm.lC.Log().Printf("error parsing the descriptor: %s", err.Error())
+			cm.l.Printf("error parsing the descriptor: %s", err.Error())
 			return err
 		}
 
@@ -85,20 +87,20 @@ func (cm *manager) ensureOneComponent(c model.Component, data *model.TemplateCon
 		}
 
 		// Customize or keep the resulting environment into the global one
-		cm.lC.Log().Println("prepare partial environment customization")
+		cm.l.Println("prepare partial environment customization")
 		if cm.environment == nil {
 			cm.environment = cEnv
-			cm.lC.Log().Println("no customization required, it's the first built environment ")
+			cm.l.Println("no customization required, it's the first built environment ")
 		} else {
 			// We don't want to customize the templates defined into the environment
 			// But instead we want to keep them into the component
 			cm.environment.Platform().KeepTemplates(c, cEnv.Templates)
 			cEnv.Templates = model.Patterns{}
-			cm.lC.Log().Println("partial environment should be used for customization")
+			cm.l.Println("partial environment should be used for customization")
 			err = cm.environment.Customize(cEnv)
 
 			if err != nil {
-				cm.lC.Log().Printf("error customizing the environment %s", err.Error())
+				cm.l.Printf("error customizing the environment %s", err.Error())
 				return err
 			}
 		}
@@ -140,7 +142,7 @@ func (cm *manager) contains(isFolder bool, name string, in ...model.ComponentRef
 		for _, v := range in {
 			uv, err := cm.Use(v)
 			if err != nil {
-				cm.lC.Log().Printf("An error occurred using the component %s : %s", v.ComponentName(), err.Error())
+				cm.l.Printf("An error occurred using the component %s : %s", v.ComponentName(), err.Error())
 			}
 			if isFolder {
 				if ok, match := uv.ContainsDirectory(name); ok {
@@ -163,7 +165,7 @@ func (cm *manager) contains(isFolder bool, name string, in ...model.ComponentRef
 			}
 			uv, err := cm.Use(lRef)
 			if err != nil {
-				cm.lC.Log().Printf("An error occurred using the component %s : %s", lRef.ComponentName(), err.Error())
+				cm.l.Printf("An error occurred using the component %s : %s", lRef.ComponentName(), err.Error())
 			}
 			if isFolder {
 				if ok, match := uv.ContainsDirectory(name); ok {
@@ -191,7 +193,7 @@ func (cm *manager) contains(isFolder bool, name string, in ...model.ComponentRef
 func (cm *manager) Use(cr model.ComponentReferencer) (UsableComponent, error) {
 	c := cm.environment.Platform().Components[cr.ComponentName()]
 	if ok, patterns := c.Templatable(); ok {
-		path, err := runTemplate(cm.tplC, cm.Paths[cr.ComponentName()].LocalPath, patterns, cr)
+		path, err := runTemplate(cm.tplC, cm.paths[cr.ComponentName()].LocalPath, patterns, cr)
 		if err != nil {
 			return usable{}, err
 		}
@@ -211,7 +213,7 @@ TemplateFalse:
 	return usable{
 		cm:        cm,
 		release:   releaseNothing,
-		path:      filepath.Join(cm.Directory, cr.ComponentName()),
+		path:      filepath.Join(cm.directory, cr.ComponentName()),
 		component: cm.environment.Platform().Components[cr.ComponentName()],
 		templated: false,
 	}, nil

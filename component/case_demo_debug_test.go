@@ -105,9 +105,9 @@ func TestDebugDemo(t *testing.T) {
 	_, err = yaml.Marshal(env)
 	assert.Nil(t, err)
 	refM := tester.cM.referenceManager
-	assert.True(t, refM.UsedReferences.IdUsed("ek-aws"))
-	assert.True(t, refM.UsedReferences.IdUsed("ek-swarm"))
-	assert.True(t, refM.UsedReferences.IdUsed("visualizer"))
+	assert.True(t, refM.usedReferences.IdUsed("ek-aws"))
+	assert.True(t, refM.usedReferences.IdUsed("ek-swarm"))
+	assert.True(t, refM.usedReferences.IdUsed("visualizer"))
 
 	// comp1 should be downloaded because it's used as orchestrator into the parent
 	// comp2 should not be downloaded because it's referenced by a component

@@ -41,12 +41,12 @@ nodes:
 	assert.Nil(t, err)
 
 	refM := tester.cM.referenceManager
-	assert.Equal(t, len(refM.UsedReferences.Refs), 1)
-	assert.True(t, refM.UsedReferences.IdUsed("ek-aws"))
+	assert.Equal(t, len(refM.usedReferences.Refs), 1)
+	assert.True(t, refM.usedReferences.IdUsed("ek-aws"))
 
-	assert.Equal(t, len(refM.ReferencedComponents.Refs), 0)
+	assert.Equal(t, len(refM.referencedComponents.Refs), 0)
 
-	assert.Len(t, refM.Parents, 0)
+	assert.Len(t, refM.parents, 0)
 }
 
 // when the descriptor doesn't define its own specific parent then
@@ -97,25 +97,25 @@ nodes:
 	assert.Nil(t, err)
 
 	refM := tester.cM.referenceManager
-	assert.Equal(t, len(refM.UsedReferences.Refs), 2)
+	assert.Equal(t, len(refM.usedReferences.Refs), 2)
 
-	assert.True(t, refM.UsedReferences.IdUsed("ek-swarm"))
-	assert.True(t, refM.UsedReferences.IdUsed("ek-aws"))
+	assert.True(t, refM.usedReferences.IdUsed("ek-swarm"))
+	assert.True(t, refM.usedReferences.IdUsed("ek-aws"))
 
-	assert.Equal(t, len(refM.ReferencedComponents.Refs), 3)
-	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-swarm"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-aws"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-swarm-visualizer"))
+	assert.Equal(t, len(refM.referencedComponents.Refs), 3)
+	assert.True(t, refM.referencedComponents.IdReferenced("ek-swarm"))
+	assert.True(t, refM.referencedComponents.IdReferenced("ek-aws"))
+	assert.True(t, refM.referencedComponents.IdReferenced("ek-swarm-visualizer"))
 
-	assert.Len(t, refM.Parents, 1)
+	assert.Len(t, refM.parents, 1)
 	// Check that the parent has been renamed base on its position
-	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Comp.Id)
+	assert.Equal(t, model.EkaraComponentId+"1", refM.parents[0].comp.Id)
 
 	// Check the referenced components has been cleaned
-	refM.ReferencedComponents.Clean(*refM.UsedReferences)
-	assert.Equal(t, len(refM.ReferencedComponents.Refs), 2)
-	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-swarm"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("ek-aws"))
+	refM.referencedComponents.Clean(*refM.usedReferences)
+	assert.Equal(t, len(refM.referencedComponents.Refs), 2)
+	assert.True(t, refM.referencedComponents.IdReferenced("ek-swarm"))
+	assert.True(t, refM.referencedComponents.IdReferenced("ek-aws"))
 
 	env := tester.Env()
 	assert.NotNil(t, env)
@@ -187,22 +187,22 @@ nodes:
 	assert.Nil(t, err)
 
 	refM := tester.cM.referenceManager
-	assert.Equal(t, 2, len(refM.UsedReferences.Refs))
-	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
-	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
-	assert.Equal(t, 2, len(refM.ReferencedComponents.Refs))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("comp1"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("comp2"))
+	assert.Equal(t, 2, len(refM.usedReferences.Refs))
+	assert.True(t, refM.usedReferences.IdUsed("comp1"))
+	assert.True(t, refM.usedReferences.IdUsed("comp2"))
+	assert.Equal(t, 2, len(refM.referencedComponents.Refs))
+	assert.True(t, refM.referencedComponents.IdReferenced("comp1"))
+	assert.True(t, refM.referencedComponents.IdReferenced("comp2"))
 
-	assert.Len(t, refM.Parents, 1)
+	assert.Len(t, refM.parents, 1)
 	// Check that the parent has been renamed base on its position
-	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Comp.Id)
+	assert.Equal(t, model.EkaraComponentId+"1", refM.parents[0].comp.Id)
 
 	// Check the referenced components has not been cleaned
-	refM.ReferencedComponents.Clean(*refM.UsedReferences)
-	assert.Equal(t, len(refM.ReferencedComponents.Refs), 2)
-	assert.True(t, refM.ReferencedComponents.IdReferenced("comp1"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("comp2"))
+	refM.referencedComponents.Clean(*refM.usedReferences)
+	assert.Equal(t, len(refM.referencedComponents.Refs), 2)
+	assert.True(t, refM.referencedComponents.IdReferenced("comp1"))
+	assert.True(t, refM.referencedComponents.IdReferenced("comp2"))
 
 	env := tester.Env()
 	assert.NotNil(t, env)
@@ -284,24 +284,24 @@ nodes:
 	assert.Nil(t, err)
 
 	refM := tester.cM.referenceManager
-	assert.Equal(t, len(refM.UsedReferences.Refs), 2)
-	assert.True(t, refM.UsedReferences.IdUsed("comp1"))
-	assert.True(t, refM.UsedReferences.IdUsed("comp2"))
-	assert.Equal(t, len(refM.ReferencedComponents.Refs), 4)
-	assert.True(t, refM.ReferencedComponents.IdReferenced("comp1"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("comp2"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("comp3"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("comp4"))
-	assert.Len(t, refM.Parents, 2)
+	assert.Equal(t, len(refM.usedReferences.Refs), 2)
+	assert.True(t, refM.usedReferences.IdUsed("comp1"))
+	assert.True(t, refM.usedReferences.IdUsed("comp2"))
+	assert.Equal(t, len(refM.referencedComponents.Refs), 4)
+	assert.True(t, refM.referencedComponents.IdReferenced("comp1"))
+	assert.True(t, refM.referencedComponents.IdReferenced("comp2"))
+	assert.True(t, refM.referencedComponents.IdReferenced("comp3"))
+	assert.True(t, refM.referencedComponents.IdReferenced("comp4"))
+	assert.Len(t, refM.parents, 2)
 	// Check that the parents has been renamed base on their position
-	assert.Equal(t, model.EkaraComponentId+"1", refM.Parents[0].Comp.Id)
-	assert.Equal(t, model.EkaraComponentId+"2", refM.Parents[1].Comp.Id)
+	assert.Equal(t, model.EkaraComponentId+"1", refM.parents[0].comp.Id)
+	assert.Equal(t, model.EkaraComponentId+"2", refM.parents[1].comp.Id)
 
 	// Check the referenced components has been cleaned
-	refM.ReferencedComponents.Clean(*refM.UsedReferences)
-	assert.Equal(t, len(refM.ReferencedComponents.Refs), 2)
-	assert.True(t, refM.ReferencedComponents.IdReferenced("comp1"))
-	assert.True(t, refM.ReferencedComponents.IdReferenced("comp2"))
+	refM.referencedComponents.Clean(*refM.usedReferences)
+	assert.Equal(t, len(refM.referencedComponents.Refs), 2)
+	assert.True(t, refM.referencedComponents.IdReferenced("comp1"))
+	assert.True(t, refM.referencedComponents.IdReferenced("comp2"))
 
 	env := tester.Env()
 	assert.NotNil(t, env)
