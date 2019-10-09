@@ -1,6 +1,7 @@
 package action
 
 import (
+	"github.com/ekara-platform/engine/util"
 	"time"
 )
 
@@ -28,8 +29,6 @@ const (
 	ValidateActionID = "VALIDATE"
 	// CheckActionID identifies the action of returning the validation results of an environment model.
 	CheckActionID = "CHECK"
-	// FailOnErrorActionID identifies the action of failing if the environment model has validation errors.
-	FailOnErrorActionID = "FAIL"
 	// DumpActionID identifies the action of dumping the effective environment model.
 	DumpActionID = "DUMP"
 	// ApplyActionID identifies the action of applying a descriptor to reality
@@ -77,7 +76,7 @@ func (a Action) run(am *actionManager) (*ExecutionReport, Result, error) {
 	am.lC.Log().Printf(LogRunningAction, a.name)
 
 	// Run the final action and return its result
-	rep, res := a.launch(CreateRuntimeContext(am.lC, am.cM, am.aM))
+	rep, res := a.launch(CreateRuntimeContext(am.lC, am.cM, am.aM, util.CreateProgressNotifier(am.lC.Log())))
 	r.aggregate(rep)
 	return r, res, nil
 }

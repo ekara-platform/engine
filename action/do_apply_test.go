@@ -120,5 +120,5 @@ qualifier: QualifierContent
 }
 
 func mockRuntimeContextWithParameters(lC util.LaunchContext) *runtimeContext {
-	return CreateRuntimeContext(lC, component.CreateComponentManager(lC, "dummy"), nil)
+	return CreateRuntimeContext(lC, component.CreateComponentManager(lC, "dummy"), nil, nil)
 }

@@ -6,10 +6,15 @@ import (
 	"io"
 	"log"
 	"os/exec"
+	"strings"
 	"syscall"
 
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
+)
+
+const (
+	taskPrefix = "TASK ["
 )
 
 type (
@@ -24,7 +29,7 @@ type (
 		//		envars: the environment variables set before launching the playbook
 		//		data: the template context required to template a used component
 		//
-		Execute(cr component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars) (int, error)
+		Execute(cr component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars, pN util.ProgressNotifier) (int, error)
 	}
 
 	manager struct {
@@ -42,7 +47,7 @@ func CreateAnsibleManager(lC util.LaunchContext, componentManager component.Mana
 	}
 }
 
-func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars) (int, error) {
+func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars, pN util.ProgressNotifier) (int, error) {
 
 	ok, playBookPath := uc.ContainsFile(playbook)
 
@@ -105,13 +110,13 @@ func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVa
 	if err != nil {
 		return 0, err
 	}
-	logPipe(errReader, aM.lC.Log())
+	logPipe(errReader, aM.lC.Log(), pN)
 
 	outReader, err := cmd.StdoutPipe()
 	if err != nil {
 		return 0, err
 	}
-	logPipe(outReader, aM.lC.Log())
+	logPipe(outReader, aM.lC.Log(), pN)
 
 	err = cmd.Start()
 	if err != nil {
@@ -134,11 +139,15 @@ func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVa
 }
 
 // logPipe logs the given pipe, reader/closer on the given logger
-func logPipe(rc io.ReadCloser, l *log.Logger) {
+func logPipe(rc io.ReadCloser, l *log.Logger, pN util.ProgressNotifier) {
 	s := bufio.NewScanner(rc)
 	go func() {
 		for s.Scan() {
-			l.Printf("%s\n", s.Text())
+			sTrim := strings.TrimSpace(s.Text())
+			if strings.Index(sTrim, "TASK [") == 0 {
+				pN.Detail(sTrim[len(taskPrefix):strings.LastIndex(sTrim, "]")])
+			}
+			l.Printf("%s\n", sTrim)
 		}
 	}()
 }

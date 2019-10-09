@@ -15,16 +15,18 @@ type (
 		ekaraError error
 		report     ReportFileContent
 		buffer     map[string]ansible.Buffer
+		pN         util.ProgressNotifier
 	}
 )
 
 //CreateRuntimeContext creates a new context for the runtime
-func CreateRuntimeContext(lC util.LaunchContext, cM component.Manager, aM ansible.Manager) *runtimeContext {
+func CreateRuntimeContext(lC util.LaunchContext, cM component.Manager, aM ansible.Manager, pN util.ProgressNotifier) *runtimeContext {
 	// Initialization of the runtime context
 	rC := &runtimeContext{
 		lC: lC,
 		cM: cM,
 		aM: aM,
+		pN: pN,
 	}
 	rC.buffer = make(map[string]ansible.Buffer)
 	return rC

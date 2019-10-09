@@ -85,7 +85,7 @@ func runTask(rC *runtimeContext, task model.Task, target model.Describable, sc S
 	}
 	defer usable.Release()
 
-	code, err := rC.aM.Execute(usable, task.Playbook, exv, env)
+	code, err := rC.aM.Execute(usable, task.Playbook, exv, env, rC.pN)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  task.Playbook,
