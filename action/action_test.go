@@ -257,5 +257,5 @@ func fStepMockMultipleContext(rC *runtimeContext) (StepResults, Result) {
 }
 
 func mockRuntimeContext() *runtimeContext {
-	return CreateRuntimeContext(util.CreateMockLaunchContext("", false), nil, nil)
+	return CreateRuntimeContext(util.CreateMockLaunchContext("", false), nil, nil, nil)
 }

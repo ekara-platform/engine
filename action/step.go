@@ -84,7 +84,6 @@ var InitHookStepResult = initResult(stepContextHookPlaybook)
 
 // initResult initializes a step results for the given context
 func initResult(o stepInfo) func(stepName string, appliedTo model.Describable, c Cleanup) StepResult {
-
 	return func(stepName string, appliedTo model.Describable, c Cleanup) StepResult {
 		result := StepResult{Context: o}
 		result.startedAt = time.Now()
