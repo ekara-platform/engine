@@ -20,7 +20,7 @@ func SaveFile(folder FolderPath, name string, b []byte) (string, error) {
 		}
 		f, e := os.Create(l)
 		if e != nil {
-			return l, fmt.Errorf(ERROR_CREATING_CONFIG_FILE, name, e.Error())
+			return l, fmt.Errorf("error creating the configuration file: %s, %s", name, e.Error())
 		}
 		defer f.Close()
 		_, e = f.Write(b)

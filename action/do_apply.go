@@ -1,11 +1,13 @@
 package action
 
 import (
+	"encoding/json"
 	"fmt"
-
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
+	"gopkg.in/yaml.v2"
+	"strings"
 )
 
 const (
@@ -15,12 +17,48 @@ const (
 	deployPlaybook  = "deploy.yaml"
 )
 
+type (
+	//ApplyResult contains the results of environment application
+	ApplyResult struct {
+		Success   bool
+		Inventory ansible.Inventory
+	}
+)
+
+func (r ApplyResult) IsSuccess() bool {
+	return r.Success
+}
+
+func (r ApplyResult) AsJson() (string, error) {
+	b, err := json.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func (r ApplyResult) AsYaml() (string, error) {
+	b, err := yaml.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
+}
+
+func (r ApplyResult) AsPlainText() ([]string, error) {
+	res, err := r.AsYaml()
+	if err != nil {
+		return []string{}, err
+	}
+	return strings.Split(res, "\n"), nil
+}
+
 var (
 	applyAction = Action{
 		ApplyActionID,
 		CheckActionID,
 		"Apply",
-		[]step{providerSetup, providerCreate, orchestratorSetup, orchestratorInstall, stackDeploy},
+		[]step{providerSetup, ansibleInventory, providerCreate, orchestratorSetup, orchestratorInstall, stackDeploy},
 	}
 )
 
@@ -72,7 +110,7 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 		}
 		defer usable.Release()
-		code, err := rC.aM.Execute(usable, setupPlaybook, exv, env, rC.pN)
+		code, err := rC.aM.Play(usable, setupPlaybook, exv, env, rC.pN)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  setupPlaybook,
@@ -169,7 +207,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		defer usable.Release()
 
 		// Launch the playbook
-		code, err := rC.aM.Execute(usable, createPlaybook, exv, env, rC.pN)
+		code, err := rC.aM.Play(usable, createPlaybook, exv, env, rC.pN)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  createPlaybook,
@@ -254,7 +292,7 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	defer usable.Release()
 
 	// We launch the playbook
-	code, err := rC.aM.Execute(usable, setupPlaybook, exv, env, rC.pN)
+	code, err := rC.aM.Play(usable, setupPlaybook, exv, env, rC.pN)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  setupPlaybook,
@@ -339,7 +377,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 		defer usable.Release()
 
 		// Launch the playbook
-		code, err := rC.aM.Execute(usable, installPlaybook, exv, env, rC.pN)
+		code, err := rC.aM.Play(usable, installPlaybook, exv, env, rC.pN)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  installPlaybook,
@@ -446,7 +484,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			buffer)
 
 		// Execute the playbook
-		code, err := rC.aM.Execute(target, deployPlaybook, exv, env, rC.pN)
+		code, err := rC.aM.Play(target, deployPlaybook, exv, env, rC.pN)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  deployPlaybook,
@@ -483,6 +521,22 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 	rC.pN.Notify("apply.stack.deploy", "All stacks deployed")
 
 	return *sCs, nil
+}
+
+func ansibleInventory(rC *runtimeContext) (StepResults, Result) {
+	sCs := InitStepResults()
+	sr := InitPlaybookStepResult("Building inventory", nil, NoCleanUpRequired)
+
+	inv, err := rC.aM.Inventory()
+	if err != nil {
+		FailsOnCode(&sr, err, "An error occurred during inventory", nil)
+	}
+
+	sCs.Add(sr)
+	return *sCs, ApplyResult{
+		Success:   true,
+		Inventory: inv,
+	}
 }
 
 func buildBaseParam(rC *runtimeContext, nodeSetName string) ansible.BaseParam {
