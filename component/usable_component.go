@@ -28,7 +28,6 @@ type (
 		release   func()
 		path      string
 		component model.Component
-		cm        *manager
 		templated bool
 	}
 )

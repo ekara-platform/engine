@@ -6,6 +6,7 @@ import (
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
+	"github.com/ekara-platform/model"
 )
 
 //Result represents the result of an action
@@ -24,7 +25,7 @@ type (
 	//Manager is the manager of all action available into the engine
 	Manager interface {
 		// Run executes an engine action
-		Run(id ActionID) (Result, error)
+		Run(id ActionID, env *model.Environment) (Result, error)
 	}
 
 	actionManager struct {
@@ -66,13 +67,13 @@ func (am *actionManager) get(id ActionID) (Action, error) {
 }
 
 //Run launches the action corresponding to the given id.
-func (am *actionManager) Run(id ActionID) (Result, error) {
+func (am *actionManager) Run(id ActionID, env *model.Environment) (Result, error) {
 	a, e := am.get(id)
 	if e != nil {
 		return nil, e
 	}
 
-	report, res, e := a.run(am)
+	report, res, e := a.run(am, env)
 	if e != nil {
 		return nil, e
 	}

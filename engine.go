@@ -24,8 +24,11 @@ type engine struct {
 	tplC      *model.TemplateContext
 	directory string
 
+	environment *model.Environment
+
 	// Subsystems
-	componentManager component.Manager
+	referenceManager *component.ReferenceManager
+	componentManager *component.Manager
 	ansibleManager   ansible.Manager
 	actionManager    action.Manager
 }
@@ -45,13 +48,14 @@ func Create(lC util.LaunchContext, workDir string) (Ekara, error) {
 
 	// TODO : pass launch context to managers + let templateContext be in the componentManager only
 	eng := &engine{
-		lC:        lC,
-		directory: absWorkDir,
+		lC:          lC,
+		directory:   absWorkDir,
+		environment: model.InitEnvironment(),
 	}
 
-	eng.componentManager = component.CreateComponentManager(lC.Log(), lC.ExternalVars(), absWorkDir)
-	eng.ansibleManager = ansible.CreateAnsibleManager(lC.Log(), eng.componentManager)
-	eng.actionManager = action.CreateActionManager(lC, eng.componentManager, eng.ansibleManager)
+	eng.referenceManager = component.CreateReferenceManager(lC.Log())
+	eng.componentManager = component.CreateComponentManager(lC.Log(), lC.ExternalVars(), eng.environment.Platform(), absWorkDir)
+
 	return eng, nil
 }
 
@@ -79,22 +83,26 @@ func (eng *engine) Init() (err error) {
 	mainComponent := model.CreateComponent(model.MainComponentId, mainRep)
 
 	// Discover components starting from the main one
-	err = eng.componentManager.Init(mainComponent)
+	err = eng.referenceManager.Init(mainComponent, eng.componentManager)
 	if err != nil {
 		return
 	}
 
 	// Then ensure all effectively used components are fetched
-	err = eng.componentManager.Ensure()
+	err = eng.referenceManager.Ensure(eng.environment, eng.componentManager)
 	if err != nil {
 		return
 	}
 
+	// ONce the environment is created we can create the ansible and action
+	// managerq passing them copy of the
+	eng.ansibleManager = ansible.CreateAnsibleManager(eng.lC.Log(), *eng.componentManager)
+	eng.actionManager = action.CreateActionManager(eng.lC, *eng.componentManager, eng.ansibleManager)
 	return
 }
 
 func (eng *engine) ComponentManager() component.Manager {
-	return eng.componentManager
+	return *eng.componentManager
 }
 
 func (eng *engine) AnsibleManager() ansible.Manager {

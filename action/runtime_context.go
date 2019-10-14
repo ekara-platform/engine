@@ -4,6 +4,7 @@ import (
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
+	"github.com/ekara-platform/model"
 )
 
 type (
@@ -12,19 +13,20 @@ type (
 		cM component.Manager
 		aM ansible.Manager
 
-		ekaraError error
-		report     ReportFileContent
-		buffer     map[string]ansible.Buffer
+		environment *model.Environment
+		report      ReportFileContent
+		buffer      map[string]ansible.Buffer
 	}
 )
 
 //CreateRuntimeContext creates a new context for the runtime
-func CreateRuntimeContext(lC util.LaunchContext, cM component.Manager, aM ansible.Manager) *runtimeContext {
+func CreateRuntimeContext(lC util.LaunchContext, env *model.Environment, cM component.Manager, aM ansible.Manager) *runtimeContext {
 	// Initialization of the runtime context
 	rC := &runtimeContext{
-		lC: lC,
-		cM: cM,
-		aM: aM,
+		lC:          lC,
+		cM:          cM,
+		aM:          aM,
+		environment: env,
 	}
 	rC.buffer = make(map[string]ansible.Buffer)
 	return rC

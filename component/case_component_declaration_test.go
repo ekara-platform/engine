@@ -1,8 +1,9 @@
 package component
 
 import (
-	"github.com/ekara-platform/engine/util"
 	"testing"
+
+	"github.com/ekara-platform/engine/util"
 
 	"github.com/ekara-platform/model"
 
@@ -64,7 +65,7 @@ nodes:
 	assert.NotNil(t, env)
 	// comp1 should be downloaded because it's used as orchestrator
 	tester.AssertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp2")
-	rm := tester.cM.referenceManager
+	rm := tester.rM
 	assert.NotNil(t, rm)
 
 	assert.True(t, rm.referencedComponents.IdReferenced("comp2"))

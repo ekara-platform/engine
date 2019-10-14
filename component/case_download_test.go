@@ -55,7 +55,7 @@ ekara:
 	env := tester.Env()
 	assert.NotNil(t, env)
 
-	refM := tester.cM.referenceManager
+	refM := tester.rM
 	assert.Equal(t, len(refM.usedReferences.Refs), 0)
 
 	// comp1, comp2, comp3 and comp4 shouldn't be downloaded because they are not used into the descriptor
@@ -117,7 +117,7 @@ nodes:
 	env := tester.Env()
 	assert.NotNil(t, env)
 
-	refM := tester.cM.referenceManager
+	refM := tester.rM
 	assert.Equal(t, len(refM.usedReferences.Refs), 2)
 	assert.True(t, refM.usedReferences.IdUsed("comp1"))
 	assert.True(t, refM.usedReferences.IdUsed("comp2"))
@@ -184,7 +184,7 @@ nodes:
 	env := tester.Env()
 	assert.NotNil(t, env)
 
-	refM := tester.cM.referenceManager
+	refM := tester.rM
 	assert.Equal(t, len(refM.usedReferences.Refs), 2)
 	assert.True(t, refM.usedReferences.IdUsed("comp1"))
 	assert.True(t, refM.usedReferences.IdUsed("comp2"))
@@ -250,7 +250,7 @@ nodes:
 	env := tester.Env()
 	assert.NotNil(t, env)
 
-	refM := tester.cM.referenceManager
+	refM := tester.rM
 	assert.Equal(t, len(refM.usedReferences.Refs), 2)
 	assert.True(t, refM.usedReferences.IdUsed("comp1"))
 	assert.True(t, refM.usedReferences.IdUsed("comp2"))
@@ -330,7 +330,7 @@ nodes:
 	env := tester.Env()
 	assert.NotNil(t, env)
 
-	refM := tester.cM.referenceManager
+	refM := tester.rM
 	assert.Equal(t, len(refM.usedReferences.Refs), 2)
 	assert.True(t, refM.usedReferences.IdUsed("comp1"))
 	assert.True(t, refM.usedReferences.IdUsed("comp2"))
@@ -412,7 +412,7 @@ nodes:
 	env := tester.Env()
 	assert.NotNil(t, env)
 
-	refM := tester.cM.referenceManager
+	refM := tester.rM
 	assert.Equal(t, len(refM.usedReferences.Refs), 3)
 	assert.True(t, refM.usedReferences.IdUsed("comp1"))
 	assert.True(t, refM.usedReferences.IdUsed("comp2"))

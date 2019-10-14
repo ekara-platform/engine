@@ -231,7 +231,7 @@ func writecheckByMatchCommon(tester *ComponentTester, d string) {
 	repDesc.WriteCommit("ekara.yaml", byMatchDescContent)
 }
 
-func checkByMatchCommon(tester *ComponentTester, initialComp int) (model.Environment, Manager) {
+func checkByMatchCommon(tester *ComponentTester, initialComp int) (model.Environment, *Manager) {
 	err := tester.Init()
 	assert.Nil(tester.t, err)
 	env := tester.Env()

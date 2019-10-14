@@ -224,7 +224,7 @@ func writecheckUsableCommon(t *testing.T, tester *ComponentTester, d string) {
 
 }
 
-func checkUsableCommon(t *testing.T, tester *ComponentTester, initialComp int) (model.Environment, Manager) {
+func checkUsableCommon(t *testing.T, tester *ComponentTester, initialComp int) (model.Environment, *Manager) {
 	err := tester.Init()
 	assert.Nil(t, err)
 	env := tester.Env()

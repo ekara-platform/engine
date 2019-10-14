@@ -40,7 +40,7 @@ nodes:
 	err := tester.Init()
 	assert.Nil(t, err)
 
-	refM := tester.cM.referenceManager
+	refM := tester.rM
 	assert.Equal(t, len(refM.usedReferences.Refs), 1)
 	assert.True(t, refM.usedReferences.IdUsed("ek-aws"))
 
@@ -96,7 +96,7 @@ nodes:
 	err := tester.Init()
 	assert.Nil(t, err)
 
-	refM := tester.cM.referenceManager
+	refM := tester.rM
 	assert.Equal(t, len(refM.usedReferences.Refs), 2)
 
 	assert.True(t, refM.usedReferences.IdUsed("ek-swarm"))
@@ -186,7 +186,7 @@ nodes:
 	err := tester.Init()
 	assert.Nil(t, err)
 
-	refM := tester.cM.referenceManager
+	refM := tester.rM
 	assert.Equal(t, 2, len(refM.usedReferences.Refs))
 	assert.True(t, refM.usedReferences.IdUsed("comp1"))
 	assert.True(t, refM.usedReferences.IdUsed("comp2"))
@@ -283,7 +283,7 @@ nodes:
 	err := tester.Init()
 	assert.Nil(t, err)
 
-	refM := tester.cM.referenceManager
+	refM := tester.rM
 	assert.Equal(t, len(refM.usedReferences.Refs), 2)
 	assert.True(t, refM.usedReferences.IdUsed("comp1"))
 	assert.True(t, refM.usedReferences.IdUsed("comp2"))

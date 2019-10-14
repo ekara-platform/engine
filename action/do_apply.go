@@ -26,7 +26,7 @@ var (
 
 func providerSetup(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
-	for _, p := range rC.cM.Environment().Providers {
+	for _, p := range rC.environment.Providers {
 		sc := InitPlaybookStepResult("Running the setup phase", p, NoCleanUpRequired)
 		rC.lC.Log().Printf(LogRunningSetupFor, p.Name)
 
@@ -91,7 +91,7 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 
 func providerCreate(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
-	for _, n := range rC.cM.Environment().NodeSets {
+	for _, n := range rC.environment.NodeSets {
 		sc := InitPlaybookStepResult("Running the create phase", n, NoCleanUpRequired)
 		rC.lC.Log().Printf(LogProcessingNode, n.Name)
 
@@ -127,7 +127,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		runHookBefore(
 			rC,
 			sCs,
-			rC.cM.Environment().Hooks.Provision,
+			rC.environment.Hooks.Provision,
 			hookContext{"create", n, "environment", "provision", bp, env, buffer},
 			NoCleanUpRequired,
 		)
@@ -190,7 +190,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		runHookAfter(
 			rC,
 			sCs,
-			rC.cM.Environment().Hooks.Provision,
+			rC.environment.Hooks.Provision,
 			hookContext{"create", n, "environment", "provision", bp, env, buffer},
 			NoCleanUpRequired,
 		)
@@ -199,7 +199,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 }
 
 func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
-	o := rC.cM.Environment().Orchestrator
+	o := rC.environment.Orchestrator
 	sCs := InitStepResults()
 	sc := InitPlaybookStepResult("Running the orchestrator setup phase", o, NoCleanUpRequired)
 
@@ -261,7 +261,7 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 
-	for _, n := range rC.cM.Environment().NodeSets {
+	for _, n := range rC.environment.NodeSets {
 		sc := InitPlaybookStepResult("Running the orchestrator installation phase", n, NoCleanUpRequired)
 		rC.lC.Log().Printf(LogProcessingNode, n.Name)
 
@@ -340,7 +340,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 
 func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
-	for _, st := range rC.cM.Environment().Stacks {
+	for _, st := range rC.environment.Stacks {
 		sc := InitPlaybookStepResult("Deploying stack", st, NoCleanUpRequired)
 		sCs.Add(sc)
 
@@ -378,7 +378,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 		runHookBefore(
 			rC,
 			sCs,
-			rC.cM.Environment().Hooks.Deploy,
+			rC.environment.Hooks.Deploy,
 			hookContext{"deploy", st, "environment", "deploy", bp, env, buffer},
 			NoCleanUpRequired,
 		)
@@ -403,7 +403,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 		var target component.UsableComponent
 		var deployExtraVars string
 		if ok, _ := ust.ContainsFile(deployPlaybook); !ok {
-			o, err := rC.cM.Use(rC.cM.Environment().Orchestrator)
+			o, err := rC.cM.Use(rC.environment.Orchestrator)
 			if err != nil {
 				FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 			}
@@ -447,7 +447,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 		runHookAfter(
 			rC,
 			sCs,
-			rC.cM.Environment().Hooks.Deploy,
+			rC.environment.Hooks.Deploy,
 			hookContext{"deploy", st, "environment", "deploy", bp, env, buffer},
 			NoCleanUpRequired,
 		)
@@ -458,7 +458,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 }
 
 func buildBaseParam(rC *runtimeContext, nodeSetName string) ansible.BaseParam {
-	return ansible.BuildBaseParam(rC.cM.Environment(), rC.lC.SSHPublicKey(), rC.lC.SSHPrivateKey(), nodeSetName)
+	return ansible.BuildBaseParam(rC.environment, rC.lC.SSHPublicKey(), rC.lC.SSHPrivateKey(), nodeSetName)
 }
 
 func createChildExchangeFolder(parent util.FolderPath, name string, sr *StepResult) (util.ExchangeFolder, bool) {

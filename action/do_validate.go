@@ -59,6 +59,6 @@ func (v ValidateResult) AsPlainText() ([]string, error) {
 
 func doValidate(rC *runtimeContext) (StepResults, Result) {
 	sc := InitCodeStepResult("Validating the environment content", nil, NoCleanUpRequired)
-	vErrs := rC.cM.Environment().Validate()
+	vErrs := rC.environment.Validate()
 	return sc.Build(), ValidateResult{vErrs: vErrs}
 }

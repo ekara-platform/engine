@@ -22,11 +22,13 @@ import (
 type (
 	//ComponentTester is an helper user to run unit tests based on local GIT repositories
 	ComponentTester struct {
-		workdir string
-		paths   []string
-		context util.LaunchContext
-		t       *testing.T
-		cM      *manager
+		workdir     string
+		paths       []string
+		context     util.LaunchContext
+		t           *testing.T
+		environment *model.Environment
+		cM          *Manager
+		rM          *ReferenceManager
 	}
 
 	testRepo struct {
@@ -39,13 +41,15 @@ type (
 //CreateComponentTester creates a new ComponentTester
 func CreateComponentTester(t *testing.T, lC util.LaunchContext) *ComponentTester {
 	tester := &ComponentTester{
-		workdir: "testdata/gitwork",
-		context: lC,
-		t:       t,
-		paths:   make([]string, 0, 0),
+		workdir:     "testdata/gitwork",
+		context:     lC,
+		t:           t,
+		paths:       make([]string, 0, 0),
+		environment: model.InitEnvironment(),
 	}
 	tester.Clean()
-	tester.cM = CreateComponentManager(lC.Log(), lC.ExternalVars(), tester.workdir).(*manager)
+	tester.cM = CreateComponentManager(lC.Log(), lC.ExternalVars(), tester.environment.Platform(), tester.workdir)
+	tester.rM = CreateReferenceManager(lC.Log())
 	return tester
 }
 
@@ -71,11 +75,12 @@ func (t *ComponentTester) Init() error {
 		return err
 	}
 	mainComponent := model.CreateComponent(model.MainComponentId, mainRep)
-	err = t.cM.Init(mainComponent)
+	err = t.rM.Init(mainComponent, t.cM)
 	if err != nil {
 		return err
 	}
-	return t.cM.Ensure()
+
+	return t.rM.Ensure(t.environment, t.cM)
 	// TODO Link here the generated interface with the context
 	// ONce this is done into the engine then remove this link.
 	//t.context.templateContext.Model = t.Env()
@@ -230,7 +235,7 @@ func (r *testRepo) Tag(tag string) {
 
 //Env returns the environment built during the test
 func (t *ComponentTester) Env() model.Environment {
-	return *t.cM.Environment()
+	return *t.environment
 }
 
 //AssertComponentsContainsExactly asserts that the fetched component folder
@@ -313,7 +318,7 @@ func (t *ComponentTester) CheckSpecificEnvVar(env model.EnvVars, key, value stri
 // CheckStack asserts than the environment contains the stack, then check that the stack's component
 // is usable and finally check that the stack containts the provide compose content .
 func (t *ComponentTester) CheckStack(holder, stackName, composeContent string) {
-	stack, ok := t.cM.Environment().Stacks[stackName]
+	stack, ok := t.environment.Stacks[stackName]
 	if assert.True(t.t, ok) {
 		//Check that the self contained stack has been well built
 		assert.Equal(t.t, stackName, stack.Name)

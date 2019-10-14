@@ -57,5 +57,5 @@ func (r DumpResult) AsPlainText() ([]string, error) {
 
 func doDump(rC *runtimeContext) (StepResults, Result) {
 	sc := InitCodeStepResult("Retrieving aggregated environment model", nil, NoCleanUpRequired)
-	return sc.Build(), DumpResult{env: rC.cM.Environment()}
+	return sc.Build(), DumpResult{env: rC.environment}
 }

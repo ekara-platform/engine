@@ -104,7 +104,7 @@ func TestDebugDemo(t *testing.T) {
 
 	_, err = yaml.Marshal(env)
 	assert.Nil(t, err)
-	refM := tester.cM.referenceManager
+	refM := tester.rM
 	assert.True(t, refM.usedReferences.IdUsed("ek-aws"))
 	assert.True(t, refM.usedReferences.IdUsed("ek-swarm"))
 	assert.True(t, refM.usedReferences.IdUsed("visualizer"))
