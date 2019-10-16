@@ -246,8 +246,6 @@ func (rm *ReferenceManager) callEnsure(c model.Component, env *model.Environment
 			rm.l.Printf("error customizing the environment %s", err.Error())
 			return err
 		}
-
-		ctx.Model = model.CreateTEnvironmentForEnvironment(*env)
 	}
 	rm.sortedFetchedComponents = append(rm.sortedFetchedComponents, c.Id)
 	return nil

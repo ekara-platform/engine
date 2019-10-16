@@ -52,7 +52,7 @@ nodes:
 // when the descriptor doesn't define its own specific parent then
 // the defaulted one should be used
 func TestDownloadDistribution(t *testing.T) {
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"ek": map[interface{}]interface{}{
 			"aws": map[interface{}]interface{}{
 				"region": "dummy",

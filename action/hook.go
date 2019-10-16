@@ -85,7 +85,7 @@ func runTask(rC *runtimeContext, task model.Task, target model.Describable, sc S
 	}
 	defer usable.Release()
 
-	code, err := rC.aM.Play(usable, *rC.tplC, task.Playbook, exv, env, rC.pN)
+	code, err := rC.aM.Play(usable, *rC.tplC, task.Playbook, exv, env, rC.lC.Feedback())
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  task.Playbook,

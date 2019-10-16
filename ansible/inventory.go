@@ -25,7 +25,7 @@ type (
 	InventoryVars map[string]interface{}
 )
 
-func (i *Inventory) UnmarshalJSON(data []byte) error {
+func (i *Inventory) UnmarshalAnsibleInventory(data []byte) error {
 	const allGroup = "all"
 	const meta = "_meta"
 	const hostVars = "hostvars"

@@ -31,9 +31,9 @@ type (
 		//		playbook: the name of the playbook to launch
 		//		extraVars: the extra vars passed to the playbook
 		//		envVars: the environment variables set before launching the playbook
-		//		pN: progress notifier
+		//		fN: feedback notifier
 		//
-		Play(cr component.UsableComponent, ctx model.TemplateContext, playbook string, extraVars ExtraVars, envVars EnvVars, pN util.ProgressNotifier) (int, error)
+		Play(cr component.UsableComponent, ctx model.TemplateContext, playbook string, extraVars ExtraVars, envVars EnvVars, fN util.FeedbackNotifier) (int, error)
 		// Inventory returns the current inventory of environment nodes
 		Inventory(ctx model.TemplateContext) (Inventory, error)
 	}
@@ -61,7 +61,7 @@ func CreateAnsibleManager(l *log.Logger, verbosity int, cF component.Finder) Man
 	}
 }
 
-func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, playbook string, extraVars ExtraVars, envVars EnvVars, pN util.ProgressNotifier) (int, error) {
+func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, playbook string, extraVars ExtraVars, envVars EnvVars, fN util.FeedbackNotifier) (int, error) {
 	ok, playBookPath := uc.ContainsFile(playbook)
 	if !ok {
 		return 0, fmt.Errorf("component \"%s\" does not contain playbook: %s", uc.Name(), playbook)
@@ -104,14 +104,18 @@ func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, 
 			// Detect tasks to show progression
 			sTrim := strings.TrimSpace(outLine)
 			if strings.Index(sTrim, "TASK [") == 0 {
-				pN.Detail(sTrim[len(taskPrefix):strings.LastIndex(sTrim, "]")])
+				fN.Detail(sTrim[len(taskPrefix):strings.LastIndex(sTrim, "]")])
 			}
 			if aM.verbosity > 0 {
 				aM.l.Println(outLine)
 			}
 		case status := <-eC.status:
 			aM.l.Printf("Playbook finished (%d)", status)
-			return status, nil
+			if status != 0 {
+				return status, fmt.Errorf("playbook did not complete successfully (%d), check the logs for details", status)
+			} else {
+				return status, nil
+			}
 		}
 	}
 }
@@ -146,8 +150,8 @@ func (aM manager) Inventory(ctx model.TemplateContext) (Inventory, error) {
 		}
 	}
 
-	// Parse the output
-	err = res.UnmarshalJSON([]byte(sb.String()))
+	// Parse the ansible output
+	err = res.UnmarshalAnsibleInventory([]byte(sb.String()))
 	if err != nil {
 		return res, err
 	}

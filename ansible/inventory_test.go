@@ -40,7 +40,7 @@ const jsonInventory = `{
 
 func TestParse(t *testing.T) {
 	inv := Inventory{}
-	err := inv.UnmarshalJSON([]byte(jsonInventory))
+	err := inv.UnmarshalAnsibleInventory([]byte(jsonInventory))
 	assert.Nil(t, err)
 	assert.Contains(t, inv.Hosts, "host001")
 	assert.Contains(t, inv.Hosts, "host002")
@@ -50,7 +50,7 @@ func TestParse(t *testing.T) {
 
 func TestParseAndMarshal(t *testing.T) {
 	inv := Inventory{}
-	err := inv.UnmarshalJSON([]byte(jsonInventory))
+	err := inv.UnmarshalAnsibleInventory([]byte(jsonInventory))
 	assert.Nil(t, err)
 	b, err := json.Marshal(inv)
 	assert.Nil(t, err)
