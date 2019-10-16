@@ -121,5 +121,5 @@ qualifier: QualifierContent
 
 func mockRuntimeContextWithParameters(lC util.LaunchContext) *runtimeContext {
 	env := model.InitEnvironment()
-	return CreateRuntimeContext(lC, model.TemplateContext{}, *env, nil, nil, util.CreateProgressNotifier(lC.Log()))
+	return createRuntimeContext(lC, model.TemplateContext{}, *env, nil, nil, util.CreateProgressNotifier(lC.Log()))
 }

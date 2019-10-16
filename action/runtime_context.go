@@ -21,8 +21,8 @@ type (
 	}
 )
 
-//CreateRuntimeContext creates a new context for the runtime
-func CreateRuntimeContext(lC util.LaunchContext, tplC model.TemplateContext, env model.Environment, cF component.Finder, aM ansible.Manager, pN util.ProgressNotifier) *runtimeContext {
+//createRuntimeContext creates a new context for the runtime
+func createRuntimeContext(lC util.LaunchContext, tplC model.TemplateContext, env model.Environment, cF component.Finder, aM ansible.Manager, pN util.ProgressNotifier) *runtimeContext {
 	// Initialization of the runtime context
 	rC := &runtimeContext{
 		lC:          lC,

@@ -258,5 +258,5 @@ func fStepMockMultipleContext(rC *runtimeContext) (StepResults, Result) {
 
 func mockRuntimeContext() *runtimeContext {
 	lC := util.CreateMockLaunchContext("", false)
-	return CreateRuntimeContext(lC, model.TemplateContext{}, model.Environment{}, nil, nil, util.CreateProgressNotifier(lC.Log()))
+	return createRuntimeContext(lC, model.TemplateContext{}, model.Environment{}, nil, nil, util.CreateProgressNotifier(lC.Log()))
 }

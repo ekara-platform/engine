@@ -145,7 +145,7 @@ func ParseParamValues(path string) (ParamValues, error) {
 	env := make(map[interface{}]interface{})
 	err = yaml.Unmarshal(b, &env)
 	if err != nil {
-		panic(err)
+		return r, err
 	}
 	go readMap(cKv, exit, "", env)
 

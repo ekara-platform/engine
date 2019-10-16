@@ -17,7 +17,7 @@ var releaseNothing = func() {
 type (
 
 	//Manager manages the fetch and the templating of components used into a descriptor
-	Manager struct {
+	canager struct {
 		l         *log.Logger
 		directory string
 		paths     map[string]scm.FetchedComponent
@@ -25,7 +25,7 @@ type (
 )
 
 //CreateComponentManager creates a new component manager
-func CreateComponentManager(l *log.Logger, baseDir string) *Manager {
+func createComponentManager(l *log.Logger, baseDir string) *canager {
 	c := &Manager{
 		l:         l,
 		directory: filepath.Join(baseDir, "components"),
