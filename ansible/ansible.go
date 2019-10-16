@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"os"
 	"os/exec"
 	"strings"
 	"syscall"
@@ -34,7 +35,7 @@ type (
 		//
 		Play(cr component.UsableComponent, ctx model.TemplateContext, playbook string, extraVars ExtraVars, envVars EnvVars, pN util.ProgressNotifier) (int, error)
 		// Inventory returns the current inventory of environment nodes
-		Inventory(ef util.ExchangeFolder, ctx model.TemplateContext) (Inventory, error)
+		Inventory(ctx model.TemplateContext) (Inventory, error)
 	}
 
 	manager struct {
@@ -104,7 +105,7 @@ func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, 
 	}
 }
 
-func (aM manager) Inventory(ef util.ExchangeFolder, ctx model.TemplateContext) (Inventory, error) {
+func (aM manager) Inventory(ctx model.TemplateContext) (Inventory, error) {
 	res := Inventory{}
 
 	// Discovered inventory sources
@@ -114,7 +115,7 @@ func (aM manager) Inventory(ef util.ExchangeFolder, ctx model.TemplateContext) (
 	args := []string{"--list"}
 	args = append(args, aM.buildInventoryArgs(inventoryPaths)...)
 
-	eC, err := aM.exec(ef.RootFolder, "ansible-inventory", args, EnvVars{})
+	eC, err := aM.exec(os.TempDir(), "ansible-inventory", args, EnvVars{})
 	if err != nil {
 		return res, err
 	}

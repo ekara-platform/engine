@@ -529,7 +529,7 @@ func ansibleInventory(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 	sr := InitPlaybookStepResult("Building inventory", nil, NoCleanUpRequired)
 
-	inv, err := rC.aM.Inventory(rC.lC.Ef(), *rC.tplC)
+	inv, err := rC.aM.Inventory(*rC.tplC)
 	if err != nil {
 		FailsOnCode(&sr, err, "An error occurred during inventory", nil)
 	}
