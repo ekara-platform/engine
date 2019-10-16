@@ -130,7 +130,7 @@ nodes:
 	assert.Contains(t, cpnts, "ek-aws")
 
 	// Looking for the availability of a the deploy.yaml playbook
-	mPaths := tester.cM.ContainsFile("deploy.yaml")
+	mPaths := tester.cF.ContainsFile("deploy.yaml", *tester.tplC)
 	if assert.True(t, len(mPaths.Paths) > 0) {
 		assert.Equal(t, mPaths.Paths[0].Component().Name(), "ek-swarm")
 	}

@@ -10,9 +10,10 @@ import (
 type (
 	runtimeContext struct {
 		lC util.LaunchContext
-		cM component.Manager
+		cF component.Finder
 		aM ansible.Manager
 
+		tplC        *model.TemplateContext
 		environment *model.Environment
 		report      ReportFileContent
 		buffer      map[string]ansible.Buffer
@@ -20,14 +21,16 @@ type (
 )
 
 //CreateRuntimeContext creates a new context for the runtime
-func CreateRuntimeContext(lC util.LaunchContext, env *model.Environment, cM component.Manager, aM ansible.Manager) *runtimeContext {
+func CreateRuntimeContext(lC util.LaunchContext, tplC model.TemplateContext, env model.Environment, cF component.Finder, aM ansible.Manager) *runtimeContext {
 	// Initialization of the runtime context
 	rC := &runtimeContext{
-		lC:          lC,
-		cM:          cM,
+		lC: lC,
+		cF:          cF,
 		aM:          aM,
-		environment: env,
+		environment: &env,
+		tplC: &tplC,
 	}
+
 	rC.buffer = make(map[string]ansible.Buffer)
 	return rC
 }

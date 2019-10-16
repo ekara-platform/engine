@@ -155,7 +155,7 @@ nodes:
 
 	tester.AssertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
-	tplC := tester.cM.TemplateContext()
+	tplC := tester.tplC
 	assert.Len(t, tplC.Vars, 12)
 	tester.CheckSpecificParameter(tplC.Vars, "key1_comp1", "val1_comp1")
 	// Should be templated with the cli params content
@@ -247,7 +247,7 @@ nodes:
 
 	tester.AssertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
-	tplC := tester.cM.TemplateContext()
+	tplC := tester.tplC
 
 	assert.Len(t, tplC.Vars, 5)
 	tester.CheckSpecificParameter(tplC.Vars, "key1", "val1_comp1")

@@ -79,14 +79,14 @@ func TestByMatchNoMatchOnSearch(t *testing.T) {
 	comp1 := env.Orchestrator
 	comp2 := env.Providers["p1"]
 
-	matches := cm.ContainsFile("dummy.file")
+	matches := cm.ContainsFile("dummy.file", *tester.tplC)
 	assert.NotNil(t, matches)
 	assert.Equal(t, 0, matches.Count())
 
 	//Nothing found the no template folder have been created
 	assert.Equal(t, cptComp, tester.ComponentCount())
 
-	matches = cm.ContainsFile("dummy.file", comp1, comp2)
+	matches = cm.ContainsFile("dummy.file", *tester.tplC, comp1, comp2)
 	assert.NotNil(t, matches)
 	assert.Equal(t, 0, matches.Count())
 
@@ -120,12 +120,12 @@ func TestByMatchOneMatchOnSearch(t *testing.T) {
 	checker := checkByMatch(tester, cptComp)
 
 	// 2 matches but only 1 (comp2) templated
-	matches := cm.ContainsFile("search2.file")
+	matches := cm.ContainsFile("search2.file", *tester.tplC)
 	releaseCheck := checker(matches, 2, 1, comp2)
 	checkByMatchContent(tester, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
 	releaseCheck()
 
-	matches = cm.ContainsFile("search2.file", comp1, comp2, comp3)
+	matches = cm.ContainsFile("search2.file", *tester.tplC, comp1, comp2, comp3)
 	releaseCheck = checker(matches, 2, 1, comp2)
 	checkByMatchContent(tester, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
 	releaseCheck()
@@ -157,13 +157,13 @@ func TestByMatchTwoMatchesOnSearch(t *testing.T) {
 	checker := checkByMatch(tester, cptComp)
 
 	// 3 matches but only 2 (comp1,comp2) templated
-	matches := cm.ContainsFile("search1.file")
+	matches := cm.ContainsFile("search1.file", *tester.tplC)
 	releaseCheck := checker(matches, 3, 2, comp1, comp2)
 	checkByMatchContent(tester, matches, comp1, "templateTarget1.yaml", "templateContentFromCli")
 	checkByMatchContent(tester, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
 	releaseCheck()
 
-	matches = cm.ContainsFile("search1.file", comp1, comp2, comp3)
+	matches = cm.ContainsFile("search1.file", *tester.tplC, comp1, comp2, comp3)
 	releaseCheck = checker(matches, 3, 2, comp1, comp2)
 	checkByMatchContent(tester, matches, comp1, "templateTarget1.yaml", "templateContentFromCli")
 	checkByMatchContent(tester, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
@@ -231,7 +231,7 @@ func writecheckByMatchCommon(tester *ComponentTester, d string) {
 	repDesc.WriteCommit("ekara.yaml", byMatchDescContent)
 }
 
-func checkByMatchCommon(tester *ComponentTester, initialComp int) (model.Environment, *Manager) {
+func checkByMatchCommon(tester *ComponentTester, initialComp int) (model.Environment, Finder) {
 	err := tester.Init()
 	assert.Nil(tester.t, err)
 	env := tester.Env()
@@ -239,9 +239,9 @@ func checkByMatchCommon(tester *ComponentTester, initialComp int) (model.Environ
 
 	tester.AssertComponentsContains(model.MainComponentId, model.EkaraComponentId+"1", "comp1", "comp2", "comp3")
 
-	cm := tester.cM
-	assert.NotNil(tester.t, cm)
+	cF := tester.cF
+	assert.NotNil(tester.t, cF)
 
 	assert.Equal(tester.t, initialComp, tester.ComponentCount())
-	return env, cm
+	return env, cF
 }

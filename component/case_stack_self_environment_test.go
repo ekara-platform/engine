@@ -95,8 +95,8 @@ ekara:
 	// Chect that the environment has one self contained stack
 	if assert.Len(t, env.Stacks, 1) {
 
-		cm := tester.cM
-		assert.NotNil(t, cm)
+		cF := tester.cF
+		assert.NotNil(t, cF)
 
 		stack, ok := env.Stacks["myStack"]
 		if assert.True(t, ok) {
@@ -108,7 +108,7 @@ ekara:
 			assert.Equal(t, model.MainComponentId, stackC.Id)
 
 			// Check that the stack is usable and returns the environent as component
-			usableStack, err := cm.Use(stack)
+			usableStack, err := cF.Use(stack, *tester.tplC)
 			defer usableStack.Release()
 			assert.Nil(t, err)
 			assert.NotNil(t, usableStack)

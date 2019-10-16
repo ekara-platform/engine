@@ -27,7 +27,9 @@ type (
 		context     util.LaunchContext
 		t           *testing.T
 		environment *model.Environment
+		tplC        *model.TemplateContext
 		cM          *Manager
+		cF          Finder
 		rM          *ReferenceManager
 	}
 
@@ -46,9 +48,10 @@ func CreateComponentTester(t *testing.T, lC util.LaunchContext) *ComponentTester
 		t:           t,
 		paths:       make([]string, 0, 0),
 		environment: model.InitEnvironment(),
+		tplC:        model.CreateTemplateContext(lC.ExternalVars()),
 	}
 	tester.Clean()
-	tester.cM = CreateComponentManager(lC.Log(), lC.ExternalVars(), tester.environment.Platform(), tester.workdir)
+	tester.cM = CreateComponentManager(lC.Log(), tester.workdir)
 	tester.rM = CreateReferenceManager(lC.Log())
 	return tester
 }
@@ -75,12 +78,14 @@ func (t *ComponentTester) Init() error {
 		return err
 	}
 	mainComponent := model.CreateComponent(model.MainComponentId, mainRep)
-	err = t.rM.Init(mainComponent, t.cM)
+	err = t.rM.Init(mainComponent, t.cM, t.tplC)
 	if err != nil {
 		return err
 	}
 
-	return t.rM.Ensure(t.environment, t.cM)
+	err = t.rM.Ensure(t.environment, t.cM, t.tplC)
+	t.cF = CreateFinder(t.context.Log(), filepath.Join(t.workdir, "components"), *t.environment.Platform())
+	return err
 	// TODO Link here the generated interface with the context
 	// ONce this is done into the engine then remove this link.
 	//t.context.templateContext.Model = t.Env()
@@ -293,7 +298,7 @@ func (t *ComponentTester) CheckFile(u UsableComponent, file, desiredContent stri
 
 //CheckParameter asserts that the template context contains the given parameter
 func (t *ComponentTester) CheckParameter(key, value string) {
-	v, ok := t.cM.TemplateContext().Vars[key]
+	v, ok := t.tplC.Vars[key]
 	if assert.True(t.t, ok) {
 		assert.Equal(t.t, value, v)
 	}
@@ -328,7 +333,7 @@ func (t *ComponentTester) CheckStack(holder, stackName, composeContent string) {
 		assert.Equal(t.t, holder, stackC.Id)
 
 		// Check that the stack is usable and returns the correct component
-		usableStack, err := t.cM.Use(stack)
+		usableStack, err := t.cF.Use(stack, *t.tplC)
 		defer usableStack.Release()
 		assert.Nil(t.t, err)
 		assert.NotNil(t.t, usableStack)

@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"syscall"
 
+	"github.com/ekara-platform/model"
+
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
 )
@@ -24,25 +26,24 @@ type (
 		//		envars: the environment variables set before launching the playbook
 		//		data: the template context required to template a used component
 		//
-		Execute(cr component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars) (int, error)
+		Execute(cr component.UsableComponent, ctx model.TemplateContext, playbook string, extraVars ExtraVars, envars EnvVars) (int, error)
 	}
 
 	manager struct {
-		l                *log.Logger
-		componentManager component.Manager
+		l  *log.Logger
+		cF component.Finder
 	}
 )
 
 //CreateAnsibleManager returns a new AnsibleManager, able to launch playbook
-//holded by the given component manager
-func CreateAnsibleManager(l *log.Logger, componentManager component.Manager) Manager {
+func CreateAnsibleManager(l *log.Logger, cF component.Finder) Manager {
 	return &manager{
-		l:                l,
-		componentManager: componentManager,
+		l:  l,
+		cF: cF,
 	}
 }
 
-func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVars ExtraVars, envars EnvVars) (int, error) {
+func (aM manager) Execute(uc component.UsableComponent, ctx model.TemplateContext, playbook string, extraVars ExtraVars, envars EnvVars) (int, error) {
 
 	ok, playBookPath := uc.ContainsFile(playbook)
 
@@ -57,7 +58,7 @@ func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVa
 	aM.l.Println("- - - - - - - - - - - - - - - - - - - - - - - - - - -")
 
 	var args = []string{playbook}
-	modulePaths := aM.componentManager.ContainsDirectory(util.ComponentModuleFolder)
+	modulePaths := aM.cF.ContainsDirectory(util.ComponentModuleFolder, ctx)
 	defer modulePaths.Release()
 	if modulePaths.Count() > 0 {
 		pathsStrings := modulePaths.JoinAbsolutePaths(":")
@@ -67,7 +68,7 @@ func (aM manager) Execute(uc component.UsableComponent, playbook string, extraVa
 		aM.l.Printf("No playbook module")
 	}
 
-	inventoryPaths := aM.componentManager.ContainsDirectory(util.InventoryModuleFolder)
+	inventoryPaths := aM.cF.ContainsDirectory(util.InventoryModuleFolder, ctx)
 	defer inventoryPaths.Release()
 	if inventoryPaths.Count() > 0 {
 		asArgs := inventoryPaths.PrefixPaths("-i")

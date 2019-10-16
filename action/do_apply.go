@@ -68,12 +68,12 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 		}
 
 		// We launch the playbook
-		usable, err := rC.cM.Use(p)
+		usable, err := rC.cF.Use(p, *rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 		}
 		defer usable.Release()
-		code, err := rC.aM.Execute(usable, setupPlaybook, exv, env)
+		code, err := rC.aM.Execute(usable, *rC.tplC, setupPlaybook, exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  setupPlaybook,
@@ -157,14 +157,14 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		exv := ansible.BuildExtraVars("", nodeCreateEf.Input, nodeCreateEf.Output, buffer)
 
 		// Make the component usable
-		usable, err := rC.cM.Use(p)
+		usable, err := rC.cF.Use(p, *rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 		}
 		defer usable.Release()
 
 		// Launch the playbook
-		code, err := rC.aM.Execute(usable, createPlaybook, exv, env)
+		code, err := rC.aM.Execute(usable, *rC.tplC, createPlaybook, exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  createPlaybook,
@@ -235,14 +235,14 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	exv := ansible.BuildExtraVars("", setupOrchestratorEf.Input, setupOrchestratorEf.Output, buffer)
 
 	// Make the component usable
-	usable, err := rC.cM.Use(o)
+	usable, err := rC.cF.Use(o, *rC.tplC)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 	}
 	defer usable.Release()
 
 	// We launch the playbook
-	code, err := rC.aM.Execute(usable, setupPlaybook, exv, env)
+	code, err := rC.aM.Execute(usable, *rC.tplC, setupPlaybook, exv, env)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  setupPlaybook,
@@ -315,14 +315,14 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 		exv := ansible.BuildExtraVars("", installOrchestratorEf.Input, installOrchestratorEf.Output, buffer)
 
 		// Make the component usable
-		usable, err := rC.cM.Use(o)
+		usable, err := rC.cF.Use(o, *rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 		}
 		defer usable.Release()
 
 		// Launch the playbook
-		code, err := rC.aM.Execute(usable, installPlaybook, exv, env)
+		code, err := rC.aM.Execute(usable, *rC.tplC, installPlaybook, exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  installPlaybook,
@@ -393,7 +393,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 		)
 
 		// Make the stack usable
-		ust, err := rC.cM.Use(st)
+		ust, err := rC.cF.Use(st, *rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
 		}
@@ -403,7 +403,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 		var target component.UsableComponent
 		var deployExtraVars string
 		if ok, _ := ust.ContainsFile(deployPlaybook); !ok {
-			o, err := rC.cM.Use(rC.environment.Orchestrator)
+			o, err := rC.cF.Use(rC.environment.Orchestrator, *rC.tplC)
 			if err != nil {
 				FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 			}
@@ -422,7 +422,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			buffer)
 
 		// Execute the playbook
-		code, err := rC.aM.Execute(target, deployPlaybook, exv, env)
+		code, err := rC.aM.Execute(target, *rC.tplC, deployPlaybook, exv, env)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  deployPlaybook,

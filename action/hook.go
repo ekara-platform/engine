@@ -79,13 +79,13 @@ func fconsumeHookResult(rC *runtimeContext, target model.Describable, repName st
 }
 
 func runTask(rC *runtimeContext, task model.Task, target model.Describable, sc StepResult, r *StepResults, ef util.ExchangeFolder, exv ansible.ExtraVars, env ansible.EnvVars) {
-	usable, err := rC.cM.Use(task)
+	usable, err := rC.cF.Use(task, *rC.tplC)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable task", nil)
 	}
 	defer usable.Release()
 
-	code, err := rC.aM.Execute(usable, task.Playbook, exv, env)
+	code, err := rC.aM.Execute(usable, *rC.tplC, task.Playbook, exv, env)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  task.Playbook,

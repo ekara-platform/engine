@@ -2,8 +2,6 @@ package action
 
 import (
 	"time"
-
-	"github.com/ekara-platform/model"
 )
 
 type (
@@ -53,7 +51,7 @@ func allActions() []Action {
 }
 
 // run runs an action for the given action manager and contexts
-func (a Action) run(am *actionManager, env *model.Environment) (*ExecutionReport, Result, error) {
+func (a Action) run(am Manager) (*ExecutionReport, Result, error) {
 	r := &ExecutionReport{}
 
 	if a.dependsOn != NilActionID {
@@ -64,7 +62,7 @@ func (a Action) run(am *actionManager, env *model.Environment) (*ExecutionReport
 		}
 
 		// Run the dependent action and aggregate its report (dropping the intermediate result)
-		rep, _, e := d.run(am, env)
+		rep, _, e := d.run(am)
 		if e != nil {
 			return r, nil, e
 		}
@@ -76,10 +74,10 @@ func (a Action) run(am *actionManager, env *model.Environment) (*ExecutionReport
 		}
 	}
 
-	am.lC.Log().Printf(LogRunningAction, a.name)
+	am.rC.lC.Log().Printf(LogRunningAction, a.name)
 
 	// Run the final action and return its result
-	rep, res := a.launch(CreateRuntimeContext(am.lC, env, am.cM, am.aM))
+	rep, res := a.launch(am.rC)
 	r.aggregate(rep)
 	return r, res, nil
 }

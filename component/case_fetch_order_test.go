@@ -294,10 +294,8 @@ nodes:
 	//- then main descriptor itself
 	checkFetchOrder(tester, t, "comp1", "comp2", model.EkaraComponentId+"2", "comp4", "comp5", model.EkaraComponentId+"1", "comp3", "comp6", model.MainComponentId)
 
-	tplC := tester.cM.TemplateContext()
-
 	// Check that all vars have been accumulated
-	assert.Equal(t, len(tplC.Vars), 9)
+	assert.Equal(t, len(tester.tplC.Vars), 9)
 
 	tester.CheckParameter("key1", "val1_comp1")
 	tester.CheckParameter("key2", "val2_comp2")

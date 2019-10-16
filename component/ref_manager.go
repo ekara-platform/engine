@@ -44,7 +44,7 @@ func CreateReferenceManager(l *log.Logger) *ReferenceManager {
 	}
 }
 
-func (rm *ReferenceManager) Init(c model.Component, cm *Manager) error {
+func (rm *ReferenceManager) Init(c model.Component, cm *Manager, ctx *model.TemplateContext) error {
 	rm.l.Println("Parsing the main descriptor")
 	rm.rootComponent = c
 
@@ -54,7 +54,7 @@ func (rm *ReferenceManager) Init(c model.Component, cm *Manager) error {
 		return err
 	}
 
-	refs, err := model.ParseYamlDescriptorReferences(url, cm.TemplateContext())
+	refs, err := model.ParseYamlDescriptorReferences(url, ctx)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (rm *ReferenceManager) Init(c model.Component, cm *Manager) error {
 
 	if b {
 		parentC, _ := parent.Component()
-		err = rm.parseParent(parentC, cm, cm.TemplateContext())
+		err = rm.parseParent(parentC, cm, ctx)
 		if err != nil {
 			return err
 		}
@@ -97,7 +97,7 @@ func (rm *ReferenceManager) Init(c model.Component, cm *Manager) error {
 	return nil
 }
 
-func (rm *ReferenceManager) parseParent(p model.Component, cm *Manager, data *model.TemplateContext) error {
+func (rm *ReferenceManager) parseParent(p model.Component, cm *Manager, ctx *model.TemplateContext) error {
 	rm.l.Printf("Parsing parent %s", p.Repository)
 
 	p.Id = fmt.Sprintf("%s%d", p.Id, len(rm.parents)+1)
@@ -109,7 +109,7 @@ func (rm *ReferenceManager) parseParent(p model.Component, cm *Manager, data *mo
 		return err
 	}
 
-	refs, err := model.ParseYamlDescriptorReferences(url, data)
+	refs, err := model.ParseYamlDescriptorReferences(url, ctx)
 	if err != nil {
 		rm.l.Printf("error parsing the parent references %s", err.Error())
 		return err
@@ -155,12 +155,12 @@ func (rm *ReferenceManager) parseParent(p model.Component, cm *Manager, data *mo
 
 	if b {
 		parentC, _ := parent.Component()
-		return rm.parseParent(parentC, cm, data)
+		return rm.parseParent(parentC, cm, ctx)
 	}
 	return nil
 }
 
-func (rm *ReferenceManager) Ensure(env *model.Environment, cm *Manager) error {
+func (rm *ReferenceManager) Ensure(env *model.Environment, cm *Manager, ctx *model.TemplateContext) error {
 	// The parents content must be processed fist
 	for i := len(rm.parents) - 1; i >= 0; i-- {
 		p := rm.parents[i]
@@ -170,7 +170,7 @@ func (rm *ReferenceManager) Ensure(env *model.Environment, cm *Manager) error {
 		for _, c := range p.referencedComponents.Sorted() {
 			rm.l.Printf("Reference manager, ensuring parent component %s", c.Id)
 			if rm.usedReferences.IdUsed(c.Id) {
-				err := rm.callEnsure(c, env, cm, cm.TemplateContext())
+				err := rm.callEnsure(c, env, cm, ctx)
 				if err != nil {
 					return err
 				}
@@ -181,7 +181,7 @@ func (rm *ReferenceManager) Ensure(env *model.Environment, cm *Manager) error {
 
 		//Once the declared components have been processed we can process the parent
 		rm.l.Printf("Reference manager, ensuring parent %s", p.comp.Id)
-		err := rm.callEnsure(p.comp, env, cm, cm.TemplateContext())
+		err := rm.callEnsure(p.comp, env, cm, ctx)
 		if err != nil {
 			return err
 		}
@@ -193,7 +193,7 @@ func (rm *ReferenceManager) Ensure(env *model.Environment, cm *Manager) error {
 	for _, c := range rm.rootComponents.Sorted() {
 		rm.l.Printf("Reference manager, ensuring descriptor component %s", c.Id)
 		if rm.usedReferences.IdUsed(c.Id) {
-			err := rm.callEnsure(c, env, cm, cm.TemplateContext())
+			err := rm.callEnsure(c, env, cm, ctx)
 			if err != nil {
 				return err
 			}
@@ -204,7 +204,7 @@ func (rm *ReferenceManager) Ensure(env *model.Environment, cm *Manager) error {
 
 	rm.l.Printf("Reference manager ensuring, main descriptor %s", rm.rootComponent.Id)
 	// Root component is the main descriptor
-	err := rm.callEnsure(rm.rootComponent, env, cm, cm.TemplateContext())
+	err := rm.callEnsure(rm.rootComponent, env, cm, ctx)
 	if err != nil {
 		return err
 	}
@@ -212,7 +212,7 @@ func (rm *ReferenceManager) Ensure(env *model.Environment, cm *Manager) error {
 	return nil
 }
 
-func (rm *ReferenceManager) callEnsure(c model.Component, env *model.Environment, cm *Manager, data *model.TemplateContext) error {
+func (rm *ReferenceManager) callEnsure(c model.Component, env *model.Environment, cm *Manager, ctx *model.TemplateContext) error {
 	env.Platform().AddComponent(c)
 
 	url, hasDesc, err := cm.ensureOneComponent(c)
@@ -222,7 +222,7 @@ func (rm *ReferenceManager) callEnsure(c model.Component, env *model.Environment
 
 	if hasDesc {
 		rm.l.Printf("creating partial environment based on component %s", c.Id)
-		descriptorYaml, err := model.ParseYamlDescriptor(url, data)
+		descriptorYaml, err := model.ParseYamlDescriptor(url, ctx)
 		if err != nil {
 			rm.l.Printf("error parsing the descriptor: %s", err.Error())
 			return err
@@ -247,7 +247,7 @@ func (rm *ReferenceManager) callEnsure(c model.Component, env *model.Environment
 			return err
 		}
 
-		data.Model = model.CreateTEnvironmentForEnvironment(*env)
+		ctx.Model = model.CreateTEnvironmentForEnvironment(*env)
 	}
 	rm.sortedFetchedComponents = append(rm.sortedFetchedComponents, c.Id)
 	return nil

@@ -88,7 +88,7 @@ nodes:
 	env := tester.Env()
 	assert.NotNil(t, env)
 
-	tplC := tester.cM.TemplateContext()
+	tplC := tester.tplC
 
 	// Check that all vars have been accumulated
 	// From the descriptor

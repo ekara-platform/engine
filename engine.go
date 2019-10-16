@@ -21,16 +21,16 @@ type Ekara interface {
 
 type engine struct {
 	lC        util.LaunchContext
-	tplC      *model.TemplateContext
 	directory string
 
 	environment *model.Environment
+	tplC        *model.TemplateContext
 
 	// Subsystems
 	referenceManager *component.ReferenceManager
 	componentManager *component.Manager
 	ansibleManager   ansible.Manager
-	actionManager    action.Manager
+	actionManager    *action.Manager
 }
 
 // Create creates an environment descriptor based on the provided location.
@@ -46,15 +46,15 @@ func Create(lC util.LaunchContext, workDir string) (Ekara, error) {
 		return nil, err
 	}
 
-	// TODO : pass launch context to managers + let templateContext be in the componentManager only
 	eng := &engine{
 		lC:          lC,
 		directory:   absWorkDir,
 		environment: model.InitEnvironment(),
+		tplC:        model.CreateTemplateContext(lC.ExternalVars()),
 	}
 
 	eng.referenceManager = component.CreateReferenceManager(lC.Log())
-	eng.componentManager = component.CreateComponentManager(lC.Log(), lC.ExternalVars(), eng.environment.Platform(), absWorkDir)
+	eng.componentManager = component.CreateComponentManager(lC.Log(), absWorkDir)
 
 	return eng, nil
 }
@@ -83,22 +83,27 @@ func (eng *engine) Init() (err error) {
 	mainComponent := model.CreateComponent(model.MainComponentId, mainRep)
 
 	// Discover components starting from the main one
-	err = eng.referenceManager.Init(mainComponent, eng.componentManager)
+	err = eng.referenceManager.Init(mainComponent, eng.componentManager, eng.tplC)
 	if err != nil {
 		return
 	}
 
 	// Then ensure all effectively used components are fetched
-	err = eng.referenceManager.Ensure(eng.environment, eng.componentManager)
+	err = eng.referenceManager.Ensure(eng.environment, eng.componentManager, eng.tplC)
 	if err != nil {
 		return
 	}
 
-	// ONce the environment is created we can create the ansible and action
-	// managerq passing them copy of the
-	eng.ansibleManager = ansible.CreateAnsibleManager(eng.lC.Log(), *eng.componentManager)
-	eng.actionManager = action.CreateActionManager(eng.lC, *eng.componentManager, eng.ansibleManager)
+	// Once the environment is created we can create the ansible and action
+	// manager passing them copy of the
+	finder := component.CreateFinder(eng.lC.Log(), filepath.Join(eng.directory, "components"), *eng.environment.Platform())
+	eng.ansibleManager = ansible.CreateAnsibleManager(eng.lC.Log(), finder)
+	eng.actionManager = action.CreateActionManager(eng.lC, *eng.tplC, *eng.environment, finder, eng.ansibleManager)
 	return
+}
+
+func (eng *engine) TemplateContext() *model.TemplateContext {
+	return eng.tplC
 }
 
 func (eng *engine) ComponentManager() component.Manager {
@@ -110,5 +115,5 @@ func (eng *engine) AnsibleManager() ansible.Manager {
 }
 
 func (eng *engine) ActionManager() action.Manager {
-	return eng.actionManager
+	return *eng.actionManager
 }

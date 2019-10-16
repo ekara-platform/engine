@@ -65,10 +65,10 @@ nodes:
 	// comp1 should be downloaded because it's used as orchestrator and provider
 	tester.AssertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "comp1")
 
-	cm := tester.cM
-	assert.NotNil(t, cm)
+	cF := tester.cF
+	assert.NotNil(t, cF)
 
-	usableComp, err := cm.Use(env.Orchestrator)
+	usableComp, err := cF.Use(env.Orchestrator, *tester.tplC)
 	assert.Nil(t, err)
 	defer usableComp.Release()
 	// Check that the comp1 used is the one defined into the main descriptor
@@ -140,10 +140,10 @@ nodes:
 	// comp1 should be downloaded because it's used as orchestrator and provider
 	tester.AssertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", model.EkaraComponentId+"2", "comp1")
 
-	cm := tester.cM
-	assert.NotNil(t, cm)
+	cF := tester.cF
+	assert.NotNil(t, cF)
 
-	usableComp, err := cm.Use(env.Orchestrator)
+	usableComp, err := cF.Use(env.Orchestrator, *tester.tplC)
 	assert.Nil(t, err)
 	defer usableComp.Release()
 	// Check that the comp1 used is the one defined into the main descriptor
