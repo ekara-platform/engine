@@ -28,8 +28,6 @@ const (
 	ValidateActionID = "VALIDATE"
 	// CheckActionID identifies the action of returning the validation results of an environment model.
 	CheckActionID = "CHECK"
-	// FailOnErrorActionID identifies the action of failing if the environment model has validation errors.
-	FailOnErrorActionID = "FAIL"
 	// DumpActionID identifies the action of dumping the effective environment model.
 	DumpActionID = "DUMP"
 	// ApplyActionID identifies the action of applying a descriptor to reality

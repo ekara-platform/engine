@@ -34,7 +34,7 @@ type (
 //CreateActionManager initializes the action manager and its content
 func CreateActionManager(lC util.LaunchContext, tplC model.TemplateContext, env model.Environment, cF component.Finder, aM ansible.Manager) *Manager {
 	am := &Manager{
-		rC:      CreateRuntimeContext(lC, tplC, env, cF, aM),
+		rC:      CreateRuntimeContext(lC, tplC, env, cF, aM, util.CreateProgressNotifier(lC.Log())),
 		actions: make(map[ActionID]Action),
 	}
 
