@@ -46,7 +46,7 @@ type (
 	}
 )
 
-func CreateFinder(l *log.Logger, baseDir string, p model.Platform) Finder {
+func createFinder(l *log.Logger, baseDir string, p model.Platform) Finder {
 	return finder{
 		l:    l,
 		base: baseDir,

@@ -11,7 +11,7 @@ type (
 	//ReferenceManager manages all the components declared and used into a descriptor
 	ReferenceManager struct {
 		l  *log.Logger
-		cm *Manager
+		cm *manager
 		//usedReferences stores the references of all components used
 		// into the parsed descriptors and all its parents
 		usedReferences *model.UsedReferences
@@ -31,8 +31,8 @@ type (
 	}
 )
 
-//CreateReferenceManager creates a new references manager
-func CreateReferenceManager(l *log.Logger) *ReferenceManager {
+//createReferenceManager creates a new references manager
+func createReferenceManager(l *log.Logger) *ReferenceManager {
 	return &ReferenceManager{
 		l:                       l,
 		usedReferences:          model.CreateUsedReferences(),
@@ -44,7 +44,7 @@ func CreateReferenceManager(l *log.Logger) *ReferenceManager {
 	}
 }
 
-func (rm *ReferenceManager) Init(c model.Component, cm *Manager, ctx *model.TemplateContext) error {
+func (rm *ReferenceManager) init(c model.Component, cm *manager, ctx *model.TemplateContext) error {
 	rm.l.Println("Parsing the main descriptor")
 	rm.rootComponent = c
 
@@ -97,7 +97,7 @@ func (rm *ReferenceManager) Init(c model.Component, cm *Manager, ctx *model.Temp
 	return nil
 }
 
-func (rm *ReferenceManager) parseParent(p model.Component, cm *Manager, ctx *model.TemplateContext) error {
+func (rm *ReferenceManager) parseParent(p model.Component, cm *manager, ctx *model.TemplateContext) error {
 	rm.l.Printf("Parsing parent %s", p.Repository)
 
 	p.Id = fmt.Sprintf("%s%d", p.Id, len(rm.parents)+1)
@@ -160,7 +160,7 @@ func (rm *ReferenceManager) parseParent(p model.Component, cm *Manager, ctx *mod
 	return nil
 }
 
-func (rm *ReferenceManager) Ensure(env *model.Environment, cm *Manager, ctx *model.TemplateContext) error {
+func (rm *ReferenceManager) ensure(env *model.Environment, cm *manager, ctx *model.TemplateContext) error {
 	// The parents content must be processed fist
 	for i := len(rm.parents) - 1; i >= 0; i-- {
 		p := rm.parents[i]
@@ -212,7 +212,7 @@ func (rm *ReferenceManager) Ensure(env *model.Environment, cm *Manager, ctx *mod
 	return nil
 }
 
-func (rm *ReferenceManager) callEnsure(c model.Component, env *model.Environment, cm *Manager, ctx *model.TemplateContext) error {
+func (rm *ReferenceManager) callEnsure(c model.Component, env *model.Environment, cm *manager, ctx *model.TemplateContext) error {
 	env.Platform().AddComponent(c)
 
 	url, hasDesc, err := cm.ensureOneComponent(c)

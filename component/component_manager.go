@@ -17,16 +17,16 @@ var releaseNothing = func() {
 type (
 
 	//Manager manages the fetch and the templating of components used into a descriptor
-	canager struct {
+	manager struct {
 		l         *log.Logger
 		directory string
 		paths     map[string]scm.FetchedComponent
 	}
 )
 
-//CreateComponentManager creates a new component manager
-func createComponentManager(l *log.Logger, baseDir string) *canager {
-	c := &Manager{
+//createComponentManager creates a new component manager
+func createComponentManager(l *log.Logger, baseDir string) *manager {
+	c := &manager{
 		l:         l,
 		directory: filepath.Join(baseDir, "components"),
 		paths:     map[string]scm.FetchedComponent{},
@@ -34,12 +34,12 @@ func createComponentManager(l *log.Logger, baseDir string) *canager {
 	return c
 }
 
-func (cm *Manager) isComponentFetched(id string) (val scm.FetchedComponent, present bool) {
+func (cm *manager) isComponentFetched(id string) (val scm.FetchedComponent, present bool) {
 	val, present = cm.paths[id]
 	return
 }
 
-func (cm *Manager) ensureOneComponent(c model.Component) (model.EkURL, bool, error) {
+func (cm *manager) ensureOneComponent(c model.Component) (model.EkURL, bool, error) {
 	cm.l.Printf("ensuring component: %s", c.Id)
 	path, fetched := cm.isComponentFetched(c.Id)
 	if !fetched {

@@ -28,7 +28,7 @@ type (
 		t           *testing.T
 		environment *model.Environment
 		tplC        *model.TemplateContext
-		cM          *Manager
+		cM          *manager
 		cF          Finder
 		rM          *ReferenceManager
 	}
@@ -51,8 +51,8 @@ func CreateComponentTester(t *testing.T, lC util.LaunchContext) *ComponentTester
 		tplC:        model.CreateTemplateContext(lC.ExternalVars()),
 	}
 	tester.Clean()
-	tester.cM = CreateComponentManager(lC.Log(), tester.workdir)
-	tester.rM = CreateReferenceManager(lC.Log())
+	tester.cM = createComponentManager(lC.Log(), tester.workdir)
+	tester.rM = createReferenceManager(lC.Log())
 	return tester
 }
 
@@ -78,13 +78,13 @@ func (t *ComponentTester) Init() error {
 		return err
 	}
 	mainComponent := model.CreateComponent(model.MainComponentId, mainRep)
-	err = t.rM.Init(mainComponent, t.cM, t.tplC)
+	err = t.rM.init(mainComponent, t.cM, t.tplC)
 	if err != nil {
 		return err
 	}
 
-	err = t.rM.Ensure(t.environment, t.cM, t.tplC)
-	t.cF = CreateFinder(t.context.Log(), filepath.Join(t.workdir, "components"), *t.environment.Platform())
+	err = t.rM.ensure(t.environment, t.cM, t.tplC)
+	t.cF = createFinder(t.context.Log(), filepath.Join(t.workdir, "components"), *t.environment.Platform())
 	return err
 	// TODO Link here the generated interface with the context
 	// ONce this is done into the engine then remove this link.
