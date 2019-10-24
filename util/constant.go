@@ -17,8 +17,12 @@ const (
 	//to pass the environment descriptor password
 	StarterEnvPasswordVariableKey string = "EKARA_ENV_DESCR_PASSWORD"
 
+	//StarterEnvPasswordVariableKey is the environment variable key used
+	//to pass the environment descriptor password
+	StarterVerbosityVariableKey string = "EKARA_VERBOSITY"
+
 	//SSHPuplicKeyFileName is the Name of the SSH Public key file
-	SSHPuplicKeyFileName string = "ssh.pub"
+	SSHPublicKeyFileName string = "ssh.pub"
 
 	//SSHPrivateKeyFileName is the Name of the SSH Private key file
 	SSHPrivateKeyFileName string = "ssh.pem"

@@ -49,6 +49,11 @@ func CreateMockLaunchContextWithDataAndFolder(mainPath string, params model.Para
 	return &c
 }
 
+//Verbosity simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) Verbosity() int {
+	return 0
+}
+
 //User simulates the corresponding method in LaunchContext for testing purposes
 func (lC MockLaunchContext) DescriptorName() string {
 	return "ekara.yaml"

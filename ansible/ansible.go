@@ -39,8 +39,9 @@ type (
 	}
 
 	manager struct {
-		l  *log.Logger
-		cF component.Finder
+		l         *log.Logger
+		cF        component.Finder
+		verbosity int
 	}
 
 	execChan struct {
@@ -52,10 +53,11 @@ type (
 
 //CreateAnsibleManager returns a new AnsibleManager, providing managed execution of
 //Ansible commands
-func CreateAnsibleManager(l *log.Logger, cF component.Finder) Manager {
+func CreateAnsibleManager(l *log.Logger, verbosity int, cF component.Finder) Manager {
 	return &manager{
-		l:  l,
-		cF: cF,
+		l:         l,
+		cF:        cF,
+		verbosity: verbosity,
 	}
 }
 
@@ -81,6 +83,11 @@ func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, 
 	// Extra vars
 	args = append(args, aM.buildExtraVarsArgs(extraVars)...)
 
+	// Verbosity = 2+
+	if aM.verbosity > 1 {
+		args = append(args, "-v")
+	}
+
 	eC, err := aM.exec(uc.RootPath(), "ansible-playbook", args, envVars)
 	if err != nil {
 		return 0, err
@@ -89,15 +96,19 @@ func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, 
 	// Read the logs as they come until a status code is returned
 	for {
 		select {
-		case <-eC.err:
-			// drop err lines
+		case errLine := <-eC.err:
+			if aM.verbosity > 1 {
+				aM.l.Println(errLine)
+			}
 		case outLine := <-eC.out:
 			// Detect tasks to show progression
 			sTrim := strings.TrimSpace(outLine)
 			if strings.Index(sTrim, "TASK [") == 0 {
 				pN.Detail(sTrim[len(taskPrefix):strings.LastIndex(sTrim, "]")])
 			}
-			aM.l.Println(outLine)
+			if aM.verbosity > 0 {
+				aM.l.Println(outLine)
+			}
 		case status := <-eC.status:
 			aM.l.Printf("Playbook finished (%d)", status)
 			return status, nil

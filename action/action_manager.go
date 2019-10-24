@@ -22,9 +22,12 @@ type Result interface {
 }
 
 type (
-
 	//Manager is the manager of all action available into the engine
-	Manager struct {
+	Manager interface {
+		Run(id ActionID) (Result, error)
+	}
+
+	manager struct {
 		rC *runtimeContext
 		// available actions
 		actions map[ActionID]Action
@@ -32,8 +35,8 @@ type (
 )
 
 //CreateActionManager initializes the action manager and its content
-func CreateActionManager(lC util.LaunchContext, tplC model.TemplateContext, env model.Environment, cF component.Finder, aM ansible.Manager) *Manager {
-	am := &Manager{
+func CreateActionManager(lC util.LaunchContext, tplC model.TemplateContext, env model.Environment, cF component.Finder, aM ansible.Manager) *manager {
+	am := &manager{
 		rC:      createRuntimeContext(lC, tplC, env, cF, aM, util.CreateProgressNotifier(lC.Log())),
 		actions: make(map[ActionID]Action),
 	}
@@ -44,12 +47,12 @@ func CreateActionManager(lC util.LaunchContext, tplC model.TemplateContext, env 
 	return am
 }
 
-func (am *Manager) empty() bool {
+func (am *manager) empty() bool {
 	return len(am.actions) == 0
 }
 
 //get returns the action corresponding to the given id.
-func (am *Manager) get(id ActionID) (Action, error) {
+func (am *manager) get(id ActionID) (Action, error) {
 	if val, ok := am.actions[id]; ok {
 		return val, nil
 	}
@@ -57,7 +60,7 @@ func (am *Manager) get(id ActionID) (Action, error) {
 }
 
 //Run launches the action corresponding to the given id.
-func (am *Manager) Run(id ActionID) (Result, error) {
+func (am *manager) Run(id ActionID) (Result, error) {
 	a, e := am.get(id)
 	if e != nil {
 		return nil, e

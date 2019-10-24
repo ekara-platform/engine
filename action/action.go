@@ -49,7 +49,7 @@ func allActions() []Action {
 }
 
 // run runs an action for the given action manager and contexts
-func (a Action) run(am Manager) (*ExecutionReport, Result, error) {
+func (a Action) run(am manager) (*ExecutionReport, Result, error) {
 	r := &ExecutionReport{}
 
 	if a.dependsOn != NilActionID {
