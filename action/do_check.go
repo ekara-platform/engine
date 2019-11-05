@@ -16,7 +16,7 @@ var (
 func doCheck(rC *runtimeContext) (StepResults, Result) {
 	sc := InitCodeStepResult("Checking if the environment has any validation error", nil, NoCleanUpRequired)
 
-	rC.pN.Notify("check", "Checking for environment model problems")
+	rC.lC.Feedback().Progress("check", "Checking for environment model problems")
 
 	vErrs := rC.environment.Validate()
 	if vErrs.HasErrors() {
@@ -24,7 +24,7 @@ func doCheck(rC *runtimeContext) (StepResults, Result) {
 		FailsOnDescriptor(&sc, fmt.Errorf("descriptor error"), "The descriptor is not valid", nil)
 	}
 
-	rC.pN.Notify("check", "Environment model checked")
+	rC.lC.Feedback().Progress("check", "Environment model checked")
 
 	return sc.Build(), nil
 }

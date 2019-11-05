@@ -49,7 +49,7 @@ nodes:
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})

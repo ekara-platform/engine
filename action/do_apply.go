@@ -3,12 +3,9 @@ package action
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
-
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
-	"gopkg.in/yaml.v2"
 )
 
 const (
@@ -30,6 +27,14 @@ func (r ApplyResult) IsSuccess() bool {
 	return r.Success
 }
 
+func (r *ApplyResult) FromJson(s string) error {
+	err := json.Unmarshal([]byte(s), r)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (r ApplyResult) AsJson() (string, error) {
 	b, err := json.Marshal(r)
 	if err != nil {
@@ -38,28 +43,12 @@ func (r ApplyResult) AsJson() (string, error) {
 	return string(b), nil
 }
 
-func (r ApplyResult) AsYaml() (string, error) {
-	b, err := yaml.Marshal(r)
-	if err != nil {
-		return "", err
-	}
-	return string(b), nil
-}
-
-func (r ApplyResult) AsPlainText() ([]string, error) {
-	res, err := r.AsYaml()
-	if err != nil {
-		return []string{}, err
-	}
-	return strings.Split(res, "\n"), nil
-}
-
 var (
 	applyAction = Action{
 		ApplyActionID,
 		CheckActionID,
 		"Apply",
-		[]step{providerSetup, ansibleInventory, providerCreate, orchestratorSetup, orchestratorInstall, stackDeploy},
+		[]step{providerSetup, providerCreate, orchestratorSetup, orchestratorInstall, stackDeploy, ansibleInventory},
 	}
 )
 
@@ -69,7 +58,7 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 		sc := InitPlaybookStepResult("Running the setup phase", p, NoCleanUpRequired)
 
 		// Notify setup progress
-		rC.pN.NotifyWithGoal("apply.provider.setup", len(rC.environment.Providers), "Preparing provider '%s'", p.Name)
+		rC.lC.Feedback().ProgressG("apply.provider.setup", len(rC.environment.Providers), "Preparing provider '%s'", p.Name)
 
 		// Provider setup exchange folder
 		setupProviderEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "setup_provider_"+p.Name, &sc)
@@ -111,7 +100,8 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 		}
 		defer usable.Release()
-		code, err := rC.aM.Play(usable, *rC.tplC, setupPlaybook, exv, env, rC.pN)
+
+		code, err := rC.aM.Play(usable, *rC.tplC, setupPlaybook, exv, env, rC.lC.Feedback())
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  setupPlaybook,
@@ -126,7 +116,7 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	// Notify setup finish
-	rC.pN.Notify("apply.provider.setup", "All providers prepared")
+	rC.lC.Feedback().Progress("apply.provider.setup", "All providers prepared")
 
 	return *sCs, nil
 }
@@ -145,7 +135,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		}
 
 		// Notify creation progress
-		rC.pN.NotifyWithGoal("apply.provider.create", len(rC.environment.NodeSets), "Creating node set '%s' with provider '%s'", n.Name, p.Name)
+		rC.lC.Feedback().ProgressG("apply.provider.create", len(rC.environment.NodeSets), "Creating node set '%s' with provider '%s'", n.Name, p.Name)
 
 		// Create a new buffer
 		buffer := ansible.CreateBuffer()
@@ -208,7 +198,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		defer usable.Release()
 
 		// Launch the playbook
-		code, err := rC.aM.Play(usable, *rC.tplC, createPlaybook, exv, env, rC.pN)
+		code, err := rC.aM.Play(usable, *rC.tplC, createPlaybook, exv, env, rC.lC.Feedback())
 
 		if err != nil {
 			pfd := playBookFailureDetail{
@@ -242,7 +232,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	// Notify creation finish
-	rC.pN.Notify("apply.provider.create", "All node sets created")
+	rC.lC.Feedback().Progress("apply.provider.create", "All node sets created")
 
 	return *sCs, nil
 }
@@ -253,7 +243,7 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	sc := InitPlaybookStepResult("Running the orchestrator setup phase", o, NoCleanUpRequired)
 
 	// Notify setup progress
-	rC.pN.NotifyWithGoal("apply.orchestrator.setup", 1, "Preparing orchestrator")
+	rC.lC.Feedback().ProgressG("apply.orchestrator.setup", 1, "Preparing orchestrator")
 
 	// Create a new buffer
 	buffer := ansible.CreateBuffer()
@@ -294,7 +284,7 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	defer usable.Release()
 
 	// We launch the playbook
-	code, err := rC.aM.Play(usable, *rC.tplC, setupPlaybook, exv, env, rC.pN)
+	code, err := rC.aM.Play(usable, *rC.tplC, setupPlaybook, exv, env, rC.lC.Feedback())
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  setupPlaybook,
@@ -307,7 +297,7 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	// Notify setup progress
-	rC.pN.Notify("apply.orchestrator.setup", "Orchestrator prepared")
+	rC.lC.Feedback().Progress("apply.orchestrator.setup", "Orchestrator prepared")
 
 	sCs.Add(sc)
 	return *sCs, nil
@@ -336,7 +326,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 		}
 
 		// Notify setup progress
-		rC.pN.NotifyWithGoal("apply.orchestrator.install", len(rC.environment.NodeSets), "Installing orchestrator on node set '%s'", n.Name)
+		rC.lC.Feedback().ProgressG("apply.orchestrator.install", len(rC.environment.NodeSets), "Installing orchestrator on node set '%s'", n.Name)
 
 		// Create a new buffer
 		buffer := ansible.CreateBuffer()
@@ -379,7 +369,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 		defer usable.Release()
 
 		// Launch the playbook
-		code, err := rC.aM.Play(usable, *rC.tplC, installPlaybook, exv, env, rC.pN)
+		code, err := rC.aM.Play(usable, *rC.tplC, installPlaybook, exv, env, rC.lC.Feedback())
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  installPlaybook,
@@ -394,7 +384,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	// Notify setup finish
-	rC.pN.NotifyWithGoal("apply.orchestrator.install", len(rC.environment.NodeSets), "Orchestrator installed on all node sets")
+	rC.lC.Feedback().ProgressG("apply.orchestrator.install", len(rC.environment.NodeSets), "Orchestrator installed on all node sets")
 
 	return *sCs, nil
 }
@@ -406,7 +396,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 		sCs.Add(sc)
 
 		// Notify stack deploy
-		rC.pN.NotifyWithGoal("apply.stack.deploy", len(rC.environment.Stacks), "Deploying stack '%s'", st.Name)
+		rC.lC.Feedback().ProgressG("apply.stack.deploy", len(rC.environment.Stacks), "Deploying stack '%s'", st.Name)
 
 		// Stack deploy exchange folder for the given provider
 		fName := fmt.Sprintf("deploy_stack_%s", st.Name)
@@ -486,7 +476,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			buffer)
 
 		// Execute the playbook
-		code, err := rC.aM.Play(target, *rC.tplC, deployPlaybook, exv, env, rC.pN)
+		code, err := rC.aM.Play(target, *rC.tplC, deployPlaybook, exv, env, rC.lC.Feedback())
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  deployPlaybook,
@@ -520,7 +510,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	// Notify stack deploy finish
-	rC.pN.Notify("apply.stack.deploy", "All stacks deployed")
+	rC.lC.Feedback().Progress("apply.stack.deploy", "All stacks deployed")
 
 	return *sCs, nil
 }
@@ -535,7 +525,7 @@ func ansibleInventory(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	sCs.Add(sr)
-	return *sCs, ApplyResult{
+	return *sCs, &ApplyResult{
 		Success:   true,
 		Inventory: inv,
 	}

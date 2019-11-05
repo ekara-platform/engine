@@ -12,7 +12,7 @@ import (
 
 func TestVarsAccumulation(t *testing.T) {
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"value1": map[interface{}]interface{}{
 			"from": map[interface{}]interface{}{
 				"cli": "value1.from.cli_value",

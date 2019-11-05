@@ -11,6 +11,7 @@ import (
 type (
 	//MockLaunchContext simulates the LaunchContext for testing purposes
 	MockLaunchContext struct {
+		fN                   FeedbackNotifier
 		logger               *log.Logger
 		ef                   ExchangeFolder
 		location             string
@@ -23,7 +24,7 @@ type (
 )
 
 func CreateMockLaunchContext(mainPath string, withLog bool) LaunchContext {
-	p, _ := model.CreateParameters(map[string]interface{}{})
+	p := model.CreateParameters(map[string]interface{}{})
 	return CreateMockLaunchContextWithData(mainPath, p, withLog)
 }
 
@@ -46,6 +47,7 @@ func CreateMockLaunchContextWithDataAndFolder(mainPath string, params model.Para
 	} else {
 		c.logger = log.New(ioutil.Discard, "TEST: ", log.Ldate|log.Ltime)
 	}
+	c.fN = CreateLoggingProgressNotifier(c.logger)
 	return &c
 }
 
@@ -54,7 +56,7 @@ func (lC MockLaunchContext) Verbosity() int {
 	return 0
 }
 
-//User simulates the corresponding method in LaunchContext for testing purposes
+//DescriptorName simulates the corresponding method in LaunchContext for testing purposes
 func (lC MockLaunchContext) DescriptorName() string {
 	return "ekara.yaml"
 }
@@ -67,6 +69,11 @@ func (lC MockLaunchContext) User() string {
 //Password simulates the corresponding method in LaunchContext for testing purposes
 func (lC MockLaunchContext) Password() string {
 	return lC.password
+}
+
+//Progress simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) Feedback() FeedbackNotifier {
+	return lC.fN
 }
 
 //Log simulates the corresponding method in LaunchContext for testing purposes

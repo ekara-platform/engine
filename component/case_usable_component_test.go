@@ -49,7 +49,7 @@ func TestUsableTemplateOneMatch(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})
@@ -89,7 +89,7 @@ func TestUsableTemplateMatch2Usable(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})
@@ -138,7 +138,7 @@ func TestUsableTemplateDoubleMatch(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget[12].yaml",
 	})
@@ -178,7 +178,7 @@ func TestUsableTemplateNoMatch(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"templateDef": "/noMatchinTarget.yaml",
 	})
 

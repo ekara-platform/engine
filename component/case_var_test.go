@@ -12,7 +12,7 @@ import (
 
 func TestTemplateOnMainVars(t *testing.T) {
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"value1": map[interface{}]interface{}{
 			"from": map[interface{}]interface{}{
 				"cli": "value1.from.cli_value",
@@ -83,7 +83,7 @@ nodes:
 
 func TestTemplateOnParentVars(t *testing.T) {
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"value1": map[interface{}]interface{}{
 			"from": map[interface{}]interface{}{
 				"cli": map[interface{}]interface{}{
@@ -180,7 +180,7 @@ nodes:
 
 func TestVarsPrecedence(t *testing.T) {
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"keyCli": "value4.from.cli",
 	})
 
