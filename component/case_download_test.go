@@ -262,7 +262,7 @@ nodes:
 
 // The orchestrator and the providers, once defined into a parent
 // can be customized lower into the hierarchy of descriptors.
-// In this case the component will be omited, because it has already been defined,
+// In this case the component will be omitted, because it has already been defined,
 // and the should not affect the download process
 func TestDonwloadTwoParentsProviderUpperUsedRedefined(t *testing.T) {
 
@@ -342,7 +342,7 @@ nodes:
 
 // A stack  once defined into a parent
 // can be customized lower into the hierarchy of descriptors.
-// In this case the component will be omited, because it has already been defined,
+// In this case the component will be omitted, because it has already been defined,
 // and the should not affect the download process
 func TestDonwloadTwoParentsStackUpperUsedRedefined(t *testing.T) {
 
