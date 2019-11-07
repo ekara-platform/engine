@@ -7,10 +7,13 @@ import (
 )
 
 const (
+	//ProgressPrefix represent the conent to look for in order to locate 
+	// the progesse content into the logs.
 	ProgressPrefix = "PROGRESS: "
 )
 
 type (
+	//ProgressNotifier defines the behaviour of the progress
 	ProgressNotifier interface {
 		Detail(message string, v ...interface{})
 		Notify(key string, message string, v ...interface{})
