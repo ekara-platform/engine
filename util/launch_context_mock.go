@@ -23,7 +23,7 @@ type (
 )
 
 func CreateMockLaunchContext(mainPath string, withLog bool) LaunchContext {
-	p, _ := model.CreateParameters(map[string]interface{}{})
+	p := model.CreateParameters(map[string]interface{}{})
 	return CreateMockLaunchContextWithData(mainPath, p, withLog)
 }
 
