@@ -108,7 +108,7 @@ nodes:
 //
 func TestFetchOrderedTwoParents(t *testing.T) {
 
-	p, _ := model.CreateParameters(map[string]interface{}{})
+	p := model.CreateParameters(map[string]interface{}{})
 	mainPath := "./testdata/gittest/descriptor"
 	c := util.CreateMockLaunchContextWithData(mainPath, p, false)
 	tester := CreateComponentTester(t, c)

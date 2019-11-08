@@ -49,7 +49,7 @@ func allActions() []Action {
 }
 
 // run runs an action for the given action manager and contexts
-func (a Action) run(am Manager) (*ExecutionReport, Result, error) {
+func (a Action) run(am *manager, rC *runtimeContext) (*ExecutionReport, Result, error) {
 	r := &ExecutionReport{}
 
 	if a.dependsOn != NilActionID {
@@ -60,7 +60,7 @@ func (a Action) run(am Manager) (*ExecutionReport, Result, error) {
 		}
 
 		// Run the dependent action and aggregate its report (dropping the intermediate result)
-		rep, _, e := d.run(am)
+		rep, _, e := d.run(am, rC)
 		if e != nil {
 			return r, nil, e
 		}
@@ -72,15 +72,15 @@ func (a Action) run(am Manager) (*ExecutionReport, Result, error) {
 		}
 	}
 
-	am.rC.lC.Log().Printf(LogRunningAction, a.name)
+	rC.lC.Log().Printf(LogRunningAction, a.name)
 
 	// Run the final action and return its result
-	rep, res := a.launch(am.rC)
+	rep, res := a.launch(rC)
 	r.aggregate(rep)
 	return r, res, nil
 }
 
-// launch runs the action on the given contenxt
+// launch runs the action on the given context
 func (a Action) launch(rC *runtimeContext) (ExecutionReport, Result) {
 	r := ExecutionReport{}
 

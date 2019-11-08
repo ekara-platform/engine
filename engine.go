@@ -26,8 +26,8 @@ type engine struct {
 	tplC        *model.TemplateContext
 
 	// Subsystems
-	ansibleManager   ansible.Manager
-	actionManager    *action.Manager
+	ansibleManager ansible.Manager
+	actionManager  action.Manager
 }
 
 // Create creates an environment descriptor based on the provided location.
@@ -44,9 +44,9 @@ func Create(lC util.LaunchContext, workDir string) (Ekara, error) {
 	}
 
 	eng := &engine{
-		lC:          lC,
-		directory:   absWorkDir,
-		tplC:        model.CreateTemplateContext(lC.ExternalVars()),
+		lC:        lC,
+		directory: absWorkDir,
+		tplC:      model.CreateTemplateContext(lC.ExternalVars()),
 	}
 	return eng, nil
 }
@@ -74,14 +74,14 @@ func (eng *engine) Init() (err error) {
 	}
 	mainComponent := model.CreateComponent(model.MainComponentId, mainRep)
 
-	finder, env, err := component.Build(mainComponent,  eng.tplC, eng.directory, eng.lC.Log())
+	finder, env, err := component.Build(mainComponent, eng.tplC, eng.directory, eng.lC.Log())
 	if err != nil {
 		return err
 	}
 	eng.environment = env
 	// Once the environment is created we can create the ansible and action
 	// manager passing them copy of the environment
-	eng.ansibleManager = ansible.CreateAnsibleManager(eng.lC.Log(), finder)
+	eng.ansibleManager = ansible.CreateAnsibleManager(eng.lC.Log(), eng.lC.Verbosity(), finder)
 	eng.actionManager = action.CreateActionManager(eng.lC, *eng.tplC, eng.environment, finder, eng.ansibleManager)
 	return
 }
@@ -95,5 +95,5 @@ func (eng *engine) AnsibleManager() ansible.Manager {
 }
 
 func (eng *engine) ActionManager() action.Manager {
-	return *eng.actionManager
+	return eng.actionManager
 }

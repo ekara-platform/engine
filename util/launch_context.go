@@ -8,6 +8,11 @@ import (
 type (
 	//LaunchContext Represents the information required to run the engine
 	LaunchContext interface {
+		//Feedback is used to notify progress to the end-user.
+		Feedback() FeedbackNotifier
+		//Log the logger to used during the Ekara execution
+		//Verbosity is the requested verbosity level from the engine
+		Verbosity() int
 		//Log the looger to used during the Ekara execution
 		Log() *log.Logger
 		//Ef the exchange folder

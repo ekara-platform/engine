@@ -12,7 +12,6 @@ type (
 		lC util.LaunchContext
 		cF component.Finder
 		aM ansible.Manager
-		pN util.ProgressNotifier
 
 		tplC        *model.TemplateContext
 		environment *model.Environment
@@ -22,15 +21,15 @@ type (
 )
 
 //createRuntimeContext creates a new context for the runtime
-func createRuntimeContext(lC util.LaunchContext, tplC model.TemplateContext, env model.Environment, cF component.Finder, aM ansible.Manager, pN util.ProgressNotifier) *runtimeContext {
+func createRuntimeContext(lC util.LaunchContext, cF component.Finder, aM ansible.Manager, tplC *model.TemplateContext, env *model.Environment) *runtimeContext {
 	// Initialization of the runtime context
+	clonedEnv := env // TODO: should clone the environment properly
 	rC := &runtimeContext{
 		lC:          lC,
 		cF:          cF,
 		aM:          aM,
-		pN:          pN,
-		environment: &env,
-		tplC:        &tplC,
+		environment: clonedEnv,
+		tplC:        model.CloneTemplateContext(tplC, clonedEnv),
 	}
 
 	rC.buffer = make(map[string]ansible.Buffer)

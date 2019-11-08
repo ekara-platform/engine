@@ -62,7 +62,7 @@ func TestByMatchNoMatchOnSearch(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})
@@ -99,7 +99,7 @@ func TestByMatchOneMatchOnSearch(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})
@@ -136,7 +136,7 @@ func TestByMatchTwoMatchesOnSearch(t *testing.T) {
 
 	mainPath := "./testdata/gittest/descriptor"
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"templateContent": "templateContentFromCli",
 		"templateDef":     "/templateTarget1.yaml",
 	})

@@ -13,43 +13,56 @@ import (
 type Result interface {
 	//IsSuccess returns true id the action execution was successful
 	IsSuccess() bool
+	//FromJson fills an action returned content from a JSON content
+	FromJson(s string) error
 	//AsJson returns the action returned content as JSON
 	AsJson() (string, error)
-	//AsYaml returns the action returned content as YAML
-	AsYaml() (string, error)
-	//AsPlainText returns the action returned content as plain text
-	AsPlainText() ([]string, error)
 }
 
 type (
-
 	//Manager is the manager of all action available into the engine
-	Manager struct {
-		rC *runtimeContext
-		// available actions
+	Manager interface {
+		Run(id ActionID) (Result, error)
+	}
+
+	manager struct {
 		actions map[ActionID]Action
+
+		// Interfaces to other components
+		lC util.LaunchContext
+		cF component.Finder
+		aM ansible.Manager
+
+		// Model in use
+		tplC *model.TemplateContext
+		env  *model.Environment
 	}
 )
 
 //CreateActionManager initializes the action manager and its content
-func CreateActionManager(lC util.LaunchContext, tplC model.TemplateContext, env model.Environment, cF component.Finder, aM ansible.Manager) *Manager {
-	am := &Manager{
-		rC:      createRuntimeContext(lC, tplC, env, cF, aM, util.CreateProgressNotifier(lC.Log())),
+func CreateActionManager(lC util.LaunchContext, tplC model.TemplateContext, env model.Environment, cF component.Finder, aM ansible.Manager) Manager {
+	am := &manager{
 		actions: make(map[ActionID]Action),
+		lC:      lC,
+		cF:      cF,
+		aM:      aM,
+		tplC:    &tplC,
+		env:     &env,
 	}
 
 	for _, a := range allActions() {
 		am.actions[a.id] = a
 	}
+
 	return am
 }
 
-func (am *Manager) empty() bool {
+func (am *manager) empty() bool {
 	return len(am.actions) == 0
 }
 
 //get returns the action corresponding to the given id.
-func (am *Manager) get(id ActionID) (Action, error) {
+func (am *manager) get(id ActionID) (Action, error) {
 	if val, ok := am.actions[id]; ok {
 		return val, nil
 	}
@@ -57,22 +70,23 @@ func (am *Manager) get(id ActionID) (Action, error) {
 }
 
 //Run launches the action corresponding to the given id.
-func (am *Manager) Run(id ActionID) (Result, error) {
+func (am *manager) Run(id ActionID) (Result, error) {
+	rC := createRuntimeContext(am.lC, am.cF, am.aM, am.tplC, am.env)
 	a, e := am.get(id)
 	if e != nil {
 		return nil, e
 	}
 
-	report, res, e := a.run(*am)
+	report, res, e := a.run(am, rC)
 	if e != nil {
 		return nil, e
 	}
 
-	loc, e := writeReport(*report, am.rC.lC.Ef().Output)
+	loc, e := writeReport(*report, rC.lC.Ef().Output)
 	if e != nil {
 		return nil, e
 	}
-	am.rC.lC.Log().Printf(LogReportWritten, loc)
+	rC.lC.Log().Printf(LogReportWritten, loc)
 
 	return res, nil
 }

@@ -14,7 +14,7 @@ import (
 
 func TestDebugDemo(t *testing.T) {
 
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"ek": map[interface{}]interface{}{
 			"aws": map[interface{}]interface{}{
 				"region": "dummy",

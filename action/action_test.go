@@ -10,7 +10,7 @@ import (
 )
 
 func TestManagerInitialGrossContent(t *testing.T) {
-	am := CreateActionManager(util.CreateMockLaunchContext("", false), model.TemplateContext{}, model.Environment{}, nil, nil)
+	am := CreateActionManager(util.CreateMockLaunchContext("", false), model.TemplateContext{}, model.Environment{}, nil, nil).(*manager)
 
 	assert.NotNil(t, am.actions)
 
@@ -227,6 +227,45 @@ func TestLaunchStepsMultiples(t *testing.T) {
 	assert.Equal(t, scs[5].StepName, "Dummy step, multiple 3")
 }
 
+func TestIsolatedRuntimeContext(t *testing.T) {
+	tplC := model.CreateTemplateContext(model.Parameters{})
+	am := CreateActionManager(util.CreateMockLaunchContext("", false), *tplC, model.Environment{}, nil, nil).(*manager)
+	action1 := Action{
+		id:        "action1",
+		dependsOn: NilActionID,
+		steps: []step{
+			func(rC *runtimeContext) (StepResults, Result) {
+				assert.NotContains(t, rC.tplC.Vars, "toto")
+				rC.tplC.Vars["toto"] = "value"
+				return StepResults{}, nil
+			},
+			func(rC *runtimeContext) (StepResults, Result) {
+				assert.Equal(t, rC.tplC.Vars["toto"], "value")
+				rC.tplC.Vars["toto"] = "overridden"
+				return StepResults{}, nil
+			},
+			func(rC *runtimeContext) (StepResults, Result) {
+				assert.Equal(t, rC.tplC.Vars["toto"], "overridden")
+				return StepResults{}, nil
+			},
+		}}
+	am.actions["action1"] = action1
+	action2 := Action{
+		id:        "action2",
+		dependsOn: NilActionID,
+		steps: []step{
+			func(rC *runtimeContext) (StepResults, Result) {
+				assert.NotContains(t, rC.tplC.Vars, "toto")
+				return StepResults{}, nil
+			},
+		}}
+	am.actions["action2"] = action2
+	_, err := am.Run("action1")
+	assert.Nil(t, err)
+	_, err = am.Run("action2")
+	assert.Nil(t, err)
+}
+
 func fStepMock1(rC *runtimeContext) (StepResults, Result) {
 	sc := InitCodeStepResult("Dummy step 1", nil, NoCleanUpRequired)
 	return sc.Build(), nil
@@ -258,5 +297,5 @@ func fStepMockMultipleContext(rC *runtimeContext) (StepResults, Result) {
 
 func mockRuntimeContext() *runtimeContext {
 	lC := util.CreateMockLaunchContext("", false)
-	return createRuntimeContext(lC, model.TemplateContext{}, model.Environment{}, nil, nil, util.CreateProgressNotifier(lC.Log()))
+	return createRuntimeContext(lC, nil, nil, &model.TemplateContext{}, &model.Environment{})
 }

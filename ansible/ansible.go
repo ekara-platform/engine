@@ -31,16 +31,17 @@ type (
 		//		playbook: the name of the playbook to launch
 		//		extraVars: the extra vars passed to the playbook
 		//		envVars: the environment variables set before launching the playbook
-		//		pN: progress notifier
+		//		fN: feedback notifier
 		//
-		Play(cr component.UsableComponent, ctx model.TemplateContext, playbook string, extraVars ExtraVars, envVars EnvVars, pN util.ProgressNotifier) (int, error)
+		Play(cr component.UsableComponent, ctx model.TemplateContext, playbook string, extraVars ExtraVars, envVars EnvVars, fN util.FeedbackNotifier) (int, error)
 		// Inventory returns the current inventory of environment nodes
 		Inventory(ctx model.TemplateContext) (Inventory, error)
 	}
 
 	manager struct {
-		l  *log.Logger
-		cF component.Finder
+		l         *log.Logger
+		cF        component.Finder
+		verbosity int
 	}
 
 	execChan struct {
@@ -52,14 +53,15 @@ type (
 
 //CreateAnsibleManager returns a new AnsibleManager, providing managed execution of
 //Ansible commands
-func CreateAnsibleManager(l *log.Logger, cF component.Finder) Manager {
+func CreateAnsibleManager(l *log.Logger, verbosity int, cF component.Finder) Manager {
 	return &manager{
-		l:  l,
-		cF: cF,
+		l:         l,
+		cF:        cF,
+		verbosity: verbosity,
 	}
 }
 
-func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, playbook string, extraVars ExtraVars, envVars EnvVars, pN util.ProgressNotifier) (int, error) {
+func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, playbook string, extraVars ExtraVars, envVars EnvVars, fN util.FeedbackNotifier) (int, error) {
 	ok, playBookPath := uc.ContainsFile(playbook)
 	if !ok {
 		return 0, fmt.Errorf("component \"%s\" does not contain playbook: %s", uc.Name(), playbook)
@@ -81,6 +83,11 @@ func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, 
 	// Extra vars
 	args = append(args, aM.buildExtraVarsArgs(extraVars)...)
 
+	// Verbosity = 2+
+	if aM.verbosity > 1 {
+		args = append(args, "-v")
+	}
+
 	eC, err := aM.exec(uc.RootPath(), "ansible-playbook", args, envVars)
 	if err != nil {
 		return 0, err
@@ -89,18 +96,26 @@ func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, 
 	// Read the logs as they come until a status code is returned
 	for {
 		select {
-		case <-eC.err:
-			// drop err lines
+		case errLine := <-eC.err:
+			if aM.verbosity > 1 {
+				aM.l.Println(errLine)
+			}
 		case outLine := <-eC.out:
 			// Detect tasks to show progression
 			sTrim := strings.TrimSpace(outLine)
 			if strings.Index(sTrim, "TASK [") == 0 {
-				pN.Detail(sTrim[len(taskPrefix):strings.LastIndex(sTrim, "]")])
+				fN.Detail(sTrim[len(taskPrefix):strings.LastIndex(sTrim, "]")])
 			}
-			aM.l.Println(outLine)
+			if aM.verbosity > 0 {
+				aM.l.Println(outLine)
+			}
 		case status := <-eC.status:
 			aM.l.Printf("Playbook finished (%d)", status)
-			return status, nil
+			if status != 0 {
+				return status, fmt.Errorf("playbook did not complete successfully (%d), check the logs for details", status)
+			} else {
+				return status, nil
+			}
 		}
 	}
 }
@@ -135,8 +150,8 @@ func (aM manager) Inventory(ctx model.TemplateContext) (Inventory, error) {
 		}
 	}
 
-	// Parse the output
-	err = res.UnmarshalJSON([]byte(sb.String()))
+	// Parse the ansible output
+	err = res.UnmarshalAnsibleInventory([]byte(sb.String()))
 	if err != nil {
 		return res, err
 	}

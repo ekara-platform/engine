@@ -67,7 +67,7 @@ func TestChildExchangeFolderKo(t *testing.T) {
 }
 
 func TestSaveBaseParamOk(t *testing.T) {
-	p, _ := model.CreateParameters(map[string]interface{}{
+	p := model.CreateParameters(map[string]interface{}{
 		"ek": map[interface{}]interface{}{
 			"aws": map[interface{}]interface{}{
 				"region": "dummy",
@@ -121,5 +121,5 @@ qualifier: QualifierContent
 
 func mockRuntimeContextWithParameters(lC util.LaunchContext) *runtimeContext {
 	env := model.InitEnvironment()
-	return createRuntimeContext(lC, model.TemplateContext{}, *env, nil, nil, util.CreateProgressNotifier(lC.Log()))
+	return createRuntimeContext(lC, nil, nil, &model.TemplateContext{}, env)
 }
