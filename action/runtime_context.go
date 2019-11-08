@@ -31,7 +31,6 @@ func createRuntimeContext(lC util.LaunchContext, cF component.Finder, aM ansible
 		environment: clonedEnv,
 		tplC:        model.CloneTemplateContext(tplC, clonedEnv),
 	}
-
 	rC.buffer = make(map[string]ansible.Buffer)
 	return rC
 }

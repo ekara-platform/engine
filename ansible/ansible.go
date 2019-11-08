@@ -93,12 +93,17 @@ func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, 
 		return 0, err
 	}
 
+	storedLines := make([]string, 0)
 	// Read the logs as they come until a status code is returned
 	for {
 		select {
 		case errLine := <-eC.err:
 			if aM.verbosity > 1 {
+				// log stderr directly
 				aM.l.Println(errLine)
+			} else {
+				// keep stderr for later if playbook ends with error
+				storedLines = append(storedLines, errLine)
 			}
 		case outLine := <-eC.out:
 			// Detect tasks to show progression
@@ -108,10 +113,17 @@ func (aM manager) Play(uc component.UsableComponent, ctx model.TemplateContext, 
 			}
 			if aM.verbosity > 0 {
 				aM.l.Println(outLine)
+			} else {
+				// keep stdout for later if playbook ends with error
+				storedLines = append(storedLines, outLine)
 			}
 		case status := <-eC.status:
 			aM.l.Printf("Playbook finished (%d)", status)
 			if status != 0 {
+				aM.l.Printf("Failed playbook output below")
+				for _, storeLine := range storedLines {
+					aM.l.Println(storeLine)
+				}
 				return status, fmt.Errorf("playbook did not complete successfully (%d), check the logs for details", status)
 			} else {
 				return status, nil

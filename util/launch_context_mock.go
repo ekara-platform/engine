@@ -51,6 +51,11 @@ func CreateMockLaunchContextWithDataAndFolder(mainPath string, params model.Para
 	return &c
 }
 
+//Skip simulates the corresponding method in LaunchContext for testing purposes
+func (lC MockLaunchContext) Skipping() int {
+	return 0
+}
+
 //Verbosity simulates the corresponding method in LaunchContext for testing purposes
 func (lC MockLaunchContext) Verbosity() int {
 	return 0

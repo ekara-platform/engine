@@ -10,7 +10,8 @@ type (
 	LaunchContext interface {
 		//Feedback is used to notify progress to the end-user.
 		Feedback() FeedbackNotifier
-		//Log the logger to used during the Ekara execution
+		//Skip is the requested level of skipping
+		Skipping() int
 		//Verbosity is the requested verbosity level from the engine
 		Verbosity() int
 		//Log the looger to used during the Ekara execution

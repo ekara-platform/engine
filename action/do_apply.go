@@ -123,6 +123,13 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 
 func providerCreate(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
+
+	if rC.lC.Skipping() > 0 {
+		// Notify creation skipping
+		rC.lC.Feedback().Progress("apply.provider.create", "Nodeset creation skipped by user request")
+		return *sCs, nil
+	}
+
 	for _, n := range rC.environment.NodeSets {
 		sc := InitPlaybookStepResult("Running the create phase", n, NoCleanUpRequired)
 
@@ -306,6 +313,12 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 
+	if rC.lC.Skipping() > 1 {
+		// Notify installation skipping
+		rC.lC.Feedback().Progress("apply.orchestrator.install", "Orchestrator installation skipped by user request")
+		return *sCs, nil
+	}
+
 	for _, n := range rC.environment.NodeSets {
 		sc := InitPlaybookStepResult("Running the orchestrator installation phase", n, NoCleanUpRequired)
 
@@ -391,6 +404,13 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 
 func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
+
+	if rC.lC.Skipping() > 2 {
+		// Notify installation skipping
+		rC.lC.Feedback().Progress("apply.stack.deploy", "Stack deployment installation skipped by user request")
+		return *sCs, nil
+	}
+
 	for _, st := range rC.environment.Stacks {
 		sc := InitPlaybookStepResult("Deploying stack", st, NoCleanUpRequired)
 		sCs.Add(sc)
