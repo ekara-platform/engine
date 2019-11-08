@@ -8,6 +8,7 @@ import (
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -26,10 +27,12 @@ type (
 	}
 )
 
+//IsSuccess returns true id the action execution was successful
 func (r ApplyResult) IsSuccess() bool {
 	return r.Success
 }
 
+//AsJson returns the action returned content as JSON
 func (r ApplyResult) AsJson() (string, error) {
 	b, err := json.Marshal(r)
 	if err != nil {
@@ -38,6 +41,7 @@ func (r ApplyResult) AsJson() (string, error) {
 	return string(b), nil
 }
 
+//AsYaml returns the action returned content as YAML
 func (r ApplyResult) AsYaml() (string, error) {
 	b, err := yaml.Marshal(r)
 	if err != nil {
@@ -46,6 +50,7 @@ func (r ApplyResult) AsYaml() (string, error) {
 	return string(b), nil
 }
 
+//AsPlainText returns the action returned content as plain text
 func (r ApplyResult) AsPlainText() ([]string, error) {
 	res, err := r.AsYaml()
 	if err != nil {
@@ -66,6 +71,7 @@ var (
 func providerSetup(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 	for _, p := range rC.environment.Providers {
+		rC.tplC.RunTimeInfo.SetTarget(p)
 		sc := InitPlaybookStepResult("Running the setup phase", p, NoCleanUpRequired)
 
 		// Notify setup progress
@@ -134,6 +140,7 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 func providerCreate(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 	for _, n := range rC.environment.NodeSets {
+		rC.tplC.RunTimeInfo.SetTarget(n)
 		sc := InitPlaybookStepResult("Running the create phase", n, NoCleanUpRequired)
 
 		// Resolve provider
@@ -220,7 +227,6 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 			sCs.Add(sc)
 			return *sCs, nil
 		}
-		sCs.Add(sc)
 
 		// Process hook : nodeset - provision - after
 		runHookAfter(
@@ -239,6 +245,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 			hookContext{"create", n, "environment", "provision", bp, env, buffer},
 			NoCleanUpRequired,
 		)
+		sCs.Add(sc)
 	}
 
 	// Notify creation finish
@@ -250,6 +257,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	o := rC.environment.Orchestrator
 	sCs := InitStepResults()
+	rC.tplC.RunTimeInfo.SetTarget(o)
 	sc := InitPlaybookStepResult("Running the orchestrator setup phase", o, NoCleanUpRequired)
 
 	// Notify setup progress
@@ -317,6 +325,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 
 	for _, n := range rC.environment.NodeSets {
+		rC.tplC.RunTimeInfo.SetTarget(n)
 		sc := InitPlaybookStepResult("Running the orchestrator installation phase", n, NoCleanUpRequired)
 
 		// Resolve the provider
@@ -402,13 +411,13 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 	for _, st := range rC.environment.Stacks {
+		rC.tplC.RunTimeInfo.SetTarget(st)
 		sc := InitPlaybookStepResult("Deploying stack", st, NoCleanUpRequired)
-		sCs.Add(sc)
 
 		// Notify stack deploy
 		rC.pN.NotifyWithGoal("apply.stack.deploy", len(rC.environment.Stacks), "Deploying stack '%s'", st.Name)
 
-		// Stack deploy exchange folder for the given provider
+		// Stack deploy exchange folder for the given stack
 		fName := fmt.Sprintf("deploy_stack_%s", st.Name)
 
 		stackEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, fName, &sc)
