@@ -32,6 +32,8 @@ const (
 	DumpActionID = "DUMP"
 	// ApplyActionID identifies the action of applying a descriptor to reality
 	ApplyActionID = "APPLY"
+	// DestroyActionID identifies the action of destroying an existing environment
+	DestroyActionID = "DESTROY"
 )
 
 // String returns the string representation of the action id
@@ -42,6 +44,7 @@ func (a ActionID) String() string {
 func allActions() []Action {
 	r := make([]Action, 0)
 	r = append(r, applyAction)
+	r = append(r, destroyAction)
 	r = append(r, checkAction)
 	r = append(r, dumpAction)
 	r = append(r, validateAction)

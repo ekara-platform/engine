@@ -58,7 +58,7 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 		sc := InitPlaybookStepResult("Running the setup phase", p, NoCleanUpRequired)
 
 		// Notify setup progress
-		rC.lC.Feedback().ProgressG("apply.provider.setup", len(rC.environment.Providers), "Preparing provider '%s'", p.Name)
+		rC.lC.Feedback().ProgressG("provider.setup", len(rC.environment.Providers), "Preparing provider '%s'", p.Name)
 
 		// Provider setup exchange folder
 		setupProviderEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "setup_provider_"+p.Name, &sc)
@@ -116,7 +116,7 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	// Notify setup finish
-	rC.lC.Feedback().Progress("apply.provider.setup", "All providers prepared")
+	rC.lC.Feedback().Progress("provider.setup", "All providers prepared")
 
 	return *sCs, nil
 }
@@ -126,7 +126,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 
 	if rC.lC.Skipping() > 0 {
 		// Notify creation skipping
-		rC.lC.Feedback().Progress("apply.provider.create", "Nodeset creation skipped by user request")
+		rC.lC.Feedback().Progress("provider.create", "Nodeset creation skipped by user request")
 		return *sCs, nil
 	}
 
@@ -142,7 +142,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		}
 
 		// Notify creation progress
-		rC.lC.Feedback().ProgressG("apply.provider.create", len(rC.environment.NodeSets), "Creating node set '%s' with provider '%s'", n.Name, p.Name)
+		rC.lC.Feedback().ProgressG("provider.create", len(rC.environment.NodeSets), "Creating node set '%s' with provider '%s'", n.Name, p.Name)
 
 		// Create a new buffer
 		buffer := ansible.CreateBuffer()
@@ -239,7 +239,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	// Notify creation finish
-	rC.lC.Feedback().Progress("apply.provider.create", "All node sets created")
+	rC.lC.Feedback().Progress("provider.create", "All node sets created")
 
 	return *sCs, nil
 }
@@ -250,7 +250,7 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	sc := InitPlaybookStepResult("Running the orchestrator setup phase", o, NoCleanUpRequired)
 
 	// Notify setup progress
-	rC.lC.Feedback().ProgressG("apply.orchestrator.setup", 1, "Preparing orchestrator")
+	rC.lC.Feedback().ProgressG("orchestrator.setup", 1, "Preparing orchestrator")
 
 	// Create a new buffer
 	buffer := ansible.CreateBuffer()
@@ -304,7 +304,7 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	// Notify setup progress
-	rC.lC.Feedback().Progress("apply.orchestrator.setup", "Orchestrator prepared")
+	rC.lC.Feedback().Progress("orchestrator.setup", "Orchestrator prepared")
 
 	sCs.Add(sc)
 	return *sCs, nil
@@ -315,7 +315,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 
 	if rC.lC.Skipping() > 1 {
 		// Notify installation skipping
-		rC.lC.Feedback().Progress("apply.orchestrator.install", "Orchestrator installation skipped by user request")
+		rC.lC.Feedback().Progress("orchestrator.install", "Orchestrator installation skipped by user request")
 		return *sCs, nil
 	}
 
@@ -339,7 +339,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 		}
 
 		// Notify setup progress
-		rC.lC.Feedback().ProgressG("apply.orchestrator.install", len(rC.environment.NodeSets), "Installing orchestrator on node set '%s'", n.Name)
+		rC.lC.Feedback().ProgressG("orchestrator.install", len(rC.environment.NodeSets), "Installing orchestrator on node set '%s'", n.Name)
 
 		// Create a new buffer
 		buffer := ansible.CreateBuffer()
@@ -397,7 +397,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	// Notify setup finish
-	rC.lC.Feedback().ProgressG("apply.orchestrator.install", len(rC.environment.NodeSets), "Orchestrator installed on all node sets")
+	rC.lC.Feedback().ProgressG("orchestrator.install", len(rC.environment.NodeSets), "Orchestrator installed on all node sets")
 
 	return *sCs, nil
 }
@@ -407,7 +407,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 
 	if rC.lC.Skipping() > 2 {
 		// Notify installation skipping
-		rC.lC.Feedback().Progress("apply.stack.deploy", "Stack deployment installation skipped by user request")
+		rC.lC.Feedback().Progress("stack.deploy", "Stack deployment installation skipped by user request")
 		return *sCs, nil
 	}
 
@@ -416,7 +416,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 		sCs.Add(sc)
 
 		// Notify stack deploy
-		rC.lC.Feedback().ProgressG("apply.stack.deploy", len(rC.environment.Stacks), "Deploying stack '%s'", st.Name)
+		rC.lC.Feedback().ProgressG("stack.deploy", len(rC.environment.Stacks), "Deploying stack '%s'", st.Name)
 
 		// Stack deploy exchange folder for the given provider
 		fName := fmt.Sprintf("deploy_stack_%s", st.Name)
@@ -530,7 +530,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	// Notify stack deploy finish
-	rC.lC.Feedback().Progress("apply.stack.deploy", "All stacks deployed")
+	rC.lC.Feedback().Progress("stack.deploy", "All stacks deployed")
 
 	return *sCs, nil
 }
