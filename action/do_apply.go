@@ -55,7 +55,7 @@ var (
 func providerSetup(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 	for _, p := range rC.environment.Providers {
-		sc := InitPlaybookStepResult("Running the setup phase", p, NoCleanUpRequired)
+		sc := InitPlaybookStepResult("Running the provider setup phase", p, NoCleanUpRequired)
 
 		// Notify setup progress
 		rC.lC.Feedback().ProgressG("provider.setup", len(rC.environment.Providers), "Preparing provider '%s'", p.Name)
@@ -70,9 +70,6 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 		setupProviderEfIn := setupProviderEf.Input
 		setupProviderEfOut := setupProviderEf.Output
 
-		// Create a new buffer
-		buffer := ansible.CreateBuffer()
-
 		// Prepare parameters
 		bp := buildBaseParam(rC, "")
 		bp.AddNamedMap("params", p.Parameters)
@@ -82,26 +79,18 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 		}
 
 		// Prepare extra vars
-		exv := ansible.BuildExtraVars("", setupProviderEfIn, setupProviderEfOut, buffer)
-
-		// Prepare environment variables
-		env := ansible.BuildEnvVars()
-		env.AddDefaultOsVars()
-		env.AddProxy(rC.lC.Proxy())
-
-		// Adding the environment variables from the provider
-		for envK, envV := range p.EnvVars {
-			env.Add(envK, envV)
-		}
+		exv := ansible.CreateExtraVars(setupProviderEfIn, setupProviderEfOut)
 
 		// We launch the playbook
-		usable, err := rC.cF.Use(p, *rC.tplC)
+		usable, err := rC.cF.Use(p, rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
+			sCs.Add(sc)
+			return *sCs, nil
 		}
 		defer usable.Release()
 
-		code, err := rC.aM.Play(usable, *rC.tplC, setupPlaybook, exv, env, rC.lC.Feedback())
+		code, err := rC.aM.Play(usable, rC.tplC, setupPlaybook, exv)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  setupPlaybook,
@@ -131,7 +120,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 	}
 
 	for _, n := range rC.environment.NodeSets {
-		sc := InitPlaybookStepResult("Running the create phase", n, NoCleanUpRequired)
+		sc := InitPlaybookStepResult("Running the provider create phase", n, NoCleanUpRequired)
 
 		// Resolve provider
 		p, err := n.Provider.Resolve()
@@ -144,9 +133,6 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		// Notify creation progress
 		rC.lC.Feedback().ProgressG("provider.create", len(rC.environment.NodeSets), "Creating node set '%s' with provider '%s'", n.Name, p.Name)
 
-		// Create a new buffer
-		buffer := ansible.CreateBuffer()
-
 		// Prepare parameters
 		bp := buildBaseParam(rC, n.Name)
 		bp.AddInt("instances", n.Instances)
@@ -154,22 +140,12 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		bp.AddNamedMap("params", p.Parameters)
 		bp.AddInterface("proxy", p.Proxy)
 
-		// Prepare environment variables
-		env := ansible.BuildEnvVars()
-		env.AddDefaultOsVars()
-		env.AddProxy(rC.lC.Proxy())
-
-		// Adding the environment variables from the nodeset provider
-		for envK, envV := range p.EnvVars {
-			env.Add(envK, envV)
-		}
-
 		// Process hook : environment - provision - before
 		runHookBefore(
 			rC,
 			sCs,
 			rC.environment.Hooks.Provision,
-			hookContext{"create", n, "environment", "provision", bp, env, buffer},
+			hookContext{"create", n, "environment", "provision", bp},
 			NoCleanUpRequired,
 		)
 
@@ -178,7 +154,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 			rC,
 			sCs,
 			n.Hooks.Provision,
-			hookContext{"create", n, "nodeset", "provision", bp, env, buffer},
+			hookContext{"create", n, "nodeset", "provision", bp},
 			NoCleanUpRequired,
 		)
 
@@ -195,17 +171,19 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		}
 
 		// Prepare extra vars
-		exv := ansible.BuildExtraVars("", nodeCreateEf.Input, nodeCreateEf.Output, buffer)
+		exv := ansible.CreateExtraVars(nodeCreateEf.Input, nodeCreateEf.Output)
 
 		// Make the component usable
-		usable, err := rC.cF.Use(p, *rC.tplC)
+		usable, err := rC.cF.Use(p, rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
+			sCs.Add(sc)
+			return *sCs, nil
 		}
 		defer usable.Release()
 
 		// Launch the playbook
-		code, err := rC.aM.Play(usable, *rC.tplC, createPlaybook, exv, env, rC.lC.Feedback())
+		code, err := rC.aM.Play(usable, rC.tplC, createPlaybook, exv)
 
 		if err != nil {
 			pfd := playBookFailureDetail{
@@ -224,7 +202,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 			rC,
 			sCs,
 			n.Hooks.Provision,
-			hookContext{"create", n, "nodeset", "provision", bp, env, buffer},
+			hookContext{"create", n, "nodeset", "provision", bp},
 			NoCleanUpRequired,
 		)
 
@@ -233,7 +211,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 			rC,
 			sCs,
 			rC.environment.Hooks.Provision,
-			hookContext{"create", n, "environment", "provision", bp, env, buffer},
+			hookContext{"create", n, "environment", "provision", bp},
 			NoCleanUpRequired,
 		)
 	}
@@ -252,9 +230,6 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	// Notify setup progress
 	rC.lC.Feedback().ProgressG("orchestrator.setup", 1, "Preparing orchestrator")
 
-	// Create a new buffer
-	buffer := ansible.CreateBuffer()
-
 	// Orchestrator setup exchange folder
 	setupOrchestratorEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "setup_orchestrator", &sc)
 	if ko {
@@ -270,28 +245,20 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 		return *sCs, nil
 	}
 
-	// Prepare environment variables
-	env := ansible.BuildEnvVars()
-	env.AddDefaultOsVars()
-	env.AddProxy(rC.lC.Proxy())
-
-	// Adding the environment variables from the nodeset orchestrator
-	for envK, envV := range o.EnvVars {
-		env.Add(envK, envV)
-	}
-
 	// Prepare extra vars
-	exv := ansible.BuildExtraVars("", setupOrchestratorEf.Input, setupOrchestratorEf.Output, buffer)
+	exv := ansible.CreateExtraVars(setupOrchestratorEf.Input, setupOrchestratorEf.Output)
 
 	// Make the component usable
-	usable, err := rC.cF.Use(o, *rC.tplC)
+	usable, err := rC.cF.Use(o, rC.tplC)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
+		sCs.Add(sc)
+		return *sCs, nil
 	}
 	defer usable.Release()
 
 	// We launch the playbook
-	code, err := rC.aM.Play(usable, *rC.tplC, setupPlaybook, exv, env, rC.lC.Feedback())
+	code, err := rC.aM.Play(usable, rC.tplC, setupPlaybook, exv)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  setupPlaybook,
@@ -311,6 +278,7 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 }
 
 func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
+	o := rC.environment.Orchestrator
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 1 {
@@ -319,85 +287,54 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 		return *sCs, nil
 	}
 
-	for _, n := range rC.environment.NodeSets {
-		sc := InitPlaybookStepResult("Running the orchestrator installation phase", n, NoCleanUpRequired)
+	sc := InitPlaybookStepResult("Running the orchestrator install phase", nil, NoCleanUpRequired)
 
-		// Resolve the provider
-		p, err := n.Provider.Resolve()
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider reference"), nil)
-			sCs.Add(sc)
-			return *sCs, nil
-		}
+	// Notify setup progress
+	rC.lC.Feedback().Progress("orchestrator.install", "Installing orchestrator")
 
-		// Resolve the orchestrator
-		o, err := n.Orchestrator.Resolve()
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the orchestrator reference"), nil)
-			sCs.Add(sc)
-			return *sCs, nil
-		}
-
-		// Notify setup progress
-		rC.lC.Feedback().ProgressG("orchestrator.install", len(rC.environment.NodeSets), "Installing orchestrator on node set '%s'", n.Name)
-
-		// Create a new buffer
-		buffer := ansible.CreateBuffer()
-
-		// Orchestrator install exchange folder
-		installOrchestratorEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "install_orchestrator_"+n.Name, &sc)
-		if ko {
-			sCs.Add(sc)
-			return *sCs, nil
-		}
-
-		// Prepare parameters
-		bp := buildBaseParam(rC, n.Name)
-		bp.AddInterface("labels", n.Labels)
-		bp.AddNamedMap("params", o.Parameters)
-		bp.AddInterface("proxy", p.Proxy)
-		if ko := saveBaseParams(bp, installOrchestratorEf.Input, &sc); ko {
-			sCs.Add(sc)
-			return *sCs, nil
-		}
-
-		// Prepare environment variables
-		env := ansible.BuildEnvVars()
-		env.AddDefaultOsVars()
-		env.AddProxy(rC.lC.Proxy())
-
-		// Adding the environment variables from the nodeset orchestrator
-		for envK, envV := range o.EnvVars {
-			env.Add(envK, envV)
-		}
-
-		// Prepare extra vars
-		exv := ansible.BuildExtraVars("", installOrchestratorEf.Input, installOrchestratorEf.Output, buffer)
-
-		// Make the component usable
-		usable, err := rC.cF.Use(o, *rC.tplC)
-		if err != nil {
-			FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
-		}
-		defer usable.Release()
-
-		// Launch the playbook
-		code, err := rC.aM.Play(usable, *rC.tplC, installPlaybook, exv, env, rC.lC.Feedback())
-		if err != nil {
-			pfd := playBookFailureDetail{
-				Playbook:  installPlaybook,
-				Component: o.ComponentName(),
-				Code:      code,
-			}
-			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
-			sCs.Add(sc)
-			return *sCs, nil
-		}
+	// Orchestrator install exchange folder
+	installOrchestratorEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "install_orchestrator", &sc)
+	if ko {
 		sCs.Add(sc)
+		return *sCs, nil
 	}
 
-	// Notify setup finish
-	rC.lC.Feedback().ProgressG("orchestrator.install", len(rC.environment.NodeSets), "Orchestrator installed on all node sets")
+	// Prepare parameters
+	bp := buildBaseParam(rC, "")
+	bp.AddNamedMap("params", o.Parameters)
+	if ko := saveBaseParams(bp, installOrchestratorEf.Input, &sc); ko {
+		sCs.Add(sc)
+		return *sCs, nil
+	}
+
+	// Prepare extra vars
+	exv := ansible.CreateExtraVars(installOrchestratorEf.Input, installOrchestratorEf.Output)
+
+	// Make the component usable
+	usable, err := rC.cF.Use(o, rC.tplC)
+	if err != nil {
+		FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
+		sCs.Add(sc)
+		return *sCs, nil
+	}
+	defer usable.Release()
+
+	// Launch the playbook
+	code, err := rC.aM.Play(usable, rC.tplC, installPlaybook, exv)
+	if err != nil {
+		pfd := playBookFailureDetail{
+			Playbook:  installPlaybook,
+			Component: o.ComponentName(),
+			Code:      code,
+		}
+		FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
+		sCs.Add(sc)
+		return *sCs, nil
+	}
+	sCs.Add(sc)
+
+	// Notify install finish
+	rC.lC.Feedback().Progress("orchestrator.install", "Orchestrator installed")
 
 	return *sCs, nil
 }
@@ -427,9 +364,6 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			return *sCs, nil
 		}
 
-		// Create a new buffer
-		buffer := ansible.CreateBuffer()
-
 		// Prepare parameters
 		bp := buildBaseParam(rC, "")
 		bp.AddNamedMap("params", st.Parameters)
@@ -438,22 +372,12 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			return *sCs, nil
 		}
 
-		// Prepare environment variables
-		env := ansible.BuildEnvVars()
-		env.AddDefaultOsVars()
-		env.AddProxy(rC.lC.Proxy())
-
-		// Adding the environment variables from the stack
-		for envK, envV := range st.EnvVars {
-			env.Add(envK, envV)
-		}
-
 		// Process hook : environment - deploy - before
 		runHookBefore(
 			rC,
 			sCs,
 			rC.environment.Hooks.Deploy,
-			hookContext{"deploy", st, "environment", "deploy", bp, env, buffer},
+			hookContext{"deploy", st, "environment", "deploy", bp},
 			NoCleanUpRequired,
 		)
 
@@ -462,41 +386,41 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			rC,
 			sCs,
 			st.Hooks.Deploy,
-			hookContext{"deploy", st, "stack", "deploy", bp, env, buffer},
+			hookContext{"deploy", st, "stack", "deploy", bp},
 			NoCleanUpRequired,
 		)
 
 		// Make the stack usable
-		ust, err := rC.cF.Use(st, *rC.tplC)
+		ust, err := rC.cF.Use(st, rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
+			sCs.Add(sc)
+			return *sCs, nil
 		}
 		defer ust.Release()
 
+		// Prepare the extra vars
+		exv := ansible.CreateExtraVars(stackEf.Input, stackEf.Output)
+
 		// If the stack is not self deployable, use the orchestrator deploy playbook
 		var target component.UsableComponent
-		var deployExtraVars string
 		if ok, _ := ust.ContainsFile(deployPlaybook); !ok {
-			o, err := rC.cF.Use(rC.environment.Orchestrator, *rC.tplC)
+			o, err := rC.cF.Use(rC.environment.Orchestrator, rC.tplC)
 			if err != nil {
 				FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
+				sCs.Add(sc)
+				return *sCs, nil
 			}
 			defer o.Release()
 			target = o
-			deployExtraVars = fmt.Sprintf("stack_path=%s stack_name=%s", ust.RootPath(), st.Name)
+			exv.Add("stack_path", ust.RootPath())
+			exv.Add("stack_name", st.Name)
 		} else {
 			target = ust
 		}
 
-		// Prepare the extra vars
-		exv := ansible.BuildExtraVars(
-			deployExtraVars,
-			stackEf.Input,
-			stackEf.Output,
-			buffer)
-
 		// Execute the playbook
-		code, err := rC.aM.Play(target, *rC.tplC, deployPlaybook, exv, env, rC.lC.Feedback())
+		code, err := rC.aM.Play(target, rC.tplC, deployPlaybook, exv)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  deployPlaybook,
@@ -513,7 +437,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			rC,
 			sCs,
 			st.Hooks.Deploy,
-			hookContext{"deploy", st, "stack", "deploy", bp, env, buffer},
+			hookContext{"deploy", st, "stack", "deploy", bp},
 			NoCleanUpRequired,
 		)
 
@@ -522,7 +446,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			rC,
 			sCs,
 			rC.environment.Hooks.Deploy,
-			hookContext{"deploy", st, "environment", "deploy", bp, env, buffer},
+			hookContext{"deploy", st, "environment", "deploy", bp},
 			NoCleanUpRequired,
 		)
 
@@ -537,14 +461,16 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 
 func ansibleInventory(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
-	sr := InitPlaybookStepResult("Building inventory", nil, NoCleanUpRequired)
+	sc := InitPlaybookStepResult("Building inventory", nil, NoCleanUpRequired)
 
-	inv, err := rC.aM.Inventory(*rC.tplC)
+	inv, err := rC.aM.Inventory(rC.tplC)
 	if err != nil {
-		FailsOnCode(&sr, err, "An error occurred during inventory", nil)
+		FailsOnCode(&sc, err, "An error occurred during inventory", nil)
+		sCs.Add(sc)
+		return *sCs, nil
 	}
 
-	sCs.Add(sr)
+	sCs.Add(sc)
 	return *sCs, &ApplyResult{
 		Success:   true,
 		Inventory: inv,

@@ -81,13 +81,9 @@ func (eng *engine) Init() (err error) {
 	eng.environment = env
 	// Once the environment is created we can create the ansible and action
 	// manager passing them copy of the environment
-	eng.ansibleManager = ansible.CreateAnsibleManager(eng.lC.Log(), eng.lC.Verbosity(), finder)
+	eng.ansibleManager = ansible.CreateAnsibleManager(eng.lC, finder)
 	eng.actionManager = action.CreateActionManager(eng.lC, *eng.tplC, eng.environment, finder, eng.ansibleManager)
 	return
-}
-
-func (eng *engine) TemplateContext() *model.TemplateContext {
-	return eng.tplC
 }
 
 func (eng *engine) AnsibleManager() ansible.Manager {
