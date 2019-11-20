@@ -17,7 +17,7 @@ type (
 		//		ctx: the context used to eventually template the matching components
 		//		in: the component referencer where to look for the file, if not provided
 		//          the Finder will look into all the components available into the platform.
-		ContainsFile(name string, ctx model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths
+		ContainsFile(name string, ctx *model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths
 
 		//ContainsDirectory returns paths pointing on templated components containing the given directory
 		//	Parameters
@@ -25,14 +25,14 @@ type (
 		//		ctx: the context used to eventually template the matching components
 		//		in: the component referencer where to look for the directory, if not provided
 		//          the Finder will look into all the components available into the platform.
-		ContainsDirectory(name string, ctx model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths
+		ContainsDirectory(name string, ctx *model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths
 
 		//Use returns a UsableComponent matching the given reference.
 		//If the component corresponding to the reference contains a template
 		//definition then the component will be duplicated and templated before
 		// being returned as a UsableComponent.
 		// Don't forget to Release the UsableComponent once is processing is over...
-		Use(cr model.ComponentReferencer, ctx model.TemplateContext) (UsableComponent, error)
+		Use(cr model.ComponentReferencer, ctx *model.TemplateContext) (UsableComponent, error)
 	}
 
 	finder struct {
@@ -54,15 +54,15 @@ func createFinder(l *log.Logger, baseDir string, p model.Platform) Finder {
 	}
 }
 
-func (f finder) ContainsFile(name string, ctx model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths {
+func (f finder) ContainsFile(name string, ctx *model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths {
 	return f.contains(false, name, ctx, in...)
 }
 
-func (f finder) ContainsDirectory(name string, ctx model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths {
+func (f finder) ContainsDirectory(name string, ctx *model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths {
 	return f.contains(true, name, ctx, in...)
 }
 
-func (f finder) contains(isFolder bool, name string, ctx model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths {
+func (f finder) contains(isFolder bool, name string, ctx *model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths {
 	res := MatchingPaths{
 		Paths: make([]MatchingPath, 0, 0),
 	}
@@ -85,7 +85,7 @@ func (f finder) contains(isFolder bool, name string, ctx model.TemplateContext, 
 	return res
 }
 
-func (f finder) checkMatch(r model.ComponentReferencer, ctx model.TemplateContext, name string, isFolder bool) (MatchingPath, bool) {
+func (f finder) checkMatch(r model.ComponentReferencer, ctx *model.TemplateContext, name string, isFolder bool) (MatchingPath, bool) {
 	uv, err := f.Use(r, ctx)
 	if err != nil {
 		f.l.Printf("An error occurred using the component %s : %s", r.ComponentName(), err.Error())
@@ -107,33 +107,54 @@ func (f finder) checkMatch(r model.ComponentReferencer, ctx model.TemplateContex
 	return mPath{}, false
 }
 
-func (f finder) Use(cr model.ComponentReferencer, ctx model.TemplateContext) (UsableComponent, error) {
+func (f finder) Use(cr model.ComponentReferencer, ctx *model.TemplateContext) (UsableComponent, error) {
+	var res usable
 
 	lPath := filepath.Join(f.base, cr.ComponentName())
 	c := f.p.Components[cr.ComponentName()]
 	if ok, patterns := c.Templatable(); ok {
-		path, err := runTemplate(ctx, lPath, patterns, cr)
+		clonedCtx, err := model.CloneTemplateContext(ctx, cr)
 		if err != nil {
 			return usable{}, err
 		}
-		// No error no path then it has not been templated
-		if err == nil && path == "" {
-			goto TemplateFalse
+		path, err := runTemplate(clonedCtx, lPath, patterns, cr)
+		if err != nil {
+			return usable{}, err
 		}
-		return usable{
-			path:      path,
-			release:   cleanup(path),
+
+		if path != "" {
+			// Path has a value, the component has been templated
+			res = usable{
+				path:      path,
+				release:   cleanup(path),
+				component: c,
+				templated: true,
+			}
+		} else {
+			res = usable{
+				release:   releaseNothing,
+				path:      lPath,
+				component: c,
+				templated: false,
+			}
+		}
+	} else {
+		res = usable{
+			release:   releaseNothing,
+			path:      lPath,
 			component: c,
-			templated: true,
-		}, nil
+			templated: false,
+		}
 	}
-TemplateFalse:
-	return usable{
-		release:   releaseNothing,
-		path:      lPath,
-		component: c,
-		templated: false,
-	}, nil
+
+	// Keep component env vars
+	if o, ok := cr.(model.EnvVarsAware); ok {
+		res.envVars = o.EnvVarsInfo()
+	} else {
+		res.envVars = model.EnvVars{}
+	}
+
+	return res, nil
 }
 
 //Component returns the referenced component

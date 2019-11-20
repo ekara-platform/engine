@@ -71,7 +71,7 @@ func (am *manager) get(id ActionID) (Action, error) {
 
 //Run launches the action corresponding to the given id.
 func (am *manager) Run(id ActionID) (Result, error) {
-	rC := createRuntimeContext(am.lC, am.cF, am.aM, am.tplC, am.env)
+	rC := createRuntimeContext(am.lC, am.cF, am.aM, am.env, am.tplC)
 	a, e := am.get(id)
 	if e != nil {
 		return nil, e

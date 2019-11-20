@@ -235,17 +235,19 @@ func (rm *ReferenceManager) callEnsure(c model.Component, env *model.Environment
 
 		// Customize or keep the resulting environment into the global one
 		rm.l.Println("prepare partial environment for customization")
+
 		// We don't want to customize the templates defined into the environment
 		// But instead we want to keep them into the component
 		env.Platform().KeepTemplates(c, cEnv.Templates)
 		cEnv.Templates = model.Patterns{}
-		rm.l.Println("partial environment should be used for customization")
-		err = env.Customize(cEnv)
 
+		err = env.Customize(c, cEnv)
 		if err != nil {
 			rm.l.Printf("error customizing the environment %s", err.Error())
 			return err
 		}
+
+		ctx.Model = model.CreateTEnvironmentForEnvironment(*env)
 	}
 	rm.sortedFetchedComponents = append(rm.sortedFetchedComponents, c.Id)
 	return nil

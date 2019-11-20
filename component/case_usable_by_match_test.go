@@ -79,14 +79,14 @@ func TestByMatchNoMatchOnSearch(t *testing.T) {
 	comp1 := env.Orchestrator
 	comp2 := env.Providers["p1"]
 
-	matches := cm.ContainsFile("dummy.file", *tester.tplC)
+	matches := cm.ContainsFile("dummy.file", tester.tplC)
 	assert.NotNil(t, matches)
 	assert.Equal(t, 0, matches.Count())
 
 	//Nothing found the no template folder have been created
 	assert.Equal(t, cptComp, tester.ComponentCount())
 
-	matches = cm.ContainsFile("dummy.file", *tester.tplC, comp1, comp2)
+	matches = cm.ContainsFile("dummy.file", tester.tplC, comp1, comp2)
 	assert.NotNil(t, matches)
 	assert.Equal(t, 0, matches.Count())
 
@@ -120,12 +120,12 @@ func TestByMatchOneMatchOnSearch(t *testing.T) {
 	checker := checkByMatch(tester, cptComp)
 
 	// 2 matches but only 1 (comp2) templated
-	matches := cm.ContainsFile("search2.file", *tester.tplC)
+	matches := cm.ContainsFile("search2.file", tester.tplC)
 	releaseCheck := checker(matches, 2, 1, comp2)
 	checkByMatchContent(tester, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
 	releaseCheck()
 
-	matches = cm.ContainsFile("search2.file", *tester.tplC, comp1, comp2, comp3)
+	matches = cm.ContainsFile("search2.file", tester.tplC, comp1, comp2, comp3)
 	releaseCheck = checker(matches, 2, 1, comp2)
 	checkByMatchContent(tester, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
 	releaseCheck()
@@ -157,13 +157,13 @@ func TestByMatchTwoMatchesOnSearch(t *testing.T) {
 	checker := checkByMatch(tester, cptComp)
 
 	// 3 matches but only 2 (comp1,comp2) templated
-	matches := cm.ContainsFile("search1.file", *tester.tplC)
+	matches := cm.ContainsFile("search1.file", tester.tplC)
 	releaseCheck := checker(matches, 3, 2, comp1, comp2)
 	checkByMatchContent(tester, matches, comp1, "templateTarget1.yaml", "templateContentFromCli")
 	checkByMatchContent(tester, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
 	releaseCheck()
 
-	matches = cm.ContainsFile("search1.file", *tester.tplC, comp1, comp2, comp3)
+	matches = cm.ContainsFile("search1.file", tester.tplC, comp1, comp2, comp3)
 	releaseCheck = checker(matches, 3, 2, comp1, comp2)
 	checkByMatchContent(tester, matches, comp1, "templateTarget1.yaml", "templateContentFromCli")
 	checkByMatchContent(tester, matches, comp2, "templateTarget1.yaml", "templateContentFromCli")
@@ -173,8 +173,8 @@ func TestByMatchTwoMatchesOnSearch(t *testing.T) {
 
 func checkByMatchContent(tester *ComponentTester, ms MatchingPaths, r model.ComponentReferencer, file, wanted string) {
 	for _, m := range ms.Paths {
-		if m.Component().Name() == r.ComponentName() {
-			tester.CheckFile(m.Component(), file, wanted)
+		if m.UsableComponent().Name() == r.ComponentName() {
+			tester.CheckFile(m.UsableComponent(), file, wanted)
 		}
 	}
 }
@@ -201,8 +201,8 @@ func checkByMatch(tester *ComponentTester, initialCpt int) func(ms MatchingPaths
 
 func hasBeenTemplated(t *testing.T, ps MatchingPaths, r model.ComponentReferencer) bool {
 	for _, v := range ps.Paths {
-		if v.Component().Name() == r.ComponentName() {
-			return assert.True(t, v.Component().Templated())
+		if v.UsableComponent().Name() == r.ComponentName() {
+			return assert.True(t, v.UsableComponent().Templated())
 		}
 	}
 	return false

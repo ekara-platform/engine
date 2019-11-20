@@ -7,13 +7,13 @@ import (
 )
 
 const (
-	destroyPlaybook  = "destroy.yaml"
+	destroyPlaybook = "destroy.yaml"
 )
 
 type (
 	//DestroyResult contains the results of environment destruction
 	DestroyResult struct {
-		Success   bool
+		Success bool
 	}
 )
 
@@ -63,25 +63,12 @@ func providerDestroy(rC *runtimeContext) (StepResults, Result) {
 		// Notify creation progress
 		rC.lC.Feedback().ProgressG("provider.destroy", len(rC.environment.NodeSets), "Destroying node set '%s' with provider '%s'", n.Name, p.Name)
 
-		// Create a new buffer
-		buffer := ansible.CreateBuffer()
-
 		// Prepare parameters
 		bp := buildBaseParam(rC, n.Name)
 		bp.AddInt("instances", n.Instances)
 		bp.AddInterface("labels", n.Labels)
 		bp.AddNamedMap("params", p.Parameters)
 		bp.AddInterface("proxy", p.Proxy)
-
-		// Prepare environment variables
-		env := ansible.BuildEnvVars()
-		env.AddDefaultOsVars()
-		env.AddProxy(rC.lC.Proxy())
-
-		// Adding the environment variables from the nodeset provider
-		for envK, envV := range p.EnvVars {
-			env.Add(envK, envV)
-		}
 
 		// Process hook : environment - provision - before TODO
 		//runHookBefore(
@@ -102,29 +89,29 @@ func providerDestroy(rC *runtimeContext) (StepResults, Result) {
 		//)
 
 		// Node creation exchange folder
-		nodeDestroyEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "destroy_"+n.Name, &sc)
+		destroy, ko := createChildExchangeFolder(rC.lC.Ef().Input, "destroy_"+n.Name, &sc)
 		if ko {
 			sCs.Add(sc)
 			return *sCs, nil
 		}
 
-		if ko := saveBaseParams(bp, nodeDestroyEf.Input, &sc); ko {
+		if ko := saveBaseParams(bp, destroy.Input, &sc); ko {
 			sCs.Add(sc)
 			return *sCs, nil
 		}
 
 		// Prepare extra vars
-		exv := ansible.BuildExtraVars("", nodeDestroyEf.Input, nodeDestroyEf.Output, buffer)
+		exv := ansible.CreateExtraVars(destroy.Input, destroy.Output)
 
 		// Make the component usable
-		usable, err := rC.cF.Use(p, *rC.tplC)
+		usable, err := rC.cF.Use(p, rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 		}
 		defer usable.Release()
 
 		// Launch the playbook
-		code, err := rC.aM.Play(usable, *rC.tplC, destroyPlaybook, exv, env, rC.lC.Feedback())
+		code, err := rC.aM.Play(usable, rC.tplC, destroyPlaybook, exv)
 
 		if err != nil {
 			pfd := playBookFailureDetail{

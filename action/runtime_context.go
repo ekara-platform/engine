@@ -16,29 +16,18 @@ type (
 		tplC        *model.TemplateContext
 		environment *model.Environment
 		report      ReportFileContent
-		buffer      map[string]ansible.Buffer
 	}
 )
 
 //createRuntimeContext creates a new context for the runtime
-func createRuntimeContext(lC util.LaunchContext, cF component.Finder, aM ansible.Manager, tplC *model.TemplateContext, env *model.Environment) *runtimeContext {
+func createRuntimeContext(lC util.LaunchContext, cF component.Finder, aM ansible.Manager, env *model.Environment, tplC *model.TemplateContext) *runtimeContext {
 	// Initialization of the runtime context
-	clonedEnv := env // TODO: should clone the environment properly
 	rC := &runtimeContext{
 		lC:          lC,
 		cF:          cF,
 		aM:          aM,
-		environment: clonedEnv,
-		tplC:        model.CloneTemplateContext(tplC, clonedEnv),
+		environment: env,
+		tplC:        tplC,
 	}
-	rC.buffer = make(map[string]ansible.Buffer)
 	return rC
-}
-
-func (c *runtimeContext) getBuffer(p *util.FolderPath) ansible.Buffer {
-	// We check if we have a buffer corresponding to the provided folder path
-	if val, ok := c.buffer[p.Path()]; ok {
-		return val
-	}
-	return ansible.CreateBuffer()
 }

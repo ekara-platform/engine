@@ -9,51 +9,36 @@ import (
 )
 
 func TestNoExtraVars(t *testing.T) {
-	ev := BuildExtraVars("", util.CreateFolderPath(""), util.CreateFolderPath(""), Buffer{})
-	assert.Equal(t, false, ev.Bool)
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath(""))
+	assert.Equal(t, false, !ev.Empty())
 }
 
 func TestExtraVarsString(t *testing.T) {
-	ev := BuildExtraVars("aa=bb", util.CreateFolderPath(""), util.CreateFolderPath(""), Buffer{})
-	assert.Equal(t, true, ev.Bool)
-	assert.Equal(t, 2, len(ev.Vals))
-	assert.Equal(t, "--extra-vars", ev.Vals[0])
-	assert.Equal(t, "aa=bb", ev.Vals[1])
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath(""))
+	ev.Add("aa", "bb")
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	assert.Equal(t, ev.Content["aa"], "bb")
 }
 
 func TestExtraVarsInputFolder(t *testing.T) {
-	ev := BuildExtraVars("", util.CreateFolderPath("aa/bb"), util.CreateFolderPath(""), Buffer{})
-	assert.Equal(t, true, ev.Bool)
-	assert.Equal(t, 2, len(ev.Vals))
-	assert.Equal(t, "--extra-vars", ev.Vals[0])
-	assert.Equal(t, "input_dir=aa/bb", ev.Vals[1])
+	ev := CreateExtraVars(util.CreateFolderPath("aa/bb"), util.CreateFolderPath(""))
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	assert.Equal(t, ev.Content["input_dir"], "aa/bb")
 }
 
 func TestExtraVarsOutputFolder(t *testing.T) {
-	ev := BuildExtraVars("", util.CreateFolderPath(""), util.CreateFolderPath("aa/bb"), Buffer{})
-	assert.Equal(t, true, ev.Bool)
-	assert.Equal(t, 2, len(ev.Vals))
-	assert.Equal(t, "--extra-vars", ev.Vals[0])
-	assert.Equal(t, "output_dir=aa/bb", ev.Vals[1])
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath("aa/bb"))
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	assert.Equal(t, ev.Content["output_dir"], "aa/bb")
 }
 
 func TestExtraVarsInputOutputFolder(t *testing.T) {
-	ev := BuildExtraVars("", util.CreateFolderPath("aa/bb"), util.CreateFolderPath("aa/bb"), Buffer{})
-	assert.Equal(t, true, ev.Bool)
-	assert.Equal(t, 3, len(ev.Vals))
-	assert.Equal(t, "--extra-vars", ev.Vals[0])
-	assert.Equal(t, "input_dir=aa/bb", ev.Vals[1])
-	assert.Equal(t, "output_dir=aa/bb", ev.Vals[2])
-}
-
-func TestExtraVarsBuffer(t *testing.T) {
-	b := Buffer{}
-	extraVars := make(map[string]string)
-	extraVars["key1"] = "val1"
-	b.Extravars = extraVars
-	ev := BuildExtraVars("", util.CreateFolderPath(""), util.CreateFolderPath(""), b)
-	assert.Equal(t, true, ev.Bool)
-	assert.Equal(t, 2, len(ev.Vals))
-	assert.Equal(t, "--extra-vars", ev.Vals[0])
-	assert.Equal(t, "key1=val1", ev.Vals[1])
+	ev := CreateExtraVars(util.CreateFolderPath("aa/bb"), util.CreateFolderPath("aa/bb"))
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 2, len(ev.Content))
+	assert.Equal(t, ev.Content["input_dir"], "aa/bb")
+	assert.Equal(t, ev.Content["output_dir"], "aa/bb")
 }

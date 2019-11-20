@@ -9,7 +9,6 @@ import (
 
 //Build creates the base environment base on the given main component
 func Build(mainComponent model.Component, ctx *model.TemplateContext, workDir string, l *log.Logger) (Finder, model.Environment, error) {
-
 	rM := createReferenceManager(l)
 	cM := createComponentManager(l, workDir)
 	env := model.InitEnvironment()
