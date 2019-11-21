@@ -404,7 +404,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 
 		// If the stack is not self deployable, use the orchestrator deploy playbook
 		var target component.UsableComponent
-		if ok, _ := ust.ContainsFile(deployPlaybook); !ok {
+		if ok, _ := ust.ContainsFile(deployPlaybook); st.Playbook == "" && !ok {
 			o, err := rC.cF.Use(rC.environment.Orchestrator, rC.tplC)
 			if err != nil {
 				FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
@@ -420,10 +420,16 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 		}
 
 		// Execute the playbook
-		code, err := rC.aM.Play(target, rC.tplC, deployPlaybook, exv)
+		var effectivePlaybook string
+		if st.Playbook != "" {
+			effectivePlaybook = st.Playbook
+		} else {
+			effectivePlaybook = deployPlaybook
+		}
+		code, err := rC.aM.Play(target, rC.tplC, effectivePlaybook, exv)
 		if err != nil {
 			pfd := playBookFailureDetail{
-				Playbook:  deployPlaybook,
+				Playbook:  effectivePlaybook,
 				Component: target.Name(),
 				Code:      code,
 			}
