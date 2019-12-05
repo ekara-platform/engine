@@ -92,13 +92,6 @@ func (bp *BaseParam) AddString(name string, s string) {
 	bp.Body[name] = s
 }
 
-// AddBuffer adds the parameters coming from the given buffer
-//
-// Only the "Param" content of the buffer will be processed.
-func (bp *BaseParam) AddBuffer(b Buffer) {
-	bp.AddMap(b.Param)
-}
-
 // Content returns the yaml representation of the content
 func (bp BaseParam) Content() (b []byte, e error) {
 	b, e = yaml.Marshal(&bp.Body)

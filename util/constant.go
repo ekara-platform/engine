@@ -21,15 +21,19 @@ const (
 	//to pass the environment descriptor password
 	StarterVerbosityVariableKey string = "EKARA_VERBOSITY"
 
-	//SSHPuplicKeyFileName is the Name of the SSH Public key file
+	//SSHPublicKeyFileName is the Name of the SSH Public key file
 	SSHPublicKeyFileName string = "ssh.pub"
 
 	//SSHPrivateKeyFileName is the Name of the SSH Private key file
 	SSHPrivateKeyFileName string = "ssh.pem"
 
 	//ActionEnvVariableKey is the environment variable key used to pass
-	// the ekera action to perform between several Ekara components.
+	// the ekara action to perform between several Ekara components.
 	ActionEnvVariableKey string = "EKARA_ACTION"
+
+	//ActionEnvVariableSkip is the environment variable key used to pass
+	// the skipping behavior
+	ActionEnvVariableSkip string = "EKARA_SKIP"
 
 	//ExternalVarsFilename is the name of the file containing the map of all components locations
 	ExternalVarsFilename string = "external_vars.yaml"

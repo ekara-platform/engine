@@ -16,7 +16,7 @@ func TestManagerInitialGrossContent(t *testing.T) {
 
 	// Check actions preloaded into the manager
 	assert.False(t, am.empty())
-	if assert.Len(t, am.actions, 4) {
+	if assert.Len(t, am.actions, 5) {
 		v, err := am.get(CheckActionID)
 		assert.Nil(t, err)
 		check(t, v, CheckActionID, NilActionID, "Check")
@@ -24,6 +24,10 @@ func TestManagerInitialGrossContent(t *testing.T) {
 		v, err = am.get(ApplyActionID)
 		assert.Nil(t, err)
 		check(t, v, ApplyActionID, CheckActionID, "Apply")
+
+		v, err = am.get(DestroyActionID)
+		assert.Nil(t, err)
+		check(t, v, DestroyActionID, CheckActionID, "Destroy")
 
 		v, err = am.get(ValidateActionID)
 		assert.Nil(t, err)
@@ -227,45 +231,6 @@ func TestLaunchStepsMultiples(t *testing.T) {
 	assert.Equal(t, scs[5].StepName, "Dummy step, multiple 3")
 }
 
-func TestIsolatedRuntimeContext(t *testing.T) {
-	tplC := model.CreateTemplateContext(model.Parameters{})
-	am := CreateActionManager(util.CreateMockLaunchContext("", false), *tplC, model.Environment{}, nil, nil).(*manager)
-	action1 := Action{
-		id:        "action1",
-		dependsOn: NilActionID,
-		steps: []step{
-			func(rC *runtimeContext) (StepResults, Result) {
-				assert.NotContains(t, rC.tplC.Vars, "toto")
-				rC.tplC.Vars["toto"] = "value"
-				return StepResults{}, nil
-			},
-			func(rC *runtimeContext) (StepResults, Result) {
-				assert.Equal(t, rC.tplC.Vars["toto"], "value")
-				rC.tplC.Vars["toto"] = "overridden"
-				return StepResults{}, nil
-			},
-			func(rC *runtimeContext) (StepResults, Result) {
-				assert.Equal(t, rC.tplC.Vars["toto"], "overridden")
-				return StepResults{}, nil
-			},
-		}}
-	am.actions["action1"] = action1
-	action2 := Action{
-		id:        "action2",
-		dependsOn: NilActionID,
-		steps: []step{
-			func(rC *runtimeContext) (StepResults, Result) {
-				assert.NotContains(t, rC.tplC.Vars, "toto")
-				return StepResults{}, nil
-			},
-		}}
-	am.actions["action2"] = action2
-	_, err := am.Run("action1")
-	assert.Nil(t, err)
-	_, err = am.Run("action2")
-	assert.Nil(t, err)
-}
-
 func fStepMock1(rC *runtimeContext) (StepResults, Result) {
 	sc := InitCodeStepResult("Dummy step 1", nil, NoCleanUpRequired)
 	return sc.Build(), nil
@@ -297,5 +262,5 @@ func fStepMockMultipleContext(rC *runtimeContext) (StepResults, Result) {
 
 func mockRuntimeContext() *runtimeContext {
 	lC := util.CreateMockLaunchContext("", false)
-	return createRuntimeContext(lC, nil, nil, &model.TemplateContext{}, &model.Environment{})
+	return createRuntimeContext(lC, nil, nil, &model.Environment{}, &model.TemplateContext{})
 }

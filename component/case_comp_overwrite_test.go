@@ -68,7 +68,7 @@ nodes:
 	cF := tester.cF
 	assert.NotNil(t, cF)
 
-	usableComp, err := cF.Use(env.Orchestrator, *tester.tplC)
+	usableComp, err := cF.Use(env.Orchestrator, tester.tplC)
 	assert.Nil(t, err)
 	defer usableComp.Release()
 	// Check that the comp1 used is the one defined into the main descriptor
@@ -143,7 +143,7 @@ nodes:
 	cF := tester.cF
 	assert.NotNil(t, cF)
 
-	usableComp, err := cF.Use(env.Orchestrator, *tester.tplC)
+	usableComp, err := cF.Use(env.Orchestrator, tester.tplC)
 	assert.Nil(t, err)
 	defer usableComp.Release()
 	// Check that the comp1 used is the one defined into the main descriptor

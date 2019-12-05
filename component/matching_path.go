@@ -10,7 +10,7 @@ type (
 	//MatchingPath represents the matching path of the searched content
 	MatchingPath interface {
 		//Component gives the usable component wherin the searched content has been located
-		Component() UsableComponent
+		UsableComponent() UsableComponent
 		//RelativePath specifies the relatives path of the searched content into the usable component
 		RelativePath() string
 		//AbsolutePath specifies the absolute path of the searched content into the usable component
@@ -29,7 +29,7 @@ type (
 	}
 )
 
-func (p mPath) Component() UsableComponent {
+func (p mPath) UsableComponent() UsableComponent {
 	return p.comp
 }
 
@@ -38,13 +38,13 @@ func (p mPath) RelativePath() string {
 }
 
 func (p mPath) AbsolutePath() string {
-	return filepath.Join(p.Component().RootPath(), p.RelativePath())
+	return filepath.Join(p.UsableComponent().RootPath(), p.RelativePath())
 }
 
 //Release deletes, if any, the templated paths returned
 func (mp MatchingPaths) Release() {
 	for _, v := range mp.Paths {
-		v.Component().Release()
+		v.UsableComponent().Release()
 	}
 }
 
@@ -57,7 +57,7 @@ func (mp MatchingPaths) Count() int {
 func (mp MatchingPaths) JoinAbsolutePaths(separator string) string {
 	paths := make([]string, 0, 0)
 	for _, v := range mp.Paths {
-		paths = append(paths, filepath.Join(v.Component().RootPath(), v.RelativePath()))
+		paths = append(paths, filepath.Join(v.UsableComponent().RootPath(), v.RelativePath()))
 	}
 	return strings.Join(paths, separator)
 }

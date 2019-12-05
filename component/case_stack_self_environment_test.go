@@ -108,7 +108,7 @@ ekara:
 			assert.Equal(t, model.MainComponentId, stackC.Id)
 
 			// Check that the stack is usable and returns the environent as component
-			usableStack, err := cF.Use(stack, *tester.tplC)
+			usableStack, err := cF.Use(stack, tester.tplC)
 			defer usableStack.Release()
 			assert.Nil(t, err)
 			assert.NotNil(t, usableStack)

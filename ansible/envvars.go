@@ -9,28 +9,36 @@ import (
 )
 
 // EnvVars contains the extra vars to be passed to a playbook
-type EnvVars struct {
+type envVars struct {
 	Content map[string]string
 }
 
-//BuildEnvVars creates and empy EnvVars
-func BuildEnvVars() EnvVars {
-	r := EnvVars{}
+//CreateEnvVars creates and empy EnvVars
+func createEnvVars() envVars {
+	r := envVars{}
 	r.Content = make(map[string]string)
 	return r
+}
+
+func (ev envVars) String() string {
+	r := ""
+	for k, v := range ev.Content {
+		r += k + "=" + v + " "
+	}
+	return strings.Trim(r, " ")
 }
 
 // Add adds the given key and value.
 //
 // If the key already exists then its content will be overwritten by the by the value
-func (ev *EnvVars) Add(key, value string) {
+func (ev *envVars) add(key, value string) {
 	ev.Content[key] = value
 }
 
 // AddProxy adds the proxy information if any
 //
 // If proxy info is already present, it will be overwritten or removed if empty proxy values are passed
-func (ev *EnvVars) AddProxy(proxy model.Proxy) {
+func (ev *envVars) addProxy(proxy model.Proxy) {
 	if proxy.Http != "" {
 		ev.Content["http_proxy"] = proxy.Http
 	} else {
@@ -49,14 +57,14 @@ func (ev *EnvVars) AddProxy(proxy model.Proxy) {
 }
 
 // AddDefaultOsVars adds the HOSTNAME, PATH, TERM and HOME OS variables
-func (ev *EnvVars) AddDefaultOsVars() {
-	ev.AddOsVars("HOSTNAME", "PATH", "TERM", "HOME")
+func (ev *envVars) addDefaultOsVars() {
+	ev.addOsVars("HOSTNAME", "PATH", "TERM", "HOME")
 }
 
 // AddOsVars adds the current OS value of the specified variables
 //
 // If the var list is empty, all os variables are added
-func (ev *EnvVars) AddOsVars(vars ...string) {
+func (ev *envVars) addOsVars(vars ...string) {
 	osVars := os.Environ()
 	for _, osV := range osVars {
 		splitOsV := strings.Split(osV, "=")
@@ -78,17 +86,5 @@ func (ev *EnvVars) AddOsVars(vars ...string) {
 
 			}
 		}
-	}
-}
-
-// AddBuffer adds the environment variable coming from the given buffer
-//
-// Only the "Extravars" content of the buffer will be processed.
-//
-// If any of the buffered keys already exist then its content will be
-// overwritten by the by the corresponding buffered value.
-func (ev *EnvVars) AddBuffer(b Buffer) {
-	for k, v := range b.Envvars {
-		ev.Content[k] = v
 	}
 }

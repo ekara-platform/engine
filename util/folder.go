@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -35,7 +34,6 @@ type FolderPath struct {
 // If the ExchangeFolder already exist  it will remain untouched
 func (f ExchangeFolder) Create() error {
 	if _, err := os.Stat(f.RootFolder); os.IsNotExist(err) {
-		log.Printf("Creating exchange folder root %s", f.RootFolder)
 		e := os.Mkdir(f.RootFolder, 0777)
 		if e != nil {
 			return e

@@ -10,16 +10,16 @@ import (
 )
 
 func TestUniqueEnvVars(t *testing.T) {
-	ev := BuildEnvVars()
+	ev := createEnvVars()
 	assert.Len(t, ev.Content, 0)
-	ev.Add("key1", "value1")
+	ev.add("key1", "value1")
 	assert.Len(t, ev.Content, 1)
 
 	val, ok := ev.Content["key1"]
 	assert.True(t, ok)
 	assert.Equal(t, val, "value1")
 
-	ev.Add("key2", "value2")
+	ev.add("key2", "value2")
 	assert.Len(t, ev.Content, 2)
 
 	val, ok = ev.Content["key2"]
@@ -33,8 +33,8 @@ func TestOsEnvVars(t *testing.T) {
 	os.Setenv("TERM", "3")
 	os.Setenv("HOME", "4")
 
-	ev := BuildEnvVars()
-	ev.AddDefaultOsVars()
+	ev := createEnvVars()
+	ev.addDefaultOsVars()
 
 	assert.Len(t, ev.Content, 4)
 	val, ok := ev.Content["HOSTNAME"]
@@ -52,9 +52,9 @@ func TestOsEnvVars(t *testing.T) {
 }
 
 func TestProxyEnvVars(t *testing.T) {
-	ev := BuildEnvVars()
+	ev := createEnvVars()
 
-	ev.AddProxy(model.Proxy{
+	ev.addProxy(model.Proxy{
 		Http:    "testHttpProxy",
 		Https:   "testHttpsProxy",
 		NoProxy: "testNoProxy"})
@@ -69,7 +69,7 @@ func TestProxyEnvVars(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, val, "testNoProxy")
 
-	ev.AddProxy(model.Proxy{})
+	ev.addProxy(model.Proxy{})
 
 	_, ok = ev.Content["http_proxy"]
 	assert.False(t, ok)
@@ -77,24 +77,4 @@ func TestProxyEnvVars(t *testing.T) {
 	assert.False(t, ok)
 	_, ok = ev.Content["no_proxy"]
 	assert.False(t, ok)
-}
-
-func TestBufferedEnvVars(t *testing.T) {
-	ev := BuildEnvVars()
-	assert.Len(t, ev.Content, 0)
-
-	b := CreateBuffer()
-	b.Envvars["key1"] = "value1"
-	b.Envvars["key2"] = "value2"
-
-	ev.AddBuffer(b)
-	assert.Len(t, ev.Content, 2)
-
-	val, ok := ev.Content["key1"]
-	assert.True(t, ok)
-	assert.Equal(t, val, "value1")
-
-	val, ok = ev.Content["key2"]
-	assert.True(t, ok)
-	assert.Equal(t, val, "value2")
 }

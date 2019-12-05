@@ -220,34 +220,6 @@ func TestAddNamedMapString(t *testing.T) {
 	}
 }
 
-func TestAddBuffer(t *testing.T) {
-	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
-
-	buf := CreateBuffer()
-	buf.Param["string_key1"] = "string_val1"
-	buf.Param["string_key2"] = "string_val2"
-
-	bp.AddBuffer(buf)
-
-	body := bp.Body
-
-	val, ok := body["string_key1"]
-	assert.True(t, ok)
-
-	v, okType := val.(string)
-	assert.True(t, okType)
-	vString := string(v)
-	assert.Equal(t, "string_val1", vString)
-
-	val, ok = body["string_key2"]
-	assert.True(t, ok)
-
-	v, okType = val.(string)
-	assert.True(t, okType)
-	vString = string(v)
-	assert.Equal(t, "string_val2", vString)
-}
-
 func TestCopy(t *testing.T) {
 	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
 	copy := bp.Copy()

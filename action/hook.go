@@ -14,11 +14,9 @@ type (
 	hookContext struct {
 		action    string
 		target    model.Describable
-		hookOnwer string
+		hookOwner string
 		hookName  string
 		baseParam ansible.BaseParam
-		envVar    ansible.EnvVars
-		buffer    ansible.Buffer
 	}
 )
 
@@ -34,7 +32,7 @@ func runHookAfter(rC *runtimeContext, r *StepResults, h model.Hook, ctx hookCont
 
 func runHooks(hooks []model.TaskRef, rC *runtimeContext, r *StepResults, ctx hookContext, cl Cleanup) {
 	for i, hook := range hooks {
-		repName := fmt.Sprintf("%s_%s_hook_%s_%s_%s_%d", ctx.action, ctx.target.DescName(), ctx.hookOnwer, ctx.hookName, hook.HookLocation, i)
+		repName := fmt.Sprintf("%s_%s_hook_%s_%s_%s_%d", ctx.action, ctx.target.DescName(), ctx.hookOwner, ctx.hookName, hook.HookLocation, i)
 		sc := InitHookStepResult(folderAsMessage(repName), ctx.target, cl)
 		ef, ko := createChildExchangeFolder(rC.lC.Ef().Input, repName, &sc)
 		if ko {
@@ -57,35 +55,28 @@ func runHooks(hooks []model.TaskRef, rC *runtimeContext, r *StepResults, ctx hoo
 			continue
 		}
 
-		exv := ansible.BuildExtraVars("", ef.Input, ef.Output, ctx.buffer)
+		exv := ansible.CreateExtraVars(ef.Input, ef.Output)
 
-		runTask(rC, t, ctx.target, sc, r, ef, exv, ctx.envVar)
+		runTask(rC, t, sc, r, exv)
 		r.Add(fconsumeHookResult(rC, ctx.target, repName, ef))
 	}
 }
 
 func fconsumeHookResult(rC *runtimeContext, target model.Describable, repName string, ef util.ExchangeFolder) StepResult {
 	sc := InitCodeStepResult("Consuming the hook result", target, NoCleanUpRequired)
-	rC.lC.Log().Printf("Consume the hook result %s", target.DescName())
-	efOut := ef.Output
-	buffer, err := ansible.GetBuffer(efOut, rC.lC.Log(), "hook:"+repName)
-	if err != nil {
-		FailsOnCode(&sc, err, fmt.Sprintf("An error occurred getting the buffer"), nil)
-		return sc
-	}
-	// Keep a reference on the buffer based on the output folder
-	rC.buffer[efOut.Path()] = buffer
+	rC.lC.Log().Printf("Consuming the hook result %s", target.DescName())
+	// TODO
 	return sc
 }
 
-func runTask(rC *runtimeContext, task model.Task, target model.Describable, sc StepResult, r *StepResults, ef util.ExchangeFolder, exv ansible.ExtraVars, env ansible.EnvVars) {
-	usable, err := rC.cF.Use(task, *rC.tplC)
+func runTask(rC *runtimeContext, task model.Task, sc StepResult, r *StepResults, exv ansible.ExtraVars) {
+	usable, err := rC.cF.Use(task, rC.tplC)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable task", nil)
 	}
 	defer usable.Release()
 
-	code, err := rC.aM.Play(usable, *rC.tplC, task.Playbook, exv, env, rC.lC.Feedback())
+	code, err := rC.aM.Play(usable, rC.tplC, task.Playbook, exv)
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  task.Playbook,

@@ -22,15 +22,22 @@ type (
 		ContainsFile(name string) (bool, MatchingPath)
 		//ContainsDirectory returns the matching path of the searched directory
 		ContainsDirectory(name string) (bool, MatchingPath)
+		//EnvVars return the environment variables necessary for this component to work
+		EnvVars() model.EnvVars
 	}
 
 	usable struct {
 		release   func()
 		path      string
 		component model.Component
+		envVars   model.EnvVars
 		templated bool
 	}
 )
+
+func (u usable) EnvVars() model.EnvVars {
+	return u.envVars
+}
 
 func (u usable) Name() string {
 	return u.component.Id

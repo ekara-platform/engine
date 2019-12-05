@@ -333,7 +333,7 @@ func (t *ComponentTester) CheckStack(holder, stackName, composeContent string) {
 		assert.Equal(t.t, holder, stackC.Id)
 
 		// Check that the stack is usable and returns the correct component
-		usableStack, err := t.cF.Use(stack, *t.tplC)
+		usableStack, err := t.cF.Use(stack, t.tplC)
 		defer usableStack.Release()
 		assert.Nil(t.t, err)
 		assert.NotNil(t.t, usableStack)

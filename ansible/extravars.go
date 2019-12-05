@@ -1,6 +1,7 @@
 package ansible
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/ekara-platform/engine/util"
@@ -8,50 +9,52 @@ import (
 
 //ExtraVars extra vars, received into the buffer, to be passed to a playbook
 type ExtraVars struct {
-	// Indicates if the struct has content or not
-	Bool bool
-	// The extra vars content
-	Vals []string
+	Content map[string]interface{}
 }
 
-func (ev ExtraVars) String() string {
-	r := ""
-	for _, v := range ev.Vals {
-		r = r + " " + v
-	}
-	return r
-}
-
-//BuildExtraVars builds the extra var to pass to a playbook
-func BuildExtraVars(extraVars string, inputFolder util.FolderPath, outputFolder util.FolderPath, b Buffer) ExtraVars {
+//CreateExtraVars builds the extra var to pass to a playbook
+func CreateExtraVars(inputFolder util.FolderPath, outputFolder util.FolderPath) ExtraVars {
 	r := ExtraVars{}
-	r.Vals = make([]string, 0)
-
-	vars := strings.Trim(extraVars, " ")
+	r.Content = make(map[string]interface{}, 0)
 	in := strings.Trim(inputFolder.Path(), " ")
 	out := strings.Trim(outputFolder.Path(), " ")
-	if vars == "" && in == "" && out == "" && len(b.Extravars) == 0 {
-		r.Bool = false
-	} else {
-		r.Bool = true
-		r.Vals = append(r.Vals, "--extra-vars")
-		if vars != "" {
-			r.Vals = append(r.Vals, vars)
-		}
-
-		if in != "" {
-			r.Vals = append(r.Vals, "input_dir="+in)
-		}
-
-		if out != "" {
-			r.Vals = append(r.Vals, "output_dir="+out)
-		}
-
-		if len(b.Extravars) > 0 {
-			for k, v := range b.Extravars {
-				r.Vals = append(r.Vals, k+"="+v)
-			}
-		}
+	if in != "" {
+		r.Content["input_dir"] = in
+	}
+	if out != "" {
+		r.Content["output_dir"] = out
 	}
 	return r
+}
+
+//String returns the extra var content as string
+func (ev ExtraVars) String() (string, error) {
+	b, e := json.Marshal(ev.Content)
+	return string(b), e
+}
+
+//Empty returns true if the extra var has no content
+func (ev ExtraVars) Empty() bool {
+	return len(ev.Content) == 0
+}
+
+// Add adds the given key and value.
+//
+// If the key already exists then its content will be overwritten by the by the value
+func (ev *ExtraVars) Add(key, value string) {
+	ev.Content[key] = value
+}
+
+// AddArray adds the given key and values passed as an array.
+//
+// If the key already exists then its content will be overwritten by the by the provided values
+func (ev *ExtraVars) AddArray(key string, values []string) {
+	ev.Content[key] = values
+}
+
+// AddMap adds the given key and values passed as an array.
+//
+// If the key already exists then its content will be overwritten by the by the provided values
+func (ev *ExtraVars) AddMap(key string, values map[string]string) {
+	ev.Content[key] = values
 }

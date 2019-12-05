@@ -9,51 +9,122 @@ import (
 )
 
 func TestNoExtraVars(t *testing.T) {
-	ev := BuildExtraVars("", util.CreateFolderPath(""), util.CreateFolderPath(""), Buffer{})
-	assert.Equal(t, false, ev.Bool)
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath(""))
+	assert.Equal(t, false, !ev.Empty())
+	s, e := ev.String()
+	assert.Nil(t, e)
+	assert.Equal(t, s, "{}")
 }
 
 func TestExtraVarsString(t *testing.T) {
-	ev := BuildExtraVars("aa=bb", util.CreateFolderPath(""), util.CreateFolderPath(""), Buffer{})
-	assert.Equal(t, true, ev.Bool)
-	assert.Equal(t, 2, len(ev.Vals))
-	assert.Equal(t, "--extra-vars", ev.Vals[0])
-	assert.Equal(t, "aa=bb", ev.Vals[1])
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath(""))
+	ev.Add("aa", "bb")
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	s, e := ev.String()
+	assert.Nil(t, e)
+	assert.Equal(t, s, "{\"aa\":\"bb\"}")
 }
 
 func TestExtraVarsInputFolder(t *testing.T) {
-	ev := BuildExtraVars("", util.CreateFolderPath("aa/bb"), util.CreateFolderPath(""), Buffer{})
-	assert.Equal(t, true, ev.Bool)
-	assert.Equal(t, 2, len(ev.Vals))
-	assert.Equal(t, "--extra-vars", ev.Vals[0])
-	assert.Equal(t, "input_dir=aa/bb", ev.Vals[1])
+	ev := CreateExtraVars(util.CreateFolderPath("aa/bb"), util.CreateFolderPath(""))
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	s, e := ev.String()
+	assert.Nil(t, e)
+	assert.Equal(t, s, "{\"input_dir\":\"aa/bb\"}")
 }
 
 func TestExtraVarsOutputFolder(t *testing.T) {
-	ev := BuildExtraVars("", util.CreateFolderPath(""), util.CreateFolderPath("aa/bb"), Buffer{})
-	assert.Equal(t, true, ev.Bool)
-	assert.Equal(t, 2, len(ev.Vals))
-	assert.Equal(t, "--extra-vars", ev.Vals[0])
-	assert.Equal(t, "output_dir=aa/bb", ev.Vals[1])
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath("aa/bb"))
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	s, e := ev.String()
+	assert.Nil(t, e)
+	assert.Equal(t, s, "{\"output_dir\":\"aa/bb\"}")
 }
 
 func TestExtraVarsInputOutputFolder(t *testing.T) {
-	ev := BuildExtraVars("", util.CreateFolderPath("aa/bb"), util.CreateFolderPath("aa/bb"), Buffer{})
-	assert.Equal(t, true, ev.Bool)
-	assert.Equal(t, 3, len(ev.Vals))
-	assert.Equal(t, "--extra-vars", ev.Vals[0])
-	assert.Equal(t, "input_dir=aa/bb", ev.Vals[1])
-	assert.Equal(t, "output_dir=aa/bb", ev.Vals[2])
+	ev := CreateExtraVars(util.CreateFolderPath("aa/bb"), util.CreateFolderPath("aa/bb"))
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 2, len(ev.Content))
+	s, e := ev.String()
+	assert.Nil(t, e)
+	assert.Equal(t, s, "{\"input_dir\":\"aa/bb\",\"output_dir\":\"aa/bb\"}")
 }
 
-func TestExtraVarsBuffer(t *testing.T) {
-	b := Buffer{}
-	extraVars := make(map[string]string)
-	extraVars["key1"] = "val1"
-	b.Extravars = extraVars
-	ev := BuildExtraVars("", util.CreateFolderPath(""), util.CreateFolderPath(""), b)
-	assert.Equal(t, true, ev.Bool)
-	assert.Equal(t, 2, len(ev.Vals))
-	assert.Equal(t, "--extra-vars", ev.Vals[0])
-	assert.Equal(t, "key1=val1", ev.Vals[1])
+func TestExtraVarsEmptryArray(t *testing.T) {
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath(""))
+	values := []string{}
+	ev.AddArray("aa", values)
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	s, e := ev.String()
+	assert.Nil(t, e)
+	assert.Equal(t, s, "{\"aa\":[]}")
+}
+
+func TestExtraVarsArrayOneValue(t *testing.T) {
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath(""))
+	values := []string{"str1"}
+	ev.AddArray("aa", values)
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	s, e := ev.String()
+	assert.Nil(t, e)
+	assert.Equal(t, s, "{\"aa\":[\"str1\"]}")
+}
+
+func TestExtraVarsArrayValues(t *testing.T) {
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath(""))
+	values := []string{"str1", "str2", "str3"}
+	ev.AddArray("aa", values)
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	s, e := ev.String()
+	assert.Nil(t, e)
+	assert.Equal(t, s, "{\"aa\":[\"str1\",\"str2\",\"str3\"]}")
+}
+
+func TestExtraVarsEmptryMap(t *testing.T) {
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath(""))
+	values := map[string]string{}
+
+	ev.AddMap("aa", values)
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	s, e := ev.String()
+	assert.Nil(t, e)
+	assert.Equal(t, s, "{\"aa\":{}}")
+
+}
+
+func TestExtraVarsMapOneValue(t *testing.T) {
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath(""))
+	values := map[string]string{
+		"key1": "val1",
+	}
+	ev.AddMap("aa", values)
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	s, e := ev.String()
+	assert.Nil(t, e)
+	assert.Equal(t, s, "{\"aa\":{\"key1\":\"val1\"}}")
+}
+
+func TestExtraVarsMapValues(t *testing.T) {
+	ev := CreateExtraVars(util.CreateFolderPath(""), util.CreateFolderPath(""))
+	values := map[string]string{
+		"key1": "val1",
+		"key2": "val2",
+		"key3": "val3",
+	}
+
+	ev.AddMap("aa", values)
+	assert.Equal(t, true, !ev.Empty())
+	assert.Equal(t, 1, len(ev.Content))
+	s, e := ev.String()
+	assert.Nil(t, e)
+	assert.Equal(t, s, "{\"aa\":{\"key1\":\"val1\",\"key2\":\"val2\",\"key3\":\"val3\"}}")
+
 }
