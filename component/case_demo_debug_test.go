@@ -15,7 +15,7 @@ import (
 func TestDebugDemo(t *testing.T) {
 
 	p := model.CreateParameters(map[string]interface{}{
-		"ek": map[interface{}]interface{}{
+		"ekara": map[interface{}]interface{}{
 			"aws": map[interface{}]interface{}{
 				"region": "dummy",
 				"accessKey": map[interface{}]interface{}{
@@ -45,7 +45,7 @@ func TestDebugDemo(t *testing.T) {
   ekara:
     parent:
       repository: ekara-platform/distribution
-    components:
+      components:
       visualizer:
         repository: ekara-platform/swarm-visualizer-stack
   
@@ -111,5 +111,5 @@ func TestDebugDemo(t *testing.T) {
 
 	// comp1 should be downloaded because it's used as orchestrator into the parent
 	// comp2 should not be downloaded because it's referenced by a component
-	tester.AssertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "ek-aws", "ek-swarm", "visualizer")
+	tester.AssertComponentsContainsExactly(model.MainComponentId, model.EkaraComponentId+"1", "ek-core", "ek-aws", "ek-swarm")
 }
