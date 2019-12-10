@@ -2,6 +2,7 @@ package action
 
 import (
 	"errors"
+
 	"github.com/ekara-platform/model"
 )
 
@@ -24,6 +25,7 @@ func (v ValidateResult) IsSuccess() bool {
 	return !v.HasErrors()
 }
 
+//FromJson fills an action returned content from a JSON content
 func (v ValidateResult) FromJson(s string) error {
 	return errors.New("not implemented")
 }

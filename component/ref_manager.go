@@ -233,7 +233,6 @@ func (rm *ReferenceManager) callEnsure(c model.Component, env *model.Environment
 			return err
 		}
 
-		// Customize or keep the resulting environment into the global one
 		rm.l.Println("prepare partial environment for customization")
 
 		// We don't want to customize the templates defined into the environment

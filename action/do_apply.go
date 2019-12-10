@@ -3,9 +3,11 @@ package action
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
+	"github.com/ekara-platform/model"
 )
 
 const (
@@ -13,6 +15,7 @@ const (
 	createPlaybook  = "create.yaml"
 	installPlaybook = "install.yaml"
 	deployPlaybook  = "deploy.yaml"
+	copyPlaybook    = "copy.yaml"
 )
 
 type (
@@ -23,10 +26,12 @@ type (
 	}
 )
 
+//IsSuccess returns true id the action execution was successful
 func (r ApplyResult) IsSuccess() bool {
 	return r.Success
 }
 
+//FromJson fills an action returned content from a JSON content
 func (r *ApplyResult) FromJson(s string) error {
 	err := json.Unmarshal([]byte(s), r)
 	if err != nil {
@@ -35,6 +40,7 @@ func (r *ApplyResult) FromJson(s string) error {
 	return nil
 }
 
+//AsJson returns the action returned content as JSON
 func (r ApplyResult) AsJson() (string, error) {
 	b, err := json.Marshal(r)
 	if err != nil {
@@ -48,7 +54,7 @@ var (
 		ApplyActionID,
 		CheckActionID,
 		"Apply",
-		[]step{providerSetup, providerCreate, orchestratorSetup, orchestratorInstall, stackDeploy, ansibleInventory},
+		[]step{providerSetup, providerCreate, orchestratorSetup, orchestratorInstall, copy, stackDeploy, ansibleInventory},
 	}
 )
 
@@ -195,7 +201,6 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 			sCs.Add(sc)
 			return *sCs, nil
 		}
-		sCs.Add(sc)
 
 		// Process hook : nodeset - provision - after
 		runHookAfter(
@@ -214,6 +219,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 			hookContext{"create", n, "environment", "provision", bp},
 			NoCleanUpRequired,
 		)
+		sCs.Add(sc)
 	}
 
 	// Notify creation finish
@@ -339,6 +345,94 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 	return *sCs, nil
 }
 
+func copy(rC *runtimeContext) (StepResults, Result) {
+	sCs := InitStepResults()
+
+	if rC.lC.Skipping() > 2 {
+		// Notify installation skipping
+		rC.lC.Feedback().Progress("stack.deploy", "Stack deployment copy skipped by user request")
+		return *sCs, nil
+	}
+
+	withCopies := make([]model.Stack, 0, 0)
+	for _, st := range rC.environment.Stacks {
+		if len(st.Copies.Content) > 0 {
+			withCopies = append(withCopies, st)
+		}
+	}
+
+	for _, st := range withCopies {
+		// Notify stack copy
+		rC.lC.Feedback().ProgressG("stack.copy", len(withCopies), "Copying stack '%s'", st.Name)
+		sc := InitPlaybookStepResult("Copying stack", st, NoCleanUpRequired)
+
+		// Make the stack usable
+		ust, err := rC.cF.Use(st, rC.tplC)
+		if err != nil {
+			FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
+		}
+		defer ust.Release()
+
+		for path, cp := range st.Copies.Content {
+
+			// Stack copy exchange folder for the given stack
+			fName := fmt.Sprintf("copy_stack_%s", st.Name)
+
+			stackEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, fName, &sc)
+			if ko {
+				sCs.Add(sc)
+				return *sCs, nil
+			}
+
+			// Prepare the extra vars
+			exv := ansible.CreateExtraVars(stackEf.Input, stackEf.Output)
+
+			// If the stack is not self copyable, use the orchestrator copy playbook
+			var target component.UsableComponent
+			if ok, _ := ust.ContainsFile(copyPlaybook); !ok {
+				o, err := rC.cF.Use(rC.environment.Orchestrator, rC.tplC)
+				if err != nil {
+					FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
+				}
+				defer o.Release()
+				target = o
+			} else {
+				target = ust
+			}
+
+			exv.Add("stack_path", ust.RootPath())
+			if cp.Once {
+				exv.Add("copy_once", "true")
+			} else {
+				exv.Add("copy_once", "false")
+			}
+
+			exv.Add("copy_path", path)
+			exv.AddArray("copy_sources", cp.Sources.Content)
+			exv.AddMap("copy_labels", cp.Labels)
+
+			// Execute the playbook
+			code, err := rC.aM.Play(target, rC.tplC, copyPlaybook, exv)
+			if err != nil {
+				pfd := playBookFailureDetail{
+					Playbook:  copyPlaybook,
+					Component: target.Name(),
+					Code:      code,
+				}
+				FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
+				sCs.Add(sc)
+				return *sCs, nil
+			}
+		}
+
+		sCs.Add(sc)
+
+		// Notify stack copy finish
+		rC.lC.Feedback().Progress("stack.copy", "The stack has been copied")
+	}
+	return *sCs, nil
+}
+
 func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 
@@ -350,12 +444,11 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 
 	for _, st := range rC.environment.Stacks {
 		sc := InitPlaybookStepResult("Deploying stack", st, NoCleanUpRequired)
-		sCs.Add(sc)
 
 		// Notify stack deploy
 		rC.lC.Feedback().ProgressG("stack.deploy", len(rC.environment.Stacks), "Deploying stack '%s'", st.Name)
 
-		// Stack deploy exchange folder for the given provider
+		// Stack deploy exchange folder for the given stack
 		fName := fmt.Sprintf("deploy_stack_%s", st.Name)
 
 		stackEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, fName, &sc)

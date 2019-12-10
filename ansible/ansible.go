@@ -88,7 +88,11 @@ func (aM manager) Play(uc component.UsableComponent, ctx *model.TemplateContext,
 	env := aM.buildEnvVars(allComps...)
 
 	// Extra vars
-	args = append(args, aM.buildExtraVarsArgs(extraVars)...)
+	etxvs, err := aM.buildExtraVarsArgs(extraVars)
+	if err != nil {
+		return 0, err
+	}
+	args = append(args, etxvs...)
 
 	// Verbosity = 2+
 	if aM.lC.Verbosity() > 1 {
@@ -241,15 +245,19 @@ func (aM manager) buildInventoryArgs(inventoryPaths component.MatchingPaths) []s
 	return args
 }
 
-func (aM manager) buildExtraVarsArgs(extraVars ExtraVars) []string {
+func (aM manager) buildExtraVarsArgs(extraVars ExtraVars) ([]string, error) {
 	var args []string
 	if !extraVars.Empty() {
-		aM.lC.Log().Printf("Ansible extra vars: %s", extraVars.String())
-		args = append(args, "--extra-vars", extraVars.String())
+		s, e := extraVars.String()
+		if e != nil {
+			return args, e
+		}
+		aM.lC.Log().Printf("Ansible extra vars: %s", s)
+		args = append(args, "--extra-vars", s)
 	} else {
 		aM.lC.Log().Printf("No Ansible extra var")
 	}
-	return args
+	return args, nil
 }
 
 func (aM manager) exec(dir string, ex string, args []string, envVars envVars) (execChan, error) {

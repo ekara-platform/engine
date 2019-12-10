@@ -25,6 +25,7 @@ func (r DumpResult) IsSuccess() bool {
 	return r.Env != nil
 }
 
+//FromJson fills an action returned content from a JSON content
 func (r DumpResult) FromJson(s string) error {
 	return errors.New("not implemented")
 }
