@@ -1,6 +1,7 @@
 package component
 
 import (
+	"fmt"
 	"log"
 	"path/filepath"
 
@@ -27,7 +28,10 @@ type (
 		//          the Finder will look into all the components available into the platform.
 		ContainsDirectory(name string, ctx *model.TemplateContext, in ...model.ComponentReferencer) MatchingPaths
 
-		//Use returns a UsableComponent matching the given reference.
+		//IsAvailable checks if a component is locally available
+		IsAvailable(cr model.ComponentReferencer) bool
+
+		//Use returns a component matching the given reference.
 		//If the component corresponding to the reference contains a template
 		//definition then the component will be duplicated and templated before
 		// being returned as a UsableComponent.
@@ -107,11 +111,19 @@ func (f finder) checkMatch(r model.ComponentReferencer, ctx *model.TemplateConte
 	return mPath{}, false
 }
 
+func (f finder) IsAvailable(cr model.ComponentReferencer) bool {
+	_, ok := f.p.Components[cr.ComponentName()]
+	return ok
+}
+
 func (f finder) Use(cr model.ComponentReferencer, ctx *model.TemplateContext) (UsableComponent, error) {
 	var res usable
 
+	c, ok := f.p.Components[cr.ComponentName()]
+	if !ok {
+		return nil, fmt.Errorf("component %s is not available", cr.ComponentName())
+	}
 	lPath := filepath.Join(f.base, cr.ComponentName())
-	c := f.p.Components[cr.ComponentName()]
 	if ok, patterns := c.Templatable(); ok {
 		clonedCtx, err := model.CloneTemplateContext(ctx, cr)
 		if err != nil {

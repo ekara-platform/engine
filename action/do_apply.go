@@ -61,6 +61,10 @@ var (
 func providerSetup(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 	for _, p := range rC.environment.Providers {
+		if !rC.cF.IsAvailable(p) {
+			continue
+		}
+
 		sc := InitPlaybookStepResult("Running the provider setup phase", p, NoCleanUpRequired)
 
 		// Notify setup progress

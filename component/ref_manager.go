@@ -105,14 +105,12 @@ func (rm *ReferenceManager) parseParent(p model.Component, cm *manager, ctx *mod
 
 	url, _, err := cm.ensureOneComponent(p)
 	if err != nil {
-		rm.l.Printf("error fetching the parent %s", err.Error())
-		return err
+		return fmt.Errorf("%s: fetching error: %s", p.Id, err.Error())
 	}
 
 	refs, err := model.ParseYamlDescriptorReferences(url, ctx)
 	if err != nil {
-		rm.l.Printf("error parsing the parent references %s", err.Error())
-		return err
+		return fmt.Errorf("%s: parsing error: %s", p.Id, err.Error())
 	}
 	// Keep all the references used into the parent
 	u, o := refs.Uses(rm.orphans)
@@ -225,6 +223,7 @@ func (rm *ReferenceManager) callEnsure(c model.Component, env *model.Environment
 		descriptorYaml, err := model.ParseYamlDescriptor(url, ctx)
 		if err != nil {
 			rm.l.Printf("error parsing the descriptor: %s", err.Error())
+			rm.l.Println()
 			return err
 		}
 
