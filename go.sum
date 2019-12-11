@@ -5,12 +5,6 @@ github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYU
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/ekara-platform/model v1.0.0 h1:pbHaImZ5WyyxkmbCESt6Jt0l26iyxRLktjJCrJfCazI=
-github.com/ekara-platform/model v1.0.0/go.mod h1:6Bog+i7MeFHng1R1Aj2kLi+F+4umrjjCY3dl2fy3u8Y=
-github.com/ekara-platform/model v1.0.1-0.20191104224758-2bc53be181e0 h1:/Kq1B2ANjtHaTXOMJlhkt4zIhIZINaFUDjTAMwqh2qY=
-github.com/ekara-platform/model v1.0.1-0.20191104224758-2bc53be181e0/go.mod h1:0nVOf6MOkq+u+5PFkAe7zTw7/IZHsy187b/uTT3c1ig=
-github.com/ekara-platform/model v1.0.1-0.20191120091007-63bbd3ef7847 h1:urMrWT89xR8spPYItUYHKJWn5xcqsWR7NDH/JtljTk0=
-github.com/ekara-platform/model v1.0.1-0.20191120091007-63bbd3ef7847/go.mod h1:0nVOf6MOkq+u+5PFkAe7zTw7/IZHsy187b/uTT3c1ig=
 github.com/ekara-platform/model v1.0.1-0.20191121112038-bbd1bec10ee8 h1:Y2yXjeX/VK0SohhnbizKuwKaxwo/aEYxhfeORFOIoc8=
 github.com/ekara-platform/model v1.0.1-0.20191121112038-bbd1bec10ee8/go.mod h1:0nVOf6MOkq+u+5PFkAe7zTw7/IZHsy187b/uTT3c1ig=
 github.com/emirpasic/gods v1.9.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
@@ -67,8 +61,6 @@ golang.org/x/net v0.0.0-20180906233101-161cd47e91fd/go.mod h1:mL1N/T3taQHkDXs73r
 golang.org/x/net v0.0.0-20181011144130-49bb7cea24b1 h1:Y/KGZSOdz/2r0WJ9Mkmz6NJBusp0kiNx1Cn82lzJQ6w=
 golang.org/x/net v0.0.0-20181011144130-49bb7cea24b1/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
 golang.org/x/sys v0.0.0-20180903190138-2b024373dcd9/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
-golang.org/x/sys v0.0.0-20181011152604-fa43e7bc11ba h1:nZJIJPGow0Kf9bU9QTc1U6OXbs/7Hu4e+cNv+hxH+Zc=
-golang.org/x/sys v0.0.0-20181011152604-fa43e7bc11ba/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20191008105621-543471e840be h1:QAcqgptGM8IQBC9K/RC4o+O9YmqEm0diQn9QmZw/0mU=
 golang.org/x/sys v0.0.0-20191008105621-543471e840be/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
