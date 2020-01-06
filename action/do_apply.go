@@ -54,7 +54,7 @@ var (
 		ApplyActionID,
 		CheckActionID,
 		"Apply",
-		[]step{providerSetup, providerCreate, orchestratorSetup, orchestratorInstall, copy, stackDeploy, ansibleInventory},
+		[]step{providerSetup, providerCreate, orchestratorSetup, orchestratorInstall, stackCopy, stackDeploy, ansibleInventory},
 	}
 )
 
@@ -349,90 +349,100 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 	return *sCs, nil
 }
 
-func copy(rC *runtimeContext) (StepResults, Result) {
+func stackCopy(rC *runtimeContext) (StepResults, Result) {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 2 {
 		// Notify installation skipping
-		rC.lC.Feedback().Progress("stack.deploy", "Stack deployment copy skipped by user request")
+		rC.lC.Feedback().Progress("stack.copy", "Stack copy skipped by user request")
 		return *sCs, nil
 	}
 
-	withCopies := make([]model.Stack, 0, 0)
+	stackWithCopies := make([]model.Stack, 0, 0)
 	for _, st := range rC.environment.Stacks {
 		if len(st.Copies.Content) > 0 {
-			withCopies = append(withCopies, st)
+			stackWithCopies = append(stackWithCopies, st)
 		}
 	}
 
-	for _, st := range withCopies {
-		// Notify stack copy
-		rC.lC.Feedback().ProgressG("stack.copy", len(withCopies), "Copying stack '%s'", st.Name)
+	for _, st := range stackWithCopies {
 		sc := InitPlaybookStepResult("Copying stack", st, NoCleanUpRequired)
 
-		// Make the stack usable
-		ust, err := rC.cF.Use(st, rC.tplC)
-		if err != nil {
-			FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
-		}
-		defer ust.Release()
+		// Notify stack copy
+		rC.lC.Feedback().ProgressG("stack.copy", len(stackWithCopies), "Copying files for stack '%s'", st.Name)
 
-		for path, cp := range st.Copies.Content {
+		for cpName, cp := range st.Copies.Content {
+			if cp.Path != "" {
+				rC.lC.Feedback().Detail("Copying '%s' files to '%s'", cpName, cp.Path)
 
-			// Stack copy exchange folder for the given stack
-			fName := fmt.Sprintf("copy_stack_%s", st.Name)
+				// Create exchange folder
+				stackEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, fmt.Sprintf("copy_stack_%s_%s", st.Name, cpName), &sc)
+				if ko {
+					sCs.Add(sc)
+					return *sCs, nil
+				}
 
-			stackEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, fName, &sc)
-			if ko {
-				sCs.Add(sc)
-				return *sCs, nil
-			}
-
-			// Prepare the extra vars
-			exv := ansible.CreateExtraVars(stackEf.Input, stackEf.Output)
-
-			// If the stack is not self copyable, use the orchestrator copy playbook
-			var target component.UsableComponent
-			if ok, _ := ust.ContainsFile(copyPlaybook); !ok {
-				o, err := rC.cF.Use(rC.environment.Orchestrator, rC.tplC)
+				// Make the stack usable
+				ust, err := rC.cF.Use(st, rC.tplC)
 				if err != nil {
-					FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
+					FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
+					sCs.Add(sc)
+					return *sCs, nil
 				}
-				defer o.Release()
-				target = o
-			} else {
-				target = ust
-			}
+				defer ust.Release()
 
-			exv.Add("stack_path", ust.RootPath())
-			if cp.Once {
-				exv.Add("copy_once", "true")
-			} else {
-				exv.Add("copy_once", "false")
-			}
-
-			exv.Add("copy_path", path)
-			exv.AddArray("copy_sources", cp.Sources.Content)
-			exv.AddMap("copy_labels", cp.Labels)
-
-			// Execute the playbook
-			code, err := rC.aM.Play(target, rC.tplC, copyPlaybook, exv)
-			if err != nil {
-				pfd := playBookFailureDetail{
-					Playbook:  copyPlaybook,
-					Component: target.Name(),
-					Code:      code,
+				// If the stack is not self copyable, use the orchestrator copy playbook
+				var target component.UsableComponent
+				if ok, _ := ust.ContainsFile(copyPlaybook); !ok {
+					o, err := rC.cF.Use(rC.environment.Orchestrator, rC.tplC)
+					if err != nil {
+						FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
+						sCs.Add(sc)
+						return *sCs, nil
+					}
+					defer o.Release()
+					target = o
+				} else {
+					target = ust
 				}
-				FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
-				sCs.Add(sc)
-				return *sCs, nil
+
+				// Prepare the extra vars
+				exv := ansible.CreateExtraVars(stackEf.Input, stackEf.Output)
+				exv.Add("stack_path", ust.RootPath())
+				exv.Add("copy_path", cp.Path)
+				if cp.Once {
+					exv.Add("copy_once", "true")
+				} else {
+					exv.Add("copy_once", "false")
+				}
+				if len(cp.Sources.Content) > 0 {
+					exv.AddArray("copy_sources", cp.Sources.Content)
+				}
+				if len(cp.Labels) > 0 {
+					exv.AddMap("copy_labels", cp.Labels)
+				}
+
+				// Execute the playbook
+				code, err := rC.aM.Play(target, rC.tplC, copyPlaybook, exv)
+				if err != nil {
+					pfd := playBookFailureDetail{
+						Playbook:  copyPlaybook,
+						Component: target.Name(),
+						Code:      code,
+					}
+					FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
+					sCs.Add(sc)
+					return *sCs, nil
+				}
+			} else {
+				rC.lC.Feedback().Detail("No destination path for '%s' files, skipping copy", cpName)
 			}
 		}
 
 		sCs.Add(sc)
 
 		// Notify stack copy finish
-		rC.lC.Feedback().Progress("stack.copy", "The stack has been copied")
+		rC.lC.Feedback().Progress("stack.copy", "All stack files have been copied")
 	}
 	return *sCs, nil
 }

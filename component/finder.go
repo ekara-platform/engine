@@ -3,6 +3,7 @@ package component
 import (
 	"fmt"
 	"log"
+	"os"
 	"path/filepath"
 
 	"github.com/ekara-platform/model"
@@ -44,10 +45,6 @@ type (
 		base string
 		p    model.Platform
 	}
-
-	localRef struct {
-		component model.Component
-	}
 )
 
 func createFinder(l *log.Logger, baseDir string, p model.Platform) Finder {
@@ -78,10 +75,7 @@ func (f finder) contains(isFolder bool, name string, ctx *model.TemplateContext,
 		}
 	} else {
 		for _, comp := range f.p.Components {
-			lRef := localRef{
-				component: comp,
-			}
-			if match, b := f.checkMatch(lRef, ctx, name, isFolder); b {
+			if match, b := f.checkMatch(comp, ctx, name, isFolder); b {
 				res.Paths = append(res.Paths, match)
 			}
 		}
@@ -138,13 +132,12 @@ func (f finder) Use(cr model.ComponentReferencer, ctx *model.TemplateContext) (U
 			// Path has a value, the component has been templated
 			res = usable{
 				path:      path,
-				release:   cleanup(path),
+				release:   f.cleanup(path),
 				component: c,
 				templated: true,
 			}
 		} else {
 			res = usable{
-				release:   releaseNothing,
 				path:      lPath,
 				component: c,
 				templated: false,
@@ -152,7 +145,6 @@ func (f finder) Use(cr model.ComponentReferencer, ctx *model.TemplateContext) (U
 		}
 	} else {
 		res = usable{
-			release:   releaseNothing,
 			path:      lPath,
 			component: c,
 			templated: false,
@@ -169,12 +161,11 @@ func (f finder) Use(cr model.ComponentReferencer, ctx *model.TemplateContext) (U
 	return res, nil
 }
 
-//Component returns the referenced component
-func (r localRef) Component() (model.Component, error) {
-	return r.component, nil
-}
-
-//ComponentName returns the referenced component name
-func (r localRef) ComponentName() string {
-	return r.component.Id
+func (f finder) cleanup(path string) func() {
+	return func() {
+		err := os.RemoveAll(path)
+		if err != nil {
+			f.l.Printf("Unable to clean temporary component path %s: %s", path, err.Error())
+		}
+	}
 }

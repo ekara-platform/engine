@@ -28,14 +28,14 @@ func TestCodeFail(t *testing.T) {
 func TestDescriptorFail(t *testing.T) {
 
 	sc := InitCodeStepResult("DUMMY_STEP", nil, NoCleanUpRequired)
-	FailsOnDescriptor(&sc, fmt.Errorf("DUMMY_ERROR"), "DUMMY_DETAILS", nil)
+	FailsOnModel(&sc, fmt.Errorf("DUMMY_ERROR"), "DUMMY_DETAILS", nil)
 
 	assert.Equal(t, sc.StepName, "DUMMY_STEP")
 	assert.Equal(t, sc.AppliedToType, "")
 	assert.Equal(t, sc.AppliedToName, "")
 	assert.Equal(t, sc.Status, stepStatusFailure)
 	assert.Equal(t, sc.Context, stepContextCode)
-	assert.Equal(t, sc.FailureCause, descriptorFailure)
+	assert.Equal(t, sc.FailureCause, modelFailure)
 	assert.NotNil(t, sc.error)
 	assert.Equal(t, sc.ErrorMessage, "DUMMY_ERROR")
 	assert.Equal(t, sc.ReadableMessage, "DUMMY_DETAILS")
