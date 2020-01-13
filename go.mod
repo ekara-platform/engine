@@ -14,7 +14,3 @@ require (
 	gopkg.in/src-d/go-git.v4 v4.7.1
 	gopkg.in/yaml.v2 v2.2.1
 )
-
-replace github.com/ekara-platform/model => ../model
-
-replace github.com/ekara-platform/engine/ansible => ../engine/ansible
