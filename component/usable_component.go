@@ -1,10 +1,9 @@
 package component
 
 import (
+	"github.com/ekara-platform/model"
 	"os"
 	"path/filepath"
-
-	"github.com/ekara-platform/model"
 )
 
 type (
@@ -44,7 +43,9 @@ func (u usable) Name() string {
 }
 
 func (u usable) Release() {
-	u.release()
+	if u.release != nil {
+		u.release()
+	}
 }
 
 func (u usable) RootPath() string {

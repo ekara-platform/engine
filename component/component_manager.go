@@ -2,20 +2,13 @@ package component
 
 import (
 	"log"
-	"os"
-
 	"path/filepath"
 
 	"github.com/ekara-platform/engine/component/scm"
 	"github.com/ekara-platform/model"
 )
 
-var releaseNothing = func() {
-	// Doing nothing and it's fine
-}
-
 type (
-
 	//Manager manages the fetch and the templating of components used into a descriptor
 	manager struct {
 		l         *log.Logger
@@ -52,10 +45,4 @@ func (cm *manager) ensureOneComponent(c model.Component) (model.EkURL, bool, err
 		path = fComp
 	}
 	return path.DescriptorUrl, path.HasDescriptor(), nil
-}
-
-func cleanup(path string) func() {
-	return func() {
-		os.RemoveAll(path)
-	}
 }

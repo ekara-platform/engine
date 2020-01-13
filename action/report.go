@@ -100,7 +100,7 @@ func (rfc ReportFileContent) hasFailure() (bool, ReportFailures) {
 		if v.Status == stepStatusFailure {
 
 			switch v.FailureCause {
-			case codeFailure, descriptorFailure:
+			case codeFailure, modelFailure:
 				r.otherFailures = append(r.otherFailures, v)
 				break
 

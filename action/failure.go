@@ -22,7 +22,8 @@ type (
 const (
 	notImplementedFailure failureCause = "NotImplemented"
 	codeFailure           failureCause = "Code"
-	descriptorFailure     failureCause = "Descriptor"
+	modelFailure          failureCause = "Model"
+	componentFailure      failureCause = "Component"
 	playBookFailure       failureCause = "PlayBook"
 )
 
@@ -36,8 +37,12 @@ var FailsOnNotImplemented = failOn(notImplementedFailure)
 var FailsOnCode = failOn(codeFailure)
 
 // FailsOnDescriptor allows to create a failure on an execution step
-// because of an invalid descriptor
-var FailsOnDescriptor = failOn(descriptorFailure)
+// because of an invalid model
+var FailsOnModel = failOn(modelFailure)
+
+// FailsOnComponent allows to create a failure on an execution step
+// because of an invalid component
+var FailsOnComponent = failOn(componentFailure)
 
 // FailsOnPlaybook allows to create a failure on an execution step
 // because of an error return by a playbook execution
