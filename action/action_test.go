@@ -231,33 +231,33 @@ func TestLaunchStepsMultiples(t *testing.T) {
 	assert.Equal(t, scs[5].StepName, "Dummy step, multiple 3")
 }
 
-func fStepMock1(rC *runtimeContext) (StepResults, Result) {
+func fStepMock1(rC *runtimeContext) StepResults {
 	sc := InitCodeStepResult("Dummy step 1", nil, NoCleanUpRequired)
-	return sc.Build(), nil
+	return sc.Build()
 }
 
-func fStepMock2(rC *runtimeContext) (StepResults, Result) {
+func fStepMock2(rC *runtimeContext) StepResults {
 	sc := InitCodeStepResult("Dummy step 2", nil, NoCleanUpRequired)
-	return sc.Build(), nil
+	return sc.Build()
 }
 
-func fStepMock3(rC *runtimeContext) (StepResults, Result) {
+func fStepMock3(rC *runtimeContext) StepResults {
 	sc := InitCodeStepResult("Dummy step 3", nil, NoCleanUpRequired)
-	return sc.Build(), nil
+	return sc.Build()
 }
 
-func fStepMockError(rC *runtimeContext) (StepResults, Result) {
+func fStepMockError(rC *runtimeContext) StepResults {
 	sc := InitCodeStepResult("Dummy step on error", nil, NoCleanUpRequired)
 	sc.error = fmt.Errorf("Dummy error")
-	return sc.Build(), nil
+	return sc.Build()
 }
 
-func fStepMockMultipleContext(rC *runtimeContext) (StepResults, Result) {
+func fStepMockMultipleContext(rC *runtimeContext) StepResults {
 	srs := InitStepResults()
 	srs.Add(InitCodeStepResult("Dummy step, multiple 1", nil, NoCleanUpRequired))
 	srs.Add(InitCodeStepResult("Dummy step, multiple 2", nil, NoCleanUpRequired))
 	srs.Add(InitCodeStepResult("Dummy step, multiple 3", nil, NoCleanUpRequired))
-	return *srs, nil
+	return *srs
 }
 
 func mockRuntimeContext() *runtimeContext {

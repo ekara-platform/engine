@@ -13,8 +13,6 @@ import (
 type Result interface {
 	//IsSuccess returns true id the action execution was successful
 	IsSuccess() bool
-	//FromJson fills an action returned content from a JSON content
-	FromJson(s string) error
 	//AsJson returns the action returned content as JSON
 	AsJson() (string, error)
 }

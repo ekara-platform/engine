@@ -16,6 +16,7 @@ type (
 		tplC        *model.TemplateContext
 		environment *model.Environment
 		report      ReportFileContent
+		result      Result
 	}
 )
 

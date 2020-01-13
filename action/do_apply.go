@@ -1,8 +1,11 @@
 package action
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/http"
 
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/component"
@@ -16,6 +19,7 @@ const (
 	installPlaybook = "install.yaml"
 	deployPlaybook  = "deploy.yaml"
 	copyPlaybook    = "copy.yaml"
+	checklPlaybook  = "check.yaml"
 )
 
 type (
@@ -54,11 +58,11 @@ var (
 		ApplyActionID,
 		CheckActionID,
 		"Apply",
-		[]step{providerSetup, providerCreate, orchestratorSetup, orchestratorInstall, copy, stackDeploy, ansibleInventory},
+		[]step{providerSetup, providerCreate, orchestratorSetup, orchestratorInstall, copy, checkStack, stackDeploy, ansibleInventory, fillAPI},
 	}
 )
 
-func providerSetup(rC *runtimeContext) (StepResults, Result) {
+func providerSetup(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 	for _, p := range rC.environment.Providers {
 		if !rC.cF.IsAvailable(p) {
@@ -74,7 +78,7 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 		setupProviderEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "setup_provider_"+p.Name, &sc)
 		if ko {
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		setupProviderEfIn := setupProviderEf.Input
@@ -85,7 +89,7 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 		bp.AddNamedMap("params", p.Parameters)
 		if ko := saveBaseParams(bp, setupProviderEfIn, &sc); ko {
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		// Prepare extra vars
@@ -96,7 +100,7 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 		defer usable.Release()
 
@@ -109,7 +113,7 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 		sCs.Add(sc)
 	}
@@ -117,16 +121,16 @@ func providerSetup(rC *runtimeContext) (StepResults, Result) {
 	// Notify setup finish
 	rC.lC.Feedback().Progress("provider.setup", "All providers prepared")
 
-	return *sCs, nil
+	return *sCs
 }
 
-func providerCreate(rC *runtimeContext) (StepResults, Result) {
+func providerCreate(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 0 {
 		// Notify creation skipping
 		rC.lC.Feedback().Progress("provider.create", "Nodeset creation skipped by user request")
-		return *sCs, nil
+		return *sCs
 	}
 
 	for _, n := range rC.environment.NodeSets {
@@ -137,7 +141,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		// Notify creation progress
@@ -172,12 +176,12 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		nodeCreateEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "create_"+n.Name, &sc)
 		if ko {
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		if ko := saveBaseParams(bp, nodeCreateEf.Input, &sc); ko {
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		// Prepare extra vars
@@ -188,7 +192,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 		defer usable.Release()
 
@@ -203,7 +207,7 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		// Process hook : nodeset - provision - after
@@ -229,10 +233,10 @@ func providerCreate(rC *runtimeContext) (StepResults, Result) {
 	// Notify creation finish
 	rC.lC.Feedback().Progress("provider.create", "All node sets created")
 
-	return *sCs, nil
+	return *sCs
 }
 
-func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
+func orchestratorSetup(rC *runtimeContext) StepResults {
 	o := rC.environment.Orchestrator
 	sCs := InitStepResults()
 	sc := InitPlaybookStepResult("Running the orchestrator setup phase", o, NoCleanUpRequired)
@@ -244,7 +248,7 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	setupOrchestratorEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "setup_orchestrator", &sc)
 	if ko {
 		sCs.Add(sc)
-		return *sCs, nil
+		return *sCs
 	}
 
 	// Prepare parameters
@@ -252,7 +256,7 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	bp.AddNamedMap("params", o.Parameters)
 	if ko := saveBaseParams(bp, setupOrchestratorEf.Input, &sc); ko {
 		sCs.Add(sc)
-		return *sCs, nil
+		return *sCs
 	}
 
 	// Prepare extra vars
@@ -263,7 +267,7 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 		sCs.Add(sc)
-		return *sCs, nil
+		return *sCs
 	}
 	defer usable.Release()
 
@@ -277,24 +281,24 @@ func orchestratorSetup(rC *runtimeContext) (StepResults, Result) {
 		}
 		FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 		sCs.Add(sc)
-		return *sCs, nil
+		return *sCs
 	}
 
 	// Notify setup progress
 	rC.lC.Feedback().Progress("orchestrator.setup", "Orchestrator prepared")
 
 	sCs.Add(sc)
-	return *sCs, nil
+	return *sCs
 }
 
-func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
+func orchestratorInstall(rC *runtimeContext) StepResults {
 	o := rC.environment.Orchestrator
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 1 {
 		// Notify installation skipping
 		rC.lC.Feedback().Progress("orchestrator.install", "Orchestrator installation skipped by user request")
-		return *sCs, nil
+		return *sCs
 	}
 
 	sc := InitPlaybookStepResult("Running the orchestrator install phase", nil, NoCleanUpRequired)
@@ -306,7 +310,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 	installOrchestratorEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, "install_orchestrator", &sc)
 	if ko {
 		sCs.Add(sc)
-		return *sCs, nil
+		return *sCs
 	}
 
 	// Prepare parameters
@@ -314,7 +318,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 	bp.AddNamedMap("params", o.Parameters)
 	if ko := saveBaseParams(bp, installOrchestratorEf.Input, &sc); ko {
 		sCs.Add(sc)
-		return *sCs, nil
+		return *sCs
 	}
 
 	// Prepare extra vars
@@ -325,7 +329,7 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 		sCs.Add(sc)
-		return *sCs, nil
+		return *sCs
 	}
 	defer usable.Release()
 
@@ -339,23 +343,23 @@ func orchestratorInstall(rC *runtimeContext) (StepResults, Result) {
 		}
 		FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 		sCs.Add(sc)
-		return *sCs, nil
+		return *sCs
 	}
 	sCs.Add(sc)
 
 	// Notify install finish
 	rC.lC.Feedback().Progress("orchestrator.install", "Orchestrator installed")
 
-	return *sCs, nil
+	return *sCs
 }
 
-func copy(rC *runtimeContext) (StepResults, Result) {
+func copy(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 2 {
 		// Notify installation skipping
-		rC.lC.Feedback().Progress("stack.deploy", "Stack deployment copy skipped by user request")
-		return *sCs, nil
+		rC.lC.Feedback().Progress("stack.deploy", "Stack deployment ( copy ) skipped by user request")
+		return *sCs
 	}
 
 	withCopies := make([]model.Stack, 0, 0)
@@ -385,7 +389,7 @@ func copy(rC *runtimeContext) (StepResults, Result) {
 			stackEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, fName, &sc)
 			if ko {
 				sCs.Add(sc)
-				return *sCs, nil
+				return *sCs
 			}
 
 			// Prepare the extra vars
@@ -425,7 +429,7 @@ func copy(rC *runtimeContext) (StepResults, Result) {
 				}
 				FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 				sCs.Add(sc)
-				return *sCs, nil
+				return *sCs
 			}
 		}
 
@@ -434,16 +438,88 @@ func copy(rC *runtimeContext) (StepResults, Result) {
 		// Notify stack copy finish
 		rC.lC.Feedback().Progress("stack.copy", "The stack has been copied")
 	}
-	return *sCs, nil
+	return *sCs
 }
 
-func stackDeploy(rC *runtimeContext) (StepResults, Result) {
+func checkStack(rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+
+	if rC.lC.Skipping() > 2 {
+		// Notify installation skipping
+		rC.lC.Feedback().Progress("stack.check", "Stack deployment ( check ) skipped by user request")
+		return *sCs
+	}
+
+	for _, st := range rC.environment.Stacks {
+		sc := InitPlaybookStepResult("Checking stacks", st, NoCleanUpRequired)
+
+		// Notify stack check
+		rC.lC.Feedback().ProgressG("stack.check", len(rC.environment.Stacks), "Checking stacks '%s'", st.Name)
+
+		// Make the stack usable
+		ust, err := rC.cF.Use(st, rC.tplC)
+		if err != nil {
+			FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
+			sCs.Add(sc)
+			return *sCs
+		}
+		defer ust.Release()
+
+		//Verify that the stack contains the check playbook
+		if ok, _ := ust.ContainsFile(checklPlaybook); !ok {
+			// Notify stack deploy finish
+			rC.lC.Feedback().Progress("stack.deploy", "No check playbook available for the stack")
+			return *sCs
+		}
+
+		// Stack deploy exchange folder for the given stack
+		fName := fmt.Sprintf("check_stack_%s", st.Name)
+
+		stackEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, fName, &sc)
+		if ko {
+			sCs.Add(sc)
+			return *sCs
+		}
+
+		// Prepare parameters
+		bp := buildBaseParam(rC, "")
+		bp.AddNamedMap("params", st.Parameters)
+		if ko := saveBaseParams(bp, stackEf.Input, &sc); ko {
+			sCs.Add(sc)
+			return *sCs
+		}
+
+		// Prepare the extra vars
+		exv := ansible.CreateExtraVars(stackEf.Input, stackEf.Output)
+
+		code, err := rC.aM.Play(ust, rC.tplC, checklPlaybook, exv)
+		if err != nil {
+			pfd := playBookFailureDetail{
+				Playbook:  checklPlaybook,
+				Component: ust.Name(),
+				Code:      code,
+			}
+			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
+			sCs.Add(sc)
+			return *sCs
+		}
+
+		sCs.Add(sc)
+	}
+
+	// Notify stack deploy finish
+	rC.lC.Feedback().Progress("stack.deploy", "All stacks checked")
+
+	return *sCs
+}
+
+func stackDeploy(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 2 {
 		// Notify installation skipping
 		rC.lC.Feedback().Progress("stack.deploy", "Stack deployment installation skipped by user request")
-		return *sCs, nil
+		return *sCs
 	}
 
 	for _, st := range rC.environment.Stacks {
@@ -458,7 +534,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 		stackEf, ko := createChildExchangeFolder(rC.lC.Ef().Input, fName, &sc)
 		if ko {
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		// Prepare parameters
@@ -466,7 +542,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 		bp.AddNamedMap("params", st.Parameters)
 		if ko := saveBaseParams(bp, stackEf.Input, &sc); ko {
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		// Process hook : environment - deploy - before
@@ -492,7 +568,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 		defer ust.Release()
 
@@ -506,7 +582,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			if err != nil {
 				FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 				sCs.Add(sc)
-				return *sCs, nil
+				return *sCs
 			}
 			defer o.Release()
 			target = o
@@ -532,7 +608,7 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		// Process hook : stack - deploy - after
@@ -559,25 +635,145 @@ func stackDeploy(rC *runtimeContext) (StepResults, Result) {
 	// Notify stack deploy finish
 	rC.lC.Feedback().Progress("stack.deploy", "All stacks deployed")
 
-	return *sCs, nil
+	return *sCs
 }
 
-func ansibleInventory(rC *runtimeContext) (StepResults, Result) {
+func ansibleInventory(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 	sc := InitPlaybookStepResult("Building inventory", nil, NoCleanUpRequired)
+
+	rC.lC.Feedback().ProgressG("inventory", 1, "Generating inventory")
 
 	inv, err := rC.aM.Inventory(rC.tplC)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred during inventory", nil)
 		sCs.Add(sc)
-		return *sCs, nil
+		return *sCs
 	}
 
 	sCs.Add(sc)
-	return *sCs, &ApplyResult{
+	rC.result = ApplyResult{
 		Success:   true,
 		Inventory: inv,
 	}
+	rC.lC.Feedback().Progress("inventory", "Inventory generated")
+	return *sCs
+}
+
+func fillAPI(rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+	sc := InitPlaybookStepResult("Filling the Ekara API", nil, NoCleanUpRequired)
+	rC.lC.Feedback().ProgressG("api", 1, "Filling Ekara API ")
+
+	r, ok := rC.result.(ApplyResult)
+	if ok {
+		if !r.Success {
+			FailsOnCode(&sc, fmt.Errorf("The Ekara API cannot be filled because the previous result was not successful"), "", nil)
+			sCs.Add(sc)
+			return *sCs
+		}
+		inv := r.Inventory
+		for k := range inv.Hosts {
+
+			err := post(k, "ekara/desc_name", rC.lC.DescriptorName())
+			if err != nil {
+				FailsOnCode(&sc, err, "Error saving the descriptor name", nil)
+				sCs.Add(sc)
+				return *sCs
+			}
+
+			err = post(k, "ekara/desc_url", rC.lC.Location())
+			if err != nil {
+				FailsOnCode(&sc, err, "Error saving the descriptor location", nil)
+				sCs.Add(sc)
+				return *sCs
+			}
+
+			err = post(k, "ekara/user", rC.lC.User())
+			if err != nil {
+				FailsOnCode(&sc, err, "Error saving the ekara user", nil)
+				sCs.Add(sc)
+				return *sCs
+			}
+
+			err = post(k, "ekara/password", rC.lC.Password())
+			if err != nil {
+				FailsOnCode(&sc, err, "Error saving the ekara password", nil)
+				sCs.Add(sc)
+				return *sCs
+			}
+
+			f, err := util.FileRead(rC.lC.SSHPublicKey())
+			if err != nil {
+				FailsOnCode(&sc, err, "Error reading the ekara public SSH key", nil)
+				sCs.Add(sc)
+				return *sCs
+			}
+
+			err = post(k, "ekara/ssh_public", base64.StdEncoding.EncodeToString(f))
+			if err != nil {
+				FailsOnCode(&sc, err, "Error saving the ekara public SSH key", nil)
+				sCs.Add(sc)
+				return *sCs
+			}
+
+			f, err = util.FileRead(rC.lC.SSHPrivateKey())
+			if err != nil {
+				FailsOnCode(&sc, err, "Error reading the ekara private SSH key", nil)
+				sCs.Add(sc)
+				return *sCs
+			}
+
+			err = post(k, "ekara/ssh_private", base64.StdEncoding.EncodeToString(f))
+			if err != nil {
+				FailsOnCode(&sc, err, "Error saving the ekara private SSH key", nil)
+				sCs.Add(sc)
+				return *sCs
+			}
+
+			f, err = rC.lC.ExternalVars().ToYAML()
+			if err != nil {
+				FailsOnCode(&sc, err, "Error reading the ekara external vars", nil)
+				sCs.Add(sc)
+				return *sCs
+			}
+
+			err = post(k, "ekara/params", base64.StdEncoding.EncodeToString(f))
+			if err != nil {
+				FailsOnCode(&sc, err, "Error saving the ekara external parameters", nil)
+				sCs.Add(sc)
+				return *sCs
+			}
+			//We break because the first host is enough to reach the api
+			break
+		}
+	} else {
+		FailsOnCode(&sc, fmt.Errorf("Wrong result type, ApplyResult was expected"), "", nil)
+		sCs.Add(sc)
+		return *sCs
+	}
+	rC.lC.Feedback().Progress("api", "Ekara API Filled")
+	return *sCs
+}
+
+func post(url string, key string, value interface{}) error {
+	//find a way to put the port outside of the engine
+	u := fmt.Sprintf("http://%s:8090/storage/", url)
+	reqP := `{"key":"%s", "value":"%v"}`
+	jsonStr := []byte(fmt.Sprintf(reqP, key, value))
+
+	req, err := http.NewRequest("POST", u, bytes.NewBuffer(jsonStr))
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	fmt.Println("response Status:", resp.Status)
+	fmt.Println("response Headers:", resp.Header)
+	return nil
 }
 
 func buildBaseParam(rC *runtimeContext, nodeSetName string) ansible.BaseParam {

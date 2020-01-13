@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -29,4 +30,9 @@ func SaveFile(folder FolderPath, name string, b []byte) (string, error) {
 		}
 	}
 	return l, nil
+}
+
+//FileRead return the file content as []byte]
+func FileRead(path string) ([]byte, error) {
+	return ioutil.ReadFile(path)
 }

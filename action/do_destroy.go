@@ -46,7 +46,7 @@ var (
 	}
 )
 
-func providerDestroy(rC *runtimeContext) (StepResults, Result) {
+func providerDestroy(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 
 	for _, n := range rC.environment.NodeSets {
@@ -57,7 +57,7 @@ func providerDestroy(rC *runtimeContext) (StepResults, Result) {
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		// Notify creation progress
@@ -92,12 +92,12 @@ func providerDestroy(rC *runtimeContext) (StepResults, Result) {
 		destroy, ko := createChildExchangeFolder(rC.lC.Ef().Input, "destroy_"+n.Name, &sc)
 		if ko {
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		if ko := saveBaseParams(bp, destroy.Input, &sc); ko {
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 
 		// Prepare extra vars
@@ -121,7 +121,7 @@ func providerDestroy(rC *runtimeContext) (StepResults, Result) {
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
 			sCs.Add(sc)
-			return *sCs, nil
+			return *sCs
 		}
 		sCs.Add(sc)
 
@@ -147,5 +147,5 @@ func providerDestroy(rC *runtimeContext) (StepResults, Result) {
 	// Notify creation finish
 	rC.lC.Feedback().Progress("provider.destroy", "All node sets destroyed")
 
-	return *sCs, nil
+	return *sCs
 }

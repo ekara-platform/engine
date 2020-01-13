@@ -35,8 +35,9 @@ func (v ValidateResult) AsJson() (string, error) {
 	return "", errors.New("not implemented")
 }
 
-func doValidate(rC *runtimeContext) (StepResults, Result) {
+func doValidate(rC *runtimeContext) StepResults {
 	sc := InitCodeStepResult("Validating the environment content", nil, NoCleanUpRequired)
 	vErrs := rC.environment.Validate()
-	return sc.Build(), ValidateResult{ValidationErrors: vErrs}
+	rC.result = ValidateResult{ValidationErrors: vErrs}
+	return sc.Build()
 }

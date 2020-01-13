@@ -90,7 +90,7 @@ func (a Action) launch(rC *runtimeContext) (ExecutionReport, Result) {
 	cleanups := []Cleanup{}
 	var finalRes Result
 	for _, f := range a.steps {
-		sCs, res := f(rC)
+		sCs := f(rC)
 		for _, sr := range sCs.Status {
 			i := int64(sr.ExecutionTime / time.Millisecond)
 			if i == 0 {
@@ -111,8 +111,8 @@ func (a Action) launch(rC *runtimeContext) (ExecutionReport, Result) {
 				return r, nil
 			}
 		}
-		if res != nil {
-			finalRes = res
+		if rC.result != nil {
+			finalRes = rC.result
 		}
 	}
 	return r, finalRes

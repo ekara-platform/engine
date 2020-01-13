@@ -13,7 +13,7 @@ var (
 	}
 )
 
-func doCheck(rC *runtimeContext) (StepResults, Result) {
+func doCheck(rC *runtimeContext) StepResults {
 	sc := InitCodeStepResult("Checking if the environment has any validation error", nil, NoCleanUpRequired)
 
 	rC.lC.Feedback().Progress("check", "Checking for environment model problems")
@@ -26,5 +26,5 @@ func doCheck(rC *runtimeContext) (StepResults, Result) {
 
 	rC.lC.Feedback().Progress("check", "Environment model checked")
 
-	return sc.Build(), nil
+	return sc.Build()
 }
