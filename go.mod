@@ -3,7 +3,7 @@ module github.com/ekara-platform/engine
 go 1.13
 
 require (
-	github.com/ekara-platform/model v1.0.1-0.20200106134733-22de1a51be0e
+	github.com/ekara-platform/model v1.0.1-0.20200113085702-68778c924c17
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/gobwas/glob v0.2.3
 	github.com/oklog/ulid v1.3.1
