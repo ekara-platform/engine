@@ -70,21 +70,21 @@ func providerDestroy(rC *runtimeContext) StepResults {
 		bp.AddNamedMap("params", p.Parameters)
 		bp.AddInterface("proxy", p.Proxy)
 
-		// Process hook : environment - provision - before TODO
+		// Process hook : environment - create - before TODO
 		//runHookBefore(
 		//	rC,
 		//	sCs,
-		//	rC.environment.Hooks.Provision,
-		//	hookContext{"destroy", n, "environment", "provision", bp, env, buffer},
+		//	rC.environment.Hooks.Create,
+		//	hookContext{"destroy", n, "environment", "create", bp, env, buffer},
 		//	NoCleanUpRequired,
 		//)
 
-		// Process hook : nodeset - provision - before TODO
+		// Process hook : nodeset - create - before TODO
 		//runHookBefore(
 		//	rC,
 		//	sCs,
-		//	n.Hooks.Provision,
-		//	hookContext{"destroy", n, "nodeset", "provision", bp, env, buffer},
+		//	n.Hooks.Create,
+		//	hookContext{"destroy", n, "nodeset", "create", bp, env, buffer},
 		//	NoCleanUpRequired,
 		//)
 
@@ -125,21 +125,21 @@ func providerDestroy(rC *runtimeContext) StepResults {
 		}
 		sCs.Add(sc)
 
-		// Process hook : nodeset - provision - after TODO
+		// Process hook : nodeset - create - after TODO
 		//runHookAfter(
 		//	rC,
 		//	sCs,
-		//	n.Hooks.Provision,
-		//	hookContext{"destroy", n, "nodeset", "provision", bp, env, buffer},
+		//	n.Hooks.Create,
+		//	hookContext{"destroy", n, "nodeset", "create", bp, env, buffer},
 		//	NoCleanUpRequired,
 		//)
 
-		// Process hook : environment - provision - after TODO
+		// Process hook : environment - create - after TODO
 		//runHookAfter(
 		//	rC,
 		//	sCs,
-		//	rC.environment.Hooks.Provision,
-		//	hookContext{"destroy", n, "environment", "provision", bp, env, buffer},
+		//	rC.environment.Hooks.Create,
+		//	hookContext{"destroy", n, "environment", "create", bp, env, buffer},
 		//	NoCleanUpRequired,
 		//)
 	}

@@ -154,21 +154,21 @@ func providerCreate(rC *runtimeContext) StepResults {
 		bp.AddNamedMap("params", p.Parameters)
 		bp.AddInterface("proxy", p.Proxy)
 
-		// Process hook : environment - provision - before
+		// Process hook : environment - create - before
 		runHookBefore(
 			rC,
 			sCs,
-			rC.environment.Hooks.Provision,
-			hookContext{"create", n, "environment", "provision", bp},
+			rC.environment.Hooks.Create,
+			hookContext{"create", n, "environment", "create", bp},
 			NoCleanUpRequired,
 		)
 
-		// Process hook : nodeset - provision - before
+		// Process hook : nodeset - create - before
 		runHookBefore(
 			rC,
 			sCs,
-			n.Hooks.Provision,
-			hookContext{"create", n, "nodeset", "provision", bp},
+			n.Hooks.Create,
+			hookContext{"create", n, "nodeset", "create", bp},
 			NoCleanUpRequired,
 		)
 
@@ -210,21 +210,21 @@ func providerCreate(rC *runtimeContext) StepResults {
 			return *sCs
 		}
 
-		// Process hook : nodeset - provision - after
+		// Process hook : nodeset - create - after
 		runHookAfter(
 			rC,
 			sCs,
-			n.Hooks.Provision,
-			hookContext{"create", n, "nodeset", "provision", bp},
+			n.Hooks.Create,
+			hookContext{"create", n, "nodeset", "create", bp},
 			NoCleanUpRequired,
 		)
 
-		// Process hook : environment - provision - after
+		// Process hook : environment - create - after
 		runHookAfter(
 			rC,
 			sCs,
-			rC.environment.Hooks.Provision,
-			hookContext{"create", n, "environment", "provision", bp},
+			rC.environment.Hooks.Create,
+			hookContext{"create", n, "environment", "create", bp},
 			NoCleanUpRequired,
 		)
 		sCs.Add(sc)
@@ -685,28 +685,28 @@ func fillAPI(rC *runtimeContext) StepResults {
 		inv := r.Inventory
 		for k := range inv.Hosts {
 
-			err := post(k, "ekara_desc_name", rC.lC.DescriptorName())
+			err := post(k, "desc_name", rC.lC.DescriptorName())
 			if err != nil {
 				FailsOnCode(&sc, err, "Error saving the descriptor name", nil)
 				sCs.Add(sc)
 				return *sCs
 			}
 
-			err = post(k, "ekara_desc_url", rC.lC.Location())
+			err = post(k, "desc_url", rC.lC.Location())
 			if err != nil {
 				FailsOnCode(&sc, err, "Error saving the descriptor location", nil)
 				sCs.Add(sc)
 				return *sCs
 			}
 
-			err = post(k, "ekara_user", rC.lC.User())
+			err = post(k, "user", rC.lC.User())
 			if err != nil {
 				FailsOnCode(&sc, err, "Error saving the ekara user", nil)
 				sCs.Add(sc)
 				return *sCs
 			}
 
-			err = post(k, "ekara_password", rC.lC.Password())
+			err = post(k, "password", rC.lC.Password())
 			if err != nil {
 				FailsOnCode(&sc, err, "Error saving the ekara password", nil)
 				sCs.Add(sc)
@@ -720,7 +720,7 @@ func fillAPI(rC *runtimeContext) StepResults {
 				return *sCs
 			}
 
-			err = post(k, "ekara_ssh_public", base64.StdEncoding.EncodeToString(f))
+			err = post(k, "ssh_public", base64.StdEncoding.EncodeToString(f))
 			if err != nil {
 				FailsOnCode(&sc, err, "Error saving the ekara public SSH key", nil)
 				sCs.Add(sc)
@@ -734,7 +734,7 @@ func fillAPI(rC *runtimeContext) StepResults {
 				return *sCs
 			}
 
-			err = post(k, "ekara_ssh_private", base64.StdEncoding.EncodeToString(f))
+			err = post(k, "ssh_private", base64.StdEncoding.EncodeToString(f))
 			if err != nil {
 				FailsOnCode(&sc, err, "Error saving the ekara private SSH key", nil)
 				sCs.Add(sc)
@@ -748,7 +748,7 @@ func fillAPI(rC *runtimeContext) StepResults {
 				return *sCs
 			}
 
-			err = post(k, "ekara_params", base64.StdEncoding.EncodeToString(f))
+			err = post(k, "params", base64.StdEncoding.EncodeToString(f))
 			if err != nil {
 				FailsOnCode(&sc, err, "Error saving the ekara external parameters", nil)
 				sCs.Add(sc)
@@ -768,7 +768,7 @@ func fillAPI(rC *runtimeContext) StepResults {
 
 func post(url string, key string, value interface{}) error {
 	//find a way to put the port outside of the engine
-	u := fmt.Sprintf("http://%s:8090/storage/", url)
+	u := fmt.Sprintf("http://%s:8090/storage/ekara/", url)
 	reqP := `{"key":"%s", "value":"%v"}`
 	jsonStr := []byte(fmt.Sprintf(reqP, key, value))
 
