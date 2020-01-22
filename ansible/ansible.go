@@ -95,8 +95,12 @@ func (aM manager) Play(uc component.UsableComponent, ctx *model.TemplateContext,
 	args = append(args, etxvs...)
 
 	// Verbosity = 2+
-	if aM.lC.Verbosity() > 1 {
-		args = append(args, "-v")
+	v := aM.lC.Verbosity()
+	if v > 1 {
+		args = append(args, "-")
+		for i := 1; i < v; i++ {
+			args = append(args, "v")
+		}
 	}
 
 	eC, err := aM.exec(uc.RootPath(), "ansible-playbook", args, env)
