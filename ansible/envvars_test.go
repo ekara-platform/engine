@@ -51,6 +51,18 @@ func TestOsEnvVars(t *testing.T) {
 	assert.Equal(t, val, "4")
 }
 
+func TestAppendToVar(t *testing.T) {
+	ev := createEnvVars()
+	ev.appendToVar("TOTO", "/some/path")
+	val, ok := ev.Content["TOTO"]
+	assert.True(t, ok)
+	assert.Equal(t, val, "/some/path")
+	ev.appendToVar("TOTO", "/other/path")
+	val, ok = ev.Content["TOTO"]
+	assert.True(t, ok)
+	assert.Equal(t, val, "/some/path"+string(os.PathListSeparator)+"/other/path")
+}
+
 func TestProxyEnvVars(t *testing.T) {
 	ev := createEnvVars()
 
