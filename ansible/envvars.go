@@ -97,3 +97,11 @@ func (ev *envVars) appendToVar(name string, value string) {
 		ev.Content[name] = fmt.Sprintf("%s%c%s", currentVal, os.PathListSeparator, value)
 	}
 }
+
+func (ev *envVars) prependToVar(name string, value string) {
+	if currentVal, ok := ev.Content[name]; !ok {
+		ev.Content[name] = value
+	} else {
+		ev.Content[name] = fmt.Sprintf("%s%c%s", value, os.PathListSeparator, currentVal)
+	}
+}

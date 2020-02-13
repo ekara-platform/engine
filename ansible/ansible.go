@@ -16,10 +16,10 @@ import (
 )
 
 const (
-	taskPrefix         = "TASK ["
-	taskSuffix         = "]"
-	virtualEnvBinaries = "/opt/virtualenvs/%s/bin"
-	virtualEnvDefault  = "default"
+	taskPrefix           = "TASK ["
+	taskSuffix           = "]"
+	virtualEnvBinaryPath = "/opt/virtualenvs/%s/bin"
+	virtualEnvDefault    = "default"
 )
 
 type (
@@ -222,7 +222,7 @@ func (aM manager) buildEnvVars(comps ...component.UsableComponent) envVars {
 	env := createEnvVars()
 	env.addDefaultOsVars()
 	// TODO: currently only the default virtual env is supported, later add logic to obtain a specific virtual env from the executed component
-	env.appendToVar("PATH", fmt.Sprintf(virtualEnvBinaries, virtualEnvDefault))
+	env.prependToVar("PATH", fmt.Sprintf(virtualEnvBinaryPath, virtualEnvDefault))
 	env.addProxy(aM.lC.Proxy())
 	for _, c := range comps {
 		for envK, envV := range c.EnvVars() {
@@ -272,7 +272,8 @@ func (aM manager) exec(dir string, ex string, args []string, envVars envVars) (e
 		status: make(chan int),
 	}
 
-	cmd := exec.Command(ex, args...)
+	// TODO: currently only the default virtual env is supported, later add logic to obtain a specific virtual env from the executed component
+	cmd := exec.Command(fmt.Sprintf(virtualEnvBinaryPath+"/%s", virtualEnvDefault, ex), args...)
 	cmd.Dir = dir
 	cmd.Env = []string{}
 	for k, v := range envVars.Content {
