@@ -74,6 +74,7 @@ func runTemplate(ctx *model.TemplateContext, componentPath string, patterns mode
 			f = strings.Replace(f, componentPath, tmpPath, -1)
 
 			t, err := template.ParseFiles(f)
+			t.Funcs(template.FuncMap{"yaml": model.IndentYaml, "json": model.Json})
 			if err != nil {
 				os.RemoveAll(tmpPath)
 				return "", err

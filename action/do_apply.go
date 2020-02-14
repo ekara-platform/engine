@@ -58,7 +58,26 @@ var (
 		ApplyActionID,
 		CheckActionID,
 		"Apply",
-		[]step{providerSetup, providerCreate, orchestratorSetup, orchestratorInstall, stackCopy, checkStack, stackDeploy, ansibleInventory, fillAPI},
+		[]step{
+			providerSetup, //TODO to be moved soon
+			createHookBefore,
+			providerCreate,
+			createHookAfter,
+
+			installHookBefore,
+			orchestratorSetup, //TODO to be moved soon
+			orchestratorInstall,
+			installHookAfter,
+
+			deployHookBefore,
+			stackCopy,
+			stackCheck,
+			stackDeploy,
+			deployHookAfter,
+
+			ansibleInventory,
+			fillAPI,
+		},
 	}
 )
 
@@ -102,6 +121,7 @@ func providerSetup(rC *runtimeContext) StepResults {
 			sCs.Add(sc)
 			return *sCs
 		}
+
 		defer usable.Release()
 
 		code, err := rC.aM.Play(usable, rC.tplC, setupPlaybook, exv)
@@ -120,7 +140,37 @@ func providerSetup(rC *runtimeContext) StepResults {
 
 	// Notify setup finish
 	rC.lC.Feedback().Progress("provider.setup", "All providers prepared")
+	return *sCs
+}
 
+func createHookBefore(rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+
+	if len(rC.environment.Hooks.Create.Before) == 0 {
+		return *sCs
+	}
+
+	if rC.lC.Skipping() > 0 {
+		rC.lC.Feedback().Progress("create.hook.before", "Creation skipped by user request")
+		return *sCs
+	}
+
+	// Notify creation progress
+	rC.lC.Feedback().ProgressG("create.hook.before", 1, "Hook before creating node sets ")
+
+	// Prepare parameters
+	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+
+	// Process hook : environment - create - before
+	runHookBefore(
+		rC,
+		sCs,
+		rC.environment.Hooks.Create,
+		hookContext{"create", rC.environment, "environment", "create", bp},
+		NoCleanUpRequired,
+	)
+
+	rC.lC.Feedback().Progress("create.hook.before", "All hooks executed")
 	return *sCs
 }
 
@@ -128,7 +178,6 @@ func providerCreate(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 0 {
-		// Notify creation skipping
 		rC.lC.Feedback().Progress("provider.create", "Nodeset creation skipped by user request")
 		return *sCs
 	}
@@ -153,15 +202,6 @@ func providerCreate(rC *runtimeContext) StepResults {
 		bp.AddInterface("labels", n.Labels)
 		bp.AddNamedMap("params", p.Parameters)
 		bp.AddInterface("proxy", p.Proxy)
-
-		// Process hook : environment - create - before
-		runHookBefore(
-			rC,
-			sCs,
-			rC.environment.Hooks.Create,
-			hookContext{"create", n, "environment", "create", bp},
-			NoCleanUpRequired,
-		)
 
 		// Process hook : nodeset - create - before
 		runHookBefore(
@@ -218,27 +258,85 @@ func providerCreate(rC *runtimeContext) StepResults {
 			hookContext{"create", n, "nodeset", "create", bp},
 			NoCleanUpRequired,
 		)
-
-		// Process hook : environment - create - after
-		runHookAfter(
-			rC,
-			sCs,
-			rC.environment.Hooks.Create,
-			hookContext{"create", n, "environment", "create", bp},
-			NoCleanUpRequired,
-		)
 		sCs.Add(sc)
 	}
 
 	// Notify creation finish
 	rC.lC.Feedback().Progress("provider.create", "All node sets created")
+	return *sCs
+}
 
+func createHookAfter(rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+
+	if len(rC.environment.Hooks.Create.After) == 0 {
+		return *sCs
+	}
+
+	if rC.lC.Skipping() > 0 {
+		rC.lC.Feedback().Progress("create.hook.after", "Creation skipped by user request")
+		return *sCs
+	}
+
+	// Notify creation progress
+	rC.lC.Feedback().ProgressG("create.hook.after", 1, "Hook after creating node sets ")
+
+	// Prepare parameters
+	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+
+	// Process hook : environment - create - after
+	runHookAfter(
+		rC,
+		sCs,
+		rC.environment.Hooks.Create,
+		hookContext{"create", rC.environment, "environment", "create", bp},
+		NoCleanUpRequired,
+	)
+
+	rC.lC.Feedback().Progress("provider.create.hook.after", "All hooks executed")
+	return *sCs
+}
+
+func installHookBefore(rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+
+	if len(rC.environment.Hooks.Install.Before) == 0 {
+		return *sCs
+	}
+
+	if rC.lC.Skipping() > 1 {
+		rC.lC.Feedback().Progress("install.hook.before", "Installation skipped by user request")
+		return *sCs
+	}
+
+	// Notify creation progress
+	rC.lC.Feedback().ProgressG("install.hook.before", 1, "Hook before installing the orchestrator ")
+
+	// Prepare parameters
+	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+
+	// Process hook : environment - install - before
+	runHookBefore(
+		rC,
+		sCs,
+		rC.environment.Hooks.Install,
+		hookContext{"install", rC.environment, "environment", "install", bp},
+		NoCleanUpRequired,
+	)
+
+	rC.lC.Feedback().Progress("install.hook.before", "All hooks executed")
 	return *sCs
 }
 
 func orchestratorSetup(rC *runtimeContext) StepResults {
-	o := rC.environment.Orchestrator
 	sCs := InitStepResults()
+
+	if rC.lC.Skipping() > 1 {
+		rC.lC.Feedback().Progress("orchestrator.setup", "Orchestrator installation skipped by user request")
+		return *sCs
+	}
+
+	o := rC.environment.Orchestrator
 	sc := InitPlaybookStepResult("Running the orchestrator setup phase", o, NoCleanUpRequired)
 
 	// Notify setup progress
@@ -269,7 +367,7 @@ func orchestratorSetup(rC *runtimeContext) StepResults {
 		sCs.Add(sc)
 		return *sCs
 	}
-	defer usable.Release()
+	//defer usable.Release()
 
 	// We launch the playbook
 	code, err := rC.aM.Play(usable, rC.tplC, setupPlaybook, exv)
@@ -292,15 +390,14 @@ func orchestratorSetup(rC *runtimeContext) StepResults {
 }
 
 func orchestratorInstall(rC *runtimeContext) StepResults {
-	o := rC.environment.Orchestrator
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 1 {
-		// Notify installation skipping
 		rC.lC.Feedback().Progress("orchestrator.install", "Orchestrator installation skipped by user request")
 		return *sCs
 	}
 
+	o := rC.environment.Orchestrator
 	sc := InitPlaybookStepResult("Running the orchestrator install phase", nil, NoCleanUpRequired)
 
 	// Notify setup progress
@@ -349,7 +446,68 @@ func orchestratorInstall(rC *runtimeContext) StepResults {
 
 	// Notify install finish
 	rC.lC.Feedback().Progress("orchestrator.install", "Orchestrator installed")
+	return *sCs
+}
 
+func installHookAfter(rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+
+	if len(rC.environment.Hooks.Install.After) == 0 {
+		return *sCs
+	}
+
+	if rC.lC.Skipping() > 1 {
+		rC.lC.Feedback().Progress("install.hook.after", "Installation skipped by user request")
+		return *sCs
+	}
+
+	// Notify creation progress
+	rC.lC.Feedback().ProgressG("install.hook.after", 1, "Hook after installing the orchestrator ")
+
+	// Prepare parameters
+	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+
+	// Process hook : environment - install - after
+	runHookAfter(
+		rC,
+		sCs,
+		rC.environment.Hooks.Install,
+		hookContext{"install", rC.environment, "environment", "install", bp},
+		NoCleanUpRequired,
+	)
+
+	rC.lC.Feedback().Progress("install.hook.after", "All hooks executed")
+	return *sCs
+}
+
+func deployHookBefore(rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+
+	if len(rC.environment.Hooks.Deploy.Before) == 0 {
+		return *sCs
+	}
+
+	if rC.lC.Skipping() > 2 {
+		rC.lC.Feedback().Progress("deploy.hook.before", "Stack deploy skipped by user request")
+		return *sCs
+	}
+
+	// Notify creation progress
+	rC.lC.Feedback().ProgressG("deploy.hook.before", 1, "Hook before deploying the stacks ")
+
+	// Prepare parameters
+	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+
+	// Process hook : environment - deploy - before
+	runHookBefore(
+		rC,
+		sCs,
+		rC.environment.Hooks.Deploy,
+		hookContext{"deploy", rC.environment, "environment", "deploy", bp},
+		NoCleanUpRequired,
+	)
+
+	rC.lC.Feedback().Progress("deploy.hook.before", "All hooks executed")
 	return *sCs
 }
 
@@ -357,7 +515,6 @@ func stackCopy(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 2 {
-		// Notify installation skipping
 		rC.lC.Feedback().Progress("stack.copy", "Stack copy skipped by user request")
 		return *sCs
 	}
@@ -451,11 +608,10 @@ func stackCopy(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func checkStack(rC *runtimeContext) StepResults {
+func stackCheck(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 2 {
-		// Notify installation skipping
 		rC.lC.Feedback().Progress("stack.check", "Stack deployment ( check ) skipped by user request")
 		return *sCs
 	}
@@ -519,7 +675,6 @@ func checkStack(rC *runtimeContext) StepResults {
 
 	// Notify stack deploy finish
 	rC.lC.Feedback().Progress("stack.deploy", "All stacks checked")
-
 	return *sCs
 }
 
@@ -554,15 +709,6 @@ func stackDeploy(rC *runtimeContext) StepResults {
 			sCs.Add(sc)
 			return *sCs
 		}
-
-		// Process hook : environment - deploy - before
-		runHookBefore(
-			rC,
-			sCs,
-			rC.environment.Hooks.Deploy,
-			hookContext{"deploy", st, "environment", "deploy", bp},
-			NoCleanUpRequired,
-		)
 
 		// Process hook : stack - deploy - before
 		runHookBefore(
@@ -630,21 +776,42 @@ func stackDeploy(rC *runtimeContext) StepResults {
 			NoCleanUpRequired,
 		)
 
-		// Process hook : environment - deploy - after
-		runHookAfter(
-			rC,
-			sCs,
-			rC.environment.Hooks.Deploy,
-			hookContext{"deploy", st, "environment", "deploy", bp},
-			NoCleanUpRequired,
-		)
-
 		sCs.Add(sc)
 	}
 
 	// Notify stack deploy finish
 	rC.lC.Feedback().Progress("stack.deploy", "All stacks deployed")
+	return *sCs
+}
 
+func deployHookAfter(rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+
+	if len(rC.environment.Hooks.Deploy.After) == 0 {
+		return *sCs
+	}
+
+	if rC.lC.Skipping() > 2 {
+		rC.lC.Feedback().Progress("deploy.hook.after", "Stack deploy skipped by user request")
+		return *sCs
+	}
+
+	// Notify creation progress
+	rC.lC.Feedback().ProgressG("deploy.hook.after", 1, "Hook after deploying the stacks ")
+
+	// Prepare parameters
+	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+
+	// Process hook : environment - deploy - after
+	runHookAfter(
+		rC,
+		sCs,
+		rC.environment.Hooks.Deploy,
+		hookContext{"deploy", rC.environment, "environment", "deploy", bp},
+		NoCleanUpRequired,
+	)
+
+	rC.lC.Feedback().Progress("deploy.hook.after", "All hooks executed")
 	return *sCs
 }
 

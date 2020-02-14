@@ -2,7 +2,10 @@ package action
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 
 	"github.com/ekara-platform/engine/ansible"
 	"github.com/ekara-platform/engine/util"
@@ -32,6 +35,7 @@ func runHookAfter(rC *runtimeContext, r *StepResults, h model.Hook, ctx hookCont
 
 func runHooks(hooks []model.TaskRef, rC *runtimeContext, r *StepResults, ctx hookContext, cl Cleanup) {
 	for i, hook := range hooks {
+
 		repName := fmt.Sprintf("%s_%s_hook_%s_%s_%s_%d", ctx.action, ctx.target.DescName(), ctx.hookOwner, ctx.hookName, hook.HookLocation, i)
 		sc := InitHookStepResult(folderAsMessage(repName), ctx.target, cl)
 		ef, ko := createChildExchangeFolder(rC.lC.Ef().Input, repName, &sc)
@@ -56,16 +60,45 @@ func runHooks(hooks []model.TaskRef, rC *runtimeContext, r *StepResults, ctx hoo
 		}
 
 		exv := ansible.CreateExtraVars(ef.Input, ef.Output)
-
 		runTask(rC, t, sc, r, exv)
-		r.Add(fconsumeHookResult(rC, ctx.target, repName, ef))
+		r.Add(fconsumeHookResult(rC, ctx.target, ctx, ef, hook.Prefix))
 	}
 }
 
-func fconsumeHookResult(rC *runtimeContext, target model.Describable, repName string, ef util.ExchangeFolder) StepResult {
+func fconsumeHookResult(rC *runtimeContext, target model.Describable, ctx hookContext, ef util.ExchangeFolder, prefix string) StepResult {
 	sc := InitCodeStepResult("Consuming the hook result", target, NoCleanUpRequired)
-	rC.lC.Log().Printf("Consuming the hook result %s", target.DescName())
-	// TODO
+
+	if ef.Output.Contains(util.OutputYamlFileName) {
+		filePath := util.JoinPaths(ef.Output.Path(), util.OutputYamlFileName)
+		b, err := util.FileRead(filePath)
+
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred reading the output.yaml"), nil)
+			return sc
+		}
+		content := make(map[string]interface{})
+		err = yaml.Unmarshal(b, content)
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred Unmarshalling the output.yaml"), nil)
+			return sc
+		}
+
+		if prefix != "" {
+			rC.tplC.Runtime[prefix] = content
+		} else {
+			if val, ok := rC.tplC.Runtime[ctx.action]; ok {
+				vv := reflect.ValueOf(val)
+				if vv.Kind() == reflect.Map {
+					ma := val.(map[string]interface{})
+					ma[ctx.target.DescName()] = content
+				}
+			} else {
+				m := make(map[string]interface{})
+				m[ctx.target.DescName()] = content
+				rC.tplC.Runtime[ctx.action] = m
+			}
+		}
+	}
 	return sc
 }
 

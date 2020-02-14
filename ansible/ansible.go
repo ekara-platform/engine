@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -97,11 +98,18 @@ func (aM manager) Play(uc component.UsableComponent, ctx *model.TemplateContext,
 	// Verbosity = 2+
 	v := aM.lC.Verbosity()
 	if v > 1 {
-		args = append(args, "-")
+		st := "-"
 		for i := 1; i < v; i++ {
-			args = append(args, "v")
+			st = st + "v"
 		}
+		args = append(args, st)
 	}
+
+	args = append(args, "--private-key="+aM.lC.SSHPrivateKey())
+
+	log.Printf("In folder :%v", uc.RootPath())
+	log.Printf("With environment variables: %v", env)
+	log.Printf("Running the command \"ansible-playbook\" with arguments: %v", args)
 
 	eC, err := aM.exec(uc.RootPath(), "ansible-playbook", args, env)
 	if err != nil {

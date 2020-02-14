@@ -47,6 +47,9 @@ const (
 	//ParamYamlFileName is the name of any file containing params
 	ParamYamlFileName string = "params.yaml"
 
+	//OutputYamlFileName is the name of any file containing params
+	OutputYamlFileName string = "output.yaml"
+
 	//ExtraVarYamlFileName is the name of any file containing extra vars
 	ExtraVarYamlFileName string = "extra-vars.yaml"
 

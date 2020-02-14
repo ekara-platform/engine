@@ -42,9 +42,49 @@ var (
 		DestroyActionID,
 		CheckActionID,
 		"Destroy",
-		[]step{providerSetup, providerDestroy},
+		[]step{providerSetup, destroyHookBefore, providerDestroy, destroyHookAfter},
 	}
 )
+
+func destroyHookBefore(rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+
+	for _, n := range rC.environment.NodeSets {
+		sc := InitPlaybookStepResult("Running the hook before destroy phase", n, NoCleanUpRequired)
+
+		// Resolve provider
+		p, err := n.Provider.Resolve()
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
+			sCs.Add(sc)
+			return *sCs
+		}
+
+		// Notify creation progress
+		rC.lC.Feedback().ProgressG("provider.destroy.hook.before", len(rC.environment.NodeSets), "hook before destroying node set '%s' with provider '%s'", n.Name, p.Name)
+
+		// Prepare parameters
+		bp := buildBaseParam(rC, n.Name)
+		bp.AddInt("instances", n.Instances)
+		bp.AddInterface("labels", n.Labels)
+		bp.AddNamedMap("params", p.Parameters)
+		bp.AddInterface("proxy", p.Proxy)
+
+		// Process hook : environment - delete - before
+		runHookBefore(
+			rC,
+			sCs,
+			rC.environment.Hooks.Delete,
+			hookContext{"destroy", n, "environment", "delete", bp},
+			NoCleanUpRequired,
+		)
+	}
+
+	// Notify creation finish
+	rC.lC.Feedback().Progress("provider.destroy.hook.before", "All hooks executed")
+
+	return *sCs
+}
 
 func providerDestroy(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
@@ -70,21 +110,12 @@ func providerDestroy(rC *runtimeContext) StepResults {
 		bp.AddNamedMap("params", p.Parameters)
 		bp.AddInterface("proxy", p.Proxy)
 
-		// Process hook : environment - create - before TODO
+		// Process hook : nodeset - delete - before TODO
 		//runHookBefore(
 		//	rC,
 		//	sCs,
-		//	rC.environment.Hooks.Create,
-		//	hookContext{"destroy", n, "environment", "create", bp, env, buffer},
-		//	NoCleanUpRequired,
-		//)
-
-		// Process hook : nodeset - create - before TODO
-		//runHookBefore(
-		//	rC,
-		//	sCs,
-		//	n.Hooks.Create,
-		//	hookContext{"destroy", n, "nodeset", "create", bp, env, buffer},
+		//	n.Hooks.Delete,
+		//	hookContext{"destroy", n, "nodeset", "delete", bp, env, buffer},
 		//	NoCleanUpRequired,
 		//)
 
@@ -125,27 +156,59 @@ func providerDestroy(rC *runtimeContext) StepResults {
 		}
 		sCs.Add(sc)
 
-		// Process hook : nodeset - create - after TODO
+		// Process hook : nodeset - delete - after TODO
 		//runHookAfter(
 		//	rC,
 		//	sCs,
-		//	n.Hooks.Create,
-		//	hookContext{"destroy", n, "nodeset", "create", bp, env, buffer},
+		//	n.Hooks.Delete,
+		//	hookContext{"destroy", n, "nodeset", "delete", bp, env, buffer},
 		//	NoCleanUpRequired,
 		//)
 
-		// Process hook : environment - create - after TODO
-		//runHookAfter(
-		//	rC,
-		//	sCs,
-		//	rC.environment.Hooks.Create,
-		//	hookContext{"destroy", n, "environment", "create", bp, env, buffer},
-		//	NoCleanUpRequired,
-		//)
 	}
 
 	// Notify creation finish
 	rC.lC.Feedback().Progress("provider.destroy", "All node sets destroyed")
+
+	return *sCs
+}
+
+func destroyHookAfter(rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+
+	for _, n := range rC.environment.NodeSets {
+		sc := InitPlaybookStepResult("Running the hook after destroy phase", n, NoCleanUpRequired)
+
+		// Resolve provider
+		p, err := n.Provider.Resolve()
+		if err != nil {
+			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
+			sCs.Add(sc)
+			return *sCs
+		}
+
+		// Notify creation progress
+		rC.lC.Feedback().ProgressG("provider.destroy.hook.after", len(rC.environment.NodeSets), "hook after destroying node set '%s' with provider '%s'", n.Name, p.Name)
+
+		// Prepare parameters
+		bp := buildBaseParam(rC, n.Name)
+		bp.AddInt("instances", n.Instances)
+		bp.AddInterface("labels", n.Labels)
+		bp.AddNamedMap("params", p.Parameters)
+		bp.AddInterface("proxy", p.Proxy)
+
+		// Process hook : environment - delete - after
+		runHookAfter(
+			rC,
+			sCs,
+			rC.environment.Hooks.Delete,
+			hookContext{"destroy", n, "environment", "delete", bp},
+			NoCleanUpRequired,
+		)
+	}
+
+	// Notify creation finish
+	rC.lC.Feedback().Progress("provider.destroy.hook.after", "All hooks executed")
 
 	return *sCs
 }
