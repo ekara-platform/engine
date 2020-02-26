@@ -52,7 +52,7 @@ func runHooks(hooks []model.TaskRef, rC *runtimeContext, r *StepResults, ctx hoo
 		}
 
 		bp := ctx.baseParam.Copy()
-		bp.AddNamedMap("hook_param", t.Parameters)
+		bp.AddNamedMap("params", t.Parameters)
 
 		if ko := saveBaseParams(bp, ef.Input, &sc); ko {
 			r.Add(sc)
