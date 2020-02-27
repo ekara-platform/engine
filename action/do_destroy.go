@@ -49,40 +49,26 @@ var (
 func destroyHookBefore(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 
-	for _, n := range rC.environment.NodeSets {
-		sc := InitPlaybookStepResult("Running the hook before destroy phase", n, NoCleanUpRequired)
-
-		// Resolve provider
-		p, err := n.Provider.Resolve()
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
-			sCs.Add(sc)
-			return *sCs
-		}
-
-		// Notify creation progress
-		rC.lC.Feedback().ProgressG("provider.destroy.hook.before", len(rC.environment.NodeSets), "hook before destroying node set '%s' with provider '%s'", n.Name, p.Name)
-
-		// Prepare parameters
-		bp := buildBaseParam(rC, n.Name)
-		bp.AddInt("instances", n.Instances)
-		bp.AddInterface("labels", n.Labels)
-		bp.AddNamedMap("params", p.Parameters)
-		bp.AddInterface("proxy", p.Proxy)
-
-		// Process hook : environment - delete - before
-		runHookBefore(
-			rC,
-			sCs,
-			rC.environment.Hooks.Delete,
-			hookContext{"destroy", n, "environment", "delete", bp},
-			NoCleanUpRequired,
-		)
+	if len(rC.environment.Hooks.Destroy.Before) == 0 {
+		return *sCs
 	}
 
-	// Notify creation finish
-	rC.lC.Feedback().Progress("provider.destroy.hook.before", "All hooks executed")
+	// Notify destruction progress
+	rC.lC.Feedback().ProgressG("destroy.hook.before", 1, "Hook before destroying node sets")
 
+	// Prepare parameters
+	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+
+	// Process hook : environment - destroy - before
+	runHookBefore(
+		rC,
+		sCs,
+		rC.environment.Hooks.Destroy,
+		hookContext{"destroy", rC.environment, "environment", "destroy", bp},
+		NoCleanUpRequired,
+	)
+
+	rC.lC.Feedback().Progress("destroy.hook.before", "All hooks executed")
 	return *sCs
 }
 
@@ -100,7 +86,7 @@ func providerDestroy(rC *runtimeContext) StepResults {
 			return *sCs
 		}
 
-		// Notify creation progress
+		// Notify destruction progress
 		rC.lC.Feedback().ProgressG("provider.destroy", len(rC.environment.NodeSets), "Destroying node set '%s' with provider '%s'", n.Name, p.Name)
 
 		// Prepare parameters
@@ -110,16 +96,16 @@ func providerDestroy(rC *runtimeContext) StepResults {
 		bp.AddNamedMap("params", p.Parameters)
 		bp.AddInterface("proxy", p.Proxy)
 
-		// Process hook : nodeset - delete - before TODO
-		//runHookBefore(
-		//	rC,
-		//	sCs,
-		//	n.Hooks.Delete,
-		//	hookContext{"destroy", n, "nodeset", "delete", bp, env, buffer},
-		//	NoCleanUpRequired,
-		//)
+		// Process hook : nodeset - destroy - before
+		runHookBefore(
+			rC,
+			sCs,
+			n.Hooks.Destroy,
+			hookContext{"destroy", n, "nodeset", "destroy", bp},
+			NoCleanUpRequired,
+		)
 
-		// Node creation exchange folder
+		// Node destruction exchange folder
 		destroy, ko := createChildExchangeFolder(rC.lC.Ef().Input, "destroy_"+n.Name, &sc)
 		if ko {
 			sCs.Add(sc)
@@ -156,18 +142,17 @@ func providerDestroy(rC *runtimeContext) StepResults {
 		}
 		sCs.Add(sc)
 
-		// Process hook : nodeset - delete - after TODO
-		//runHookAfter(
-		//	rC,
-		//	sCs,
-		//	n.Hooks.Delete,
-		//	hookContext{"destroy", n, "nodeset", "delete", bp, env, buffer},
-		//	NoCleanUpRequired,
-		//)
-
+		// Process hook : nodeset - destroy - after
+		runHookAfter(
+			rC,
+			sCs,
+			n.Hooks.Destroy,
+			hookContext{"destroy", n, "nodeset", "destroy", bp},
+			NoCleanUpRequired,
+		)
 	}
 
-	// Notify creation finish
+	// Notify destruction finish
 	rC.lC.Feedback().Progress("provider.destroy", "All node sets destroyed")
 
 	return *sCs
@@ -176,39 +161,25 @@ func providerDestroy(rC *runtimeContext) StepResults {
 func destroyHookAfter(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 
-	for _, n := range rC.environment.NodeSets {
-		sc := InitPlaybookStepResult("Running the hook after destroy phase", n, NoCleanUpRequired)
-
-		// Resolve provider
-		p, err := n.Provider.Resolve()
-		if err != nil {
-			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
-			sCs.Add(sc)
-			return *sCs
-		}
-
-		// Notify creation progress
-		rC.lC.Feedback().ProgressG("provider.destroy.hook.after", len(rC.environment.NodeSets), "hook after destroying node set '%s' with provider '%s'", n.Name, p.Name)
-
-		// Prepare parameters
-		bp := buildBaseParam(rC, n.Name)
-		bp.AddInt("instances", n.Instances)
-		bp.AddInterface("labels", n.Labels)
-		bp.AddNamedMap("params", p.Parameters)
-		bp.AddInterface("proxy", p.Proxy)
-
-		// Process hook : environment - delete - after
-		runHookAfter(
-			rC,
-			sCs,
-			rC.environment.Hooks.Delete,
-			hookContext{"destroy", n, "environment", "delete", bp},
-			NoCleanUpRequired,
-		)
+	if len(rC.environment.Hooks.Destroy.After) == 0 {
+		return *sCs
 	}
 
-	// Notify creation finish
-	rC.lC.Feedback().Progress("provider.destroy.hook.after", "All hooks executed")
+	// Notify destruction progress
+	rC.lC.Feedback().ProgressG("destroy.hook.after", 1, "Hook after destruction node sets")
 
+	// Prepare parameters
+	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+
+	// Process hook : environment - destroy - after
+	runHookAfter(
+		rC,
+		sCs,
+		rC.environment.Hooks.Destroy,
+		hookContext{"destroy", rC.environment, "environment", "destroy", bp},
+		NoCleanUpRequired,
+	)
+
+	rC.lC.Feedback().Progress("provider.destroy.hook.after", "All hooks executed")
 	return *sCs
 }

@@ -618,15 +618,15 @@ hooks:
 	assert.Equal(t, len(tester.rM.sortedFetchedComponents), 6)
 	checkFetchOrder(tester, t, "comp4", model.EkaraComponentId+"1", "comp1", "comp2", "comp3", model.MainComponentId)
 
-	if assert.True(t, env.Hooks.Delete.HasTasks()) {
-		assert.Equal(t, len(env.Hooks.Delete.Before), 2)
-		assert.Equal(t, env.Hooks.Delete.Before[0].Prefix, "hook1Prefix")
-		assert.Equal(t, env.Hooks.Delete.Before[1].Prefix, "hook2Prefix")
+	if assert.True(t, env.Hooks.Destroy.HasTasks()) {
+		assert.Equal(t, len(env.Hooks.Destroy.Before), 2)
+		assert.Equal(t, env.Hooks.Destroy.Before[0].Prefix, "hook1Prefix")
+		assert.Equal(t, env.Hooks.Destroy.Before[1].Prefix, "hook2Prefix")
 	}
 
 }
 
-func TestFetchOrderedGlobalHookDeleteAfter(t *testing.T) {
+func TestFetchOrderedGlobalHookDestroyAfter(t *testing.T) {
 	mainPath := "./testdata/gittest/descriptor"
 	c := util.CreateMockLaunchContext(mainPath, false)
 	tester := CreateComponentTester(t, c)
@@ -706,10 +706,10 @@ hooks:
 	assert.Equal(t, len(tester.rM.sortedFetchedComponents), 6)
 	checkFetchOrder(tester, t, "comp4", model.EkaraComponentId+"1", "comp1", "comp2", "comp3", model.MainComponentId)
 
-	if assert.True(t, env.Hooks.Delete.HasTasks()) {
-		assert.Equal(t, len(env.Hooks.Delete.After), 2)
-		assert.Equal(t, env.Hooks.Delete.After[0].Prefix, "hook1Prefix")
-		assert.Equal(t, env.Hooks.Delete.After[1].Prefix, "hook2Prefix")
+	if assert.True(t, env.Hooks.Destroy.HasTasks()) {
+		assert.Equal(t, len(env.Hooks.Destroy.After), 2)
+		assert.Equal(t, env.Hooks.Destroy.After[0].Prefix, "hook1Prefix")
+		assert.Equal(t, env.Hooks.Destroy.After[1].Prefix, "hook2Prefix")
 	}
 
 }

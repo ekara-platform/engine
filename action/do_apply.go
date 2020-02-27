@@ -64,8 +64,8 @@ var (
 			providerCreate,
 			createHookAfter,
 
-			installHookBefore,
 			orchestratorSetup, //TODO to be moved soon
+			installHookBefore,
 			orchestratorInstall,
 			installHookAfter,
 
@@ -297,37 +297,6 @@ func createHookAfter(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func installHookBefore(rC *runtimeContext) StepResults {
-	sCs := InitStepResults()
-
-	if len(rC.environment.Hooks.Install.Before) == 0 {
-		return *sCs
-	}
-
-	if rC.lC.Skipping() > 1 {
-		rC.lC.Feedback().Progress("install.hook.before", "Installation skipped by user request")
-		return *sCs
-	}
-
-	// Notify creation progress
-	rC.lC.Feedback().ProgressG("install.hook.before", 1, "Hook before installing the orchestrator ")
-
-	// Prepare parameters
-	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
-
-	// Process hook : environment - install - before
-	runHookBefore(
-		rC,
-		sCs,
-		rC.environment.Hooks.Install,
-		hookContext{"install", rC.environment, "environment", "install", bp},
-		NoCleanUpRequired,
-	)
-
-	rC.lC.Feedback().Progress("install.hook.before", "All hooks executed")
-	return *sCs
-}
-
 func orchestratorSetup(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 
@@ -386,6 +355,37 @@ func orchestratorSetup(rC *runtimeContext) StepResults {
 	rC.lC.Feedback().Progress("orchestrator.setup", "Orchestrator prepared")
 
 	sCs.Add(sc)
+	return *sCs
+}
+
+func installHookBefore(rC *runtimeContext) StepResults {
+	sCs := InitStepResults()
+
+	if len(rC.environment.Hooks.Install.Before) == 0 {
+		return *sCs
+	}
+
+	if rC.lC.Skipping() > 1 {
+		rC.lC.Feedback().Progress("install.hook.before", "Installation skipped by user request")
+		return *sCs
+	}
+
+	// Notify creation progress
+	rC.lC.Feedback().ProgressG("install.hook.before", 1, "Hook before installing the orchestrator ")
+
+	// Prepare parameters
+	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+
+	// Process hook : environment - install - before
+	runHookBefore(
+		rC,
+		sCs,
+		rC.environment.Hooks.Install,
+		hookContext{"install", rC.environment, "environment", "install", bp},
+		NoCleanUpRequired,
+	)
+
+	rC.lC.Feedback().Progress("install.hook.before", "All hooks executed")
 	return *sCs
 }
 

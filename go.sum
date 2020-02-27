@@ -14,6 +14,8 @@ github.com/ekara-platform/model v1.0.1-0.20200113085702-68778c924c17 h1:6krNP010
 github.com/ekara-platform/model v1.0.1-0.20200113085702-68778c924c17/go.mod h1:eMxe6bPQF7mZKXlmJkkZSCAR0KTGBbgj1hKuY4y5S5Y=
 github.com/ekara-platform/model v1.0.1-0.20200214092618-53f62fb07250 h1:TtUC2GA/SHj8Lk5RmOyQifu3dnM0XkW/yrl/esRUfGY=
 github.com/ekara-platform/model v1.0.1-0.20200214092618-53f62fb07250/go.mod h1:eMxe6bPQF7mZKXlmJkkZSCAR0KTGBbgj1hKuY4y5S5Y=
+github.com/ekara-platform/model v1.0.1-0.20200227174022-a451d2e5d22b h1:NC3O7mji//ZypbcE7k5D4h2gStys0a9zi9lGx5BRpl4=
+github.com/ekara-platform/model v1.0.1-0.20200227174022-a451d2e5d22b/go.mod h1:eMxe6bPQF7mZKXlmJkkZSCAR0KTGBbgj1hKuY4y5S5Y=
 github.com/emirpasic/gods v1.9.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
 github.com/emirpasic/gods v1.12.0 h1:QAUIPSaCu4G+POclxeqb3F+WPpdKqFGlw36+yOzGlrg=
 github.com/emirpasic/gods v1.12.0/go.mod h1:YfzfFFoVP/catgzJb4IKIqXjX78Ha8FMSDh3ymbK86o=
