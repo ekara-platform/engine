@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ekara-platform/model"
+	"github.com/ekara-platform/engine/model"
 )
 
 type (

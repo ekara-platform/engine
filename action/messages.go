@@ -12,15 +12,15 @@ const (
 	ErrorCreatingDumpFile string = "Error creating the dump file  %s"
 
 	//ErrorAddingExchangeFolder indicates than an error occurred adding an exchange folder
-	ErrorAddingExchangeFolder string = "An error occurred adding the exchange folder %s: %s"
+	ErrorAddingExchangeFolder string = "an error occurred adding the exchange folder %s: %s"
 	//ErrorCreatingExchangeFolder indicates than an error occurred creating an exchange folder
-	ErrorCreatingExchangeFolder string = "An error occurred creating the exchange folder %s: %s"
+	ErrorCreatingExchangeFolder string = "an error occurred creating the exchange folder %s: %s"
 	//ErrorReadingReport indicates than an error occurred reading the execution report file
 	ErrorReadingReport string = "error reading the report file \"%s\", error \"%s\""
 	//ErrorUnmarshallingReport indicates than an error occurred unmarshalling the execution report file
 	ErrorUnmarshallingReport string = "error Unmarshalling the report file \"%s\", error \"%s\""
 	//ErrorGeneric  indicates than an error occurred
-	ErrorGeneric string = "An error occurred  %s:"
+	ErrorGeneric string = "an error occurred  %s:"
 
 	//LogValidationSuccessful indicates that the descriptor validation was successful
 	LogValidationSuccessful string = "The envinronment descriptor validation is successful!"

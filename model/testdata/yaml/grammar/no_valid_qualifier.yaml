@@ -1,0 +1,38 @@
+name: name_value
+qualifier: qualifier_value??
+description: description_value
+
+ekara:
+  components:
+    swarm:
+      repository: ekara-platform/swarm-orchestrator
+      ref: 1.2.3
+    aws:
+      repository: ekara-platform/aws-provider
+      ref: 1.2.3
+    azure:
+      repository: ekara-platform/azure-provider
+      ref: 1.2.3
+    stack1:
+      repository: some-org/stack1
+      ref: 1.2.3
+
+providers:
+  aws:
+    component: aws
+  azure:
+    component: azure
+
+orchestrator:
+  component: swarm
+
+nodes:
+  managers:
+    instances: 1
+    provider:
+      name: aws
+   
+
+stacks:
+  monitoring:
+    component: stack1

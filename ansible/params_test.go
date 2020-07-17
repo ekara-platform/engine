@@ -3,13 +3,13 @@ package ansible
 import (
 	"testing"
 
-	"github.com/ekara-platform/model"
+	"github.com/ekara-platform/engine/model"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestBuild(t *testing.T) {
-	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
+	bp := BuildBaseParam(model.Environment{QName: model.QualifiedName{Name: "client", Qualifier: "val"}}, "pubK_val", "privK_val", "uid_val")
 	body := bp.Body
 
 	val, ok := body["ssh"]
@@ -51,7 +51,7 @@ func TestBuild(t *testing.T) {
 }
 
 func TestAddString(t *testing.T) {
-	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
+	bp := BuildBaseParam(model.Environment{QName: model.QualifiedName{Name: "client", Qualifier: "val"}}, "pubK_val", "privK_val", "uid_val")
 
 	bp.AddString("string_key1", "string_val1")
 	bp.AddString("string_key2", "string_val2")
@@ -76,7 +76,7 @@ func TestAddString(t *testing.T) {
 }
 
 func TestAddInt(t *testing.T) {
-	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
+	bp := BuildBaseParam(model.Environment{QName: model.QualifiedName{Name: "client", Qualifier: "val"}}, "pubK_val", "privK_val", "uid_val")
 
 	bp.AddInt("string_key1", 11)
 	bp.AddInt("string_key2", 22)
@@ -101,7 +101,7 @@ func TestAddInt(t *testing.T) {
 }
 
 func TestAddMapString(t *testing.T) {
-	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
+	bp := BuildBaseParam(model.Environment{QName: model.QualifiedName{Name: "client", Qualifier: "val"}}, "pubK_val", "privK_val", "uid_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "string_val1"
@@ -128,7 +128,7 @@ func TestAddMapString(t *testing.T) {
 }
 
 func TestAddMapInt(t *testing.T) {
-	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
+	bp := BuildBaseParam(model.Environment{QName: model.QualifiedName{Name: "client", Qualifier: "val"}}, "pubK_val", "privK_val", "uid_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = 11
@@ -155,7 +155,7 @@ func TestAddMapInt(t *testing.T) {
 }
 
 func TestAddInterface(t *testing.T) {
-	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
+	bp := BuildBaseParam(model.Environment{QName: model.QualifiedName{Name: "client", Qualifier: "val"}}, "pubK_val", "privK_val", "uid_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "String"
@@ -194,7 +194,7 @@ func TestAddInterface(t *testing.T) {
 }
 
 func TestAddNamedMapString(t *testing.T) {
-	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
+	bp := BuildBaseParam(model.Environment{QName: model.QualifiedName{Name: "client", Qualifier: "val"}}, "pubK_val", "privK_val", "uid_val")
 
 	m := make(map[string]interface{})
 	m["string_key1"] = "string_val1"
@@ -221,7 +221,7 @@ func TestAddNamedMapString(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	bp := BuildBaseParam(&model.Environment{Name: "client", Qualifier: "val"}, "pubK_val", "privK_val", "uid_val")
+	bp := BuildBaseParam(model.Environment{QName: model.QualifiedName{Name: "client", Qualifier: "val"}}, "pubK_val", "privK_val", "uid_val")
 	copy := bp.Copy()
 
 	bpB := bp.Body

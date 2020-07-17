@@ -1,44 +1,40 @@
 package util
 
 import (
+	"github.com/ekara-platform/engine/model"
+
 	"io/ioutil"
 	"log"
 	"os"
-
-	"github.com/ekara-platform/model"
 )
 
 type (
 	//MockLaunchContext simulates the LaunchContext for testing purposes
 	MockLaunchContext struct {
-		fN                   FeedbackNotifier
 		logger               *log.Logger
+		fN                   FeedbackNotifier
 		ef                   ExchangeFolder
-		location             string
-		user                 string
-		password             string
+		externalVars         model.Parameters
 		sshPublicKeyContent  string
 		sshPrivateKeyContent string
-		externalVars         model.Parameters
 	}
 )
 
-func CreateMockLaunchContext(mainPath string, withLog bool) LaunchContext {
+func CreateMockLaunchContext(withLog bool) LaunchContext {
 	p := model.CreateParameters(map[string]interface{}{})
-	return CreateMockLaunchContextWithData(mainPath, p, withLog)
+	return CreateMockLaunchContextWithData(p, withLog)
 }
 
-func CreateMockLaunchContextWithData(mainPath string, params model.Parameters, withLog bool) LaunchContext {
+func CreateMockLaunchContextWithData(params model.Parameters, withLog bool) LaunchContext {
 	ef, _ := CreateExchangeFolder("dummy", "dummy")
-	c := CreateMockLaunchContextWithDataAndFolder(mainPath, params, ef, withLog)
+	c := CreateMockLaunchContextWithDataAndFolder(params, ef, withLog)
 	c.(*MockLaunchContext).sshPublicKeyContent = "sshPublicKey_content"
 	c.(*MockLaunchContext).sshPrivateKeyContent = "sshPrivateKey_content"
 	return c
 }
 
-func CreateMockLaunchContextWithDataAndFolder(mainPath string, params model.Parameters, ef ExchangeFolder, withLog bool) LaunchContext {
+func CreateMockLaunchContextWithDataAndFolder(params model.Parameters, ef ExchangeFolder, withLog bool) LaunchContext {
 	c := MockLaunchContext{
-		location:     mainPath,
 		externalVars: params,
 		ef:           ef,
 	}
@@ -61,21 +57,6 @@ func (lC MockLaunchContext) Verbosity() int {
 	return 0
 }
 
-//DescriptorName simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) DescriptorName() string {
-	return "ekara.yaml"
-}
-
-//User simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) User() string {
-	return lC.user
-}
-
-//Password simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) Password() string {
-	return lC.password
-}
-
 //Progress simulates the corresponding method in LaunchContext for testing purposes
 func (lC MockLaunchContext) Feedback() FeedbackNotifier {
 	return lC.fN
@@ -89,11 +70,6 @@ func (lC MockLaunchContext) Log() *log.Logger {
 //Ef simulates the corresponding method in LaunchContext for testing purposes
 func (lC MockLaunchContext) Ef() ExchangeFolder {
 	return lC.ef
-}
-
-//Location simulates the corresponding method in LaunchContext for testing purposes
-func (lC MockLaunchContext) Location() string {
-	return lC.location
 }
 
 //Proxy simulates the corresponding method in LaunchContext for testing purposes

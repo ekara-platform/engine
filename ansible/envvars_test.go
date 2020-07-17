@@ -4,8 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ekara-platform/model"
-
+	"github.com/ekara-platform/engine/model"
 	"github.com/stretchr/testify/assert"
 )
 

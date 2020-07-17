@@ -1,9 +1,9 @@
 package ansible
 
 import (
+	"github.com/ekara-platform/engine/model"
 	"testing"
 
-	"github.com/ekara-platform/model"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/ekara-platform/engine/model"
 	"github.com/ekara-platform/engine/util"
-	"github.com/ekara-platform/model"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestManagerInitialGrossContent(t *testing.T) {
-	am := CreateActionManager(util.CreateMockLaunchContext("", false), model.TemplateContext{}, model.Environment{}, nil, nil).(*manager)
+	am := CreateActionManager(util.CreateMockLaunchContext(false), nil, nil).(*manager)
 
 	assert.NotNil(t, am.actions)
 
@@ -261,6 +261,5 @@ func fStepMockMultipleContext(rC *runtimeContext) StepResults {
 }
 
 func mockRuntimeContext() *runtimeContext {
-	lC := util.CreateMockLaunchContext("", false)
-	return createRuntimeContext(lC, nil, nil, &model.Environment{}, &model.TemplateContext{})
+	return createRuntimeContext(util.CreateMockLaunchContext(false), nil, nil, model.Environment{}, &model.TemplateContext{})
 }

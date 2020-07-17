@@ -2,11 +2,10 @@ package action
 
 import (
 	"fmt"
-
+	"github.com/GroupePSA/componentizer"
 	"github.com/ekara-platform/engine/ansible"
-	"github.com/ekara-platform/engine/component"
+	"github.com/ekara-platform/engine/model"
 	"github.com/ekara-platform/engine/util"
-	"github.com/ekara-platform/model"
 )
 
 //Result represents the result of an action
@@ -28,24 +27,22 @@ type (
 
 		// Interfaces to other components
 		lC util.LaunchContext
-		cF component.Finder
+		cM componentizer.ComponentManager
 		aM ansible.Manager
 
 		// Model in use
-		tplC *model.TemplateContext
-		env  *model.Environment
+		tplC componentizer.TemplateContext
+		env  model.Environment
 	}
 )
 
 //CreateActionManager initializes the action manager and its content
-func CreateActionManager(lC util.LaunchContext, tplC model.TemplateContext, env model.Environment, cF component.Finder, aM ansible.Manager) Manager {
+func CreateActionManager(lC util.LaunchContext, cM componentizer.ComponentManager, aM ansible.Manager) Manager {
 	am := &manager{
 		actions: make(map[ActionID]Action),
 		lC:      lC,
-		cF:      cF,
+		cM:      cM,
 		aM:      aM,
-		tplC:    &tplC,
-		env:     &env,
 	}
 
 	for _, a := range allActions() {
@@ -69,7 +66,7 @@ func (am *manager) get(id ActionID) (Action, error) {
 
 //Run launches the action corresponding to the given id.
 func (am *manager) Run(id ActionID) (Result, error) {
-	rC := createRuntimeContext(am.lC, am.cF, am.aM, am.env, am.tplC)
+	rC := createRuntimeContext(am.lC, am.cM, am.aM, am.env, am.tplC)
 	a, e := am.get(id)
 	if e != nil {
 		return nil, e
