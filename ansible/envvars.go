@@ -2,11 +2,10 @@ package ansible
 
 import (
 	"fmt"
+	"github.com/ekara-platform/engine/model"
 	"os"
 	"runtime"
 	"strings"
-
-	"github.com/ekara-platform/model"
 )
 
 // EnvVars contains the extra vars to be passed to a playbook

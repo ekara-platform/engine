@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"reflect"
 
-	"github.com/ekara-platform/model"
+	"github.com/ekara-platform/engine/model"
 	"gopkg.in/yaml.v2"
 )
 
@@ -34,7 +34,7 @@ type BaseParam struct {
 //		pubK: the public SSH key to connect on the created nodeset ( the name of the file)
 //		privK: the private SSH key to connect on the created nodeset ( the name of the file)
 //
-func BuildBaseParam(env *model.Environment, pubK string, privK string, nodesetName string) BaseParam {
+func BuildBaseParam(env model.Environment, pubK string, privK string, nodesetName string) BaseParam {
 	baseParam := BaseParam{}
 	baseParam.Body = make(map[string]interface{})
 
@@ -48,14 +48,14 @@ func BuildBaseParam(env *model.Environment, pubK string, privK string, nodesetNa
 	baseParam.Body["ssh"] = sshM
 
 	environmentM := make(map[string]interface{})
-	if env.QualifiedName().String() != "" {
-		environmentM["id"] = env.QualifiedName().String()
+	if env.QName.String() != "" {
+		environmentM["id"] = env.QName.String()
 	}
-	if env.Name != "" {
-		environmentM["name"] = env.Name
+	if env.QName.Name != "" {
+		environmentM["name"] = env.QName.Name
 	}
-	if env.Qualifier != "" {
-		environmentM["qualifier"] = env.Qualifier
+	if env.QName.Qualifier != "" {
+		environmentM["qualifier"] = env.QName.Qualifier
 	}
 	if nodesetName != "" {
 		environmentM["nodeset"] = nodesetName

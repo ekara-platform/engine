@@ -3,7 +3,7 @@ package action
 import (
 	"errors"
 
-	"github.com/ekara-platform/model"
+	"github.com/ekara-platform/engine/model"
 )
 
 var (
@@ -37,7 +37,6 @@ func (v ValidateResult) AsJson() (string, error) {
 
 func doValidate(rC *runtimeContext) StepResults {
 	sc := InitCodeStepResult("Validating the environment content", nil, NoCleanUpRequired)
-	vErrs := rC.environment.Validate()
-	rC.result = ValidateResult{ValidationErrors: vErrs}
+	rC.result = ValidateResult{ValidationErrors: rC.environment.Validate()}
 	return sc.Build()
 }

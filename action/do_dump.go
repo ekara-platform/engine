@@ -2,7 +2,7 @@ package action
 
 import (
 	"errors"
-	"github.com/ekara-platform/model"
+	"github.com/ekara-platform/engine/model"
 	"gopkg.in/yaml.v2"
 )
 
@@ -17,12 +17,12 @@ var (
 
 //DumpResult contains the built environment ready to be serialized
 type DumpResult struct {
-	Env *model.Environment
+	Env model.Environment
 }
 
 //IsSuccess returns true id the dump execution was successful
 func (r DumpResult) IsSuccess() bool {
-	return r.Env != nil
+	return true
 }
 
 //FromJson fills an action returned content from a JSON content

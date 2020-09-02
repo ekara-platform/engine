@@ -57,7 +57,7 @@ func destroyHookBefore(rC *runtimeContext) StepResults {
 	rC.lC.Feedback().ProgressG("destroy.hook.before", 1, "Hook before destroying node sets")
 
 	// Prepare parameters
-	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+	bp := buildBaseParam(rC, "")
 
 	// Process hook : environment - destroy - before
 	runHookBefore(
@@ -79,7 +79,7 @@ func providerDestroy(rC *runtimeContext) StepResults {
 		sc := InitPlaybookStepResult("Running the destroy phase", n, NoCleanUpRequired)
 
 		// Resolve provider
-		p, err := n.Provider.Resolve()
+		p, err := n.Provider.Resolve(rC.environment)
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
@@ -93,8 +93,8 @@ func providerDestroy(rC *runtimeContext) StepResults {
 		bp := buildBaseParam(rC, n.Name)
 		bp.AddInt("instances", n.Instances)
 		bp.AddInterface("labels", n.Labels)
-		bp.AddNamedMap("params", p.Parameters)
-		bp.AddInterface("proxy", p.Proxy)
+		bp.AddNamedMap("params", p.Parameters())
+		bp.AddInterface("proxy", p.Proxy())
 
 		// Process hook : nodeset - destroy - before
 		runHookBefore(
@@ -121,7 +121,7 @@ func providerDestroy(rC *runtimeContext) StepResults {
 		exv := ansible.CreateExtraVars(destroy.Input, destroy.Output)
 
 		// Make the component usable
-		usable, err := rC.cF.Use(p, rC.tplC)
+		usable, err := rC.cM.Use(p, rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 		}
@@ -133,7 +133,7 @@ func providerDestroy(rC *runtimeContext) StepResults {
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  destroyPlaybook,
-				Component: p.ComponentName(),
+				Component: p.ComponentId(),
 				Code:      code,
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -169,7 +169,7 @@ func destroyHookAfter(rC *runtimeContext) StepResults {
 	rC.lC.Feedback().ProgressG("destroy.hook.after", 1, "Hook after destruction node sets")
 
 	// Prepare parameters
-	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+	bp := buildBaseParam(rC, "")
 
 	// Process hook : environment - destroy - after
 	runHookAfter(

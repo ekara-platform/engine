@@ -16,18 +16,3 @@
 
 #Visual Studio Code
 .vscode/
-
-# Go dep
-vendor/
-
-# Test generated input and output
-component/testdata/components/
-component/testdata/work/
-testdata/components/
-testdata/work/
-testdata/sample/
-testdata/gittest/
-testdata/gitwork/
-action/dummy/
-
-

@@ -1,0 +1,82 @@
+name: testEnvironment
+qualifier: testQualifier
+
+description: This is my awesome Ekara environment.
+
+ekara:
+  componentBase: someBase
+  dockerRegistry: someRegistry.org
+  components:
+    aws:
+      repository: ekara-platform/aws-provider
+      ref: 1.2.3
+    swarm:
+      repository: ekara-platform/swarm-orchestrator
+      ref: 1.2.3
+
+
+orchestrator:
+  component: swarm
+  params:
+    swarm_param_key1: swarm_param_key1_value
+    swarm_param_key2: swarm_param_key2_value
+  env:
+    swarm_env_key1: swarm_env_key1_value
+    swarm_env_key2: swarm_env_key2_value
+
+providers:
+  aws:
+    component: aws
+    params:
+      instance_type: "t2.micro"
+      ami_id: "ami-f90a4880"
+      vpc_id: "vpc-880aeaef"
+      region: "eu-west-1"
+      security_groups:
+      - name: group1
+        rules:
+        - proto: tcp
+          ports:
+          - 22
+          cidr_ip: 0.0.0.0/0
+          rule_desc: allow all on port 22
+      - name: group2
+        rules:
+        - proto: tcp
+          ports:
+          - 80
+          cidr_ip: 0.0.0.0/0
+          rule_desc: allow all on port 80
+        - proto: tcp
+          ports:
+          - 8080
+          cidr_ip: 0.0.0.0/0
+          rule_desc: allow all on port 8080
+      - name: swarm
+        rules:
+        - proto: tcp
+          ports:
+          - 2377
+          cidr_ip: 0.0.0.0/0
+          rule_desc: cluster management communications
+        - proto: tcp
+          ports:
+          - 7946
+          cidr_ip: 0.0.0.0/0
+          rule_desc: communication among nodes
+        - proto: udp
+          ports:
+          - 7946
+          cidr_ip: 0.0.0.0/0
+          rule_desc: communication among nodes
+        - proto: udp
+          ports:
+          - 4789
+          cidr_ip: 0.0.0.0/0
+          rule_desc: overlay network traffic
+
+nodes:
+  node1:
+    instances: 10
+    provider:
+      name: aws

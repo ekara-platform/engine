@@ -4,10 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ekara-platform/engine/component"
-
+	"github.com/ekara-platform/engine/model"
 	"github.com/ekara-platform/engine/util"
-	"github.com/ekara-platform/model"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -78,6 +76,10 @@ func TestSaveBaseParamOk(t *testing.T) {
 			},
 		},
 	})
+
+	tester := util.CreateComponentTester(t, p)
+	defer tester.Clean()
+
 	mainPath := "./testdata/gittest/descriptor"
 
 	ef, e := util.CreateExchangeFolder("./", "testFolder")
@@ -85,11 +87,7 @@ func TestSaveBaseParamOk(t *testing.T) {
 	assert.NotNil(t, ef)
 	defer ef.Delete()
 
-	c := util.CreateMockLaunchContextWithDataAndFolder(mainPath, p, ef, false)
-	tester := component.CreateComponentTester(t, c)
-	defer tester.Clean()
-
-	repDesc := tester.CreateRep(mainPath)
+	repDesc := tester.CreateDir(mainPath)
 
 	descContent := `
 name: NameContent
@@ -98,12 +96,12 @@ qualifier: QualifierContent
 `
 	repDesc.WriteCommit("ekara.yaml", descContent)
 
-	err := tester.Init()
-	assert.Nil(t, err)
+	tester.Init(repDesc.AsRepository("master"))
 	env := tester.Env()
 	assert.NotNil(t, env)
 
 	sc := InitCodeStepResult("DummyStep", nil, NoCleanUpRequired)
+	c := util.CreateMockLaunchContextWithDataAndFolder(p, ef, false)
 	bp := buildBaseParam(mockRuntimeContextWithParameters(c), "nodeId")
 	ko := saveBaseParams(bp, ef.Input, &sc)
 	assert.False(t, ko)
@@ -119,7 +117,126 @@ qualifier: QualifierContent
 
 }
 
+func TestStacksDependencies(t *testing.T) {
+	sts := model.Stacks{}
+
+	// This test will check the dependencies on the following tree
+	//
+	//        0                    1
+	//                           / | \
+	//                          2  7  8
+	//                        / |     | \
+	//                       3  6     9  12
+	//                      / |       | \
+	//                     4  5       10  11
+
+	sts["6"] = model.Stack{Name: "6", Dependencies: []string{"2"}}
+	sts["1"] = model.Stack{Name: "1"}
+	sts["3"] = model.Stack{Name: "3", Dependencies: []string{"2"}}
+	sts["4"] = model.Stack{Name: "4", Dependencies: []string{"3"}}
+	sts["9"] = model.Stack{Name: "9", Dependencies: []string{"8"}}
+	sts["5"] = model.Stack{Name: "5", Dependencies: []string{"3"}}
+	sts["7"] = model.Stack{Name: "7", Dependencies: []string{"1"}}
+	sts["8"] = model.Stack{Name: "8", Dependencies: []string{"1"}}
+	sts["10"] = model.Stack{Name: "10", Dependencies: []string{"9"}}
+	sts["2"] = model.Stack{Name: "2", Dependencies: []string{"1"}}
+	sts["12"] = model.Stack{Name: "12", Dependencies: []string{"8"}}
+	sts["11"] = model.Stack{Name: "11", Dependencies: []string{"9"}}
+	sts["0"] = model.Stack{Name: "0"}
+
+	assert.Len(t, sts, 13)
+	resolved, err := sortStacks(sts)
+	assert.Equal(t, len(resolved), len(sts))
+	assert.Nil(t, err)
+
+	processed := make(map[string]model.Stack)
+	for _, val := range resolved {
+		if len(processed) == 0 {
+			processed[val.Name] = val
+			continue
+		}
+		//Check than all the dependencies has been already processd
+		for _, d := range val.Dependencies {
+			if _, ok := processed[d]; !ok {
+				assert.Fail(t, "Dependency %s has not been yet processed", d)
+			}
+
+		}
+		processed[val.Name] = val
+	}
+	//Check that the original Stacks has been untouched
+	assert.Len(t, sts, 13)
+
+}
+
+func TestStacksMultiplesDependencies(t *testing.T) {
+	sts := model.Stacks{}
+
+	// This test will check the dependencies on the following tree
+	//
+	//        0                    1
+	//                           / | \
+	//                          2  7  8
+	//                        / | /    | \
+	//                       3  6     9  12
+	//                      / |   \   | \
+	//                     4  5    \-10  11
+
+	sts["6"] = model.Stack{Name: "6", Dependencies: []string{"2", "7"}}
+	sts["1"] = model.Stack{Name: "1"}
+	sts["3"] = model.Stack{Name: "3", Dependencies: []string{"2"}}
+	sts["4"] = model.Stack{Name: "4", Dependencies: []string{"3"}}
+	sts["9"] = model.Stack{Name: "9", Dependencies: []string{"8"}}
+	sts["5"] = model.Stack{Name: "5", Dependencies: []string{"3"}}
+	sts["7"] = model.Stack{Name: "7", Dependencies: []string{"1"}}
+	sts["8"] = model.Stack{Name: "8", Dependencies: []string{"1"}}
+	sts["10"] = model.Stack{Name: "10", Dependencies: []string{"9", "6"}}
+	sts["2"] = model.Stack{Name: "2", Dependencies: []string{"1"}}
+	sts["12"] = model.Stack{Name: "12", Dependencies: []string{"8"}}
+	sts["11"] = model.Stack{Name: "11", Dependencies: []string{"9"}}
+	sts["0"] = model.Stack{Name: "0"}
+
+	assert.Len(t, sts, 13)
+	resolved, err := sortStacks(sts)
+	assert.Equal(t, len(resolved), len(sts))
+	assert.Nil(t, err)
+
+	processed := make(map[string]model.Stack)
+	for _, val := range resolved {
+		if len(processed) == 0 {
+			processed[val.Name] = val
+			continue
+		}
+		//Check than all the dependencies has been already processd
+		for _, d := range val.Dependencies {
+			if _, ok := processed[d]; !ok {
+				assert.Fail(t, "Dependency %s has not been yet processed", d)
+			}
+
+		}
+		processed[val.Name] = val
+	}
+	//Check that the original Stacks has been untouched
+	assert.Len(t, sts, 13)
+
+}
+
+func TestStacksCyclicDependencies(t *testing.T) {
+	sts := model.Stacks{}
+
+	sts["1"] = model.Stack{Name: "1", Dependencies: []string{"3"}}
+	sts["2"] = model.Stack{Name: "2", Dependencies: []string{"1"}}
+	sts["3"] = model.Stack{Name: "3", Dependencies: []string{"2"}}
+
+	assert.Len(t, sts, 3)
+	_, err := sortStacks(sts)
+	assert.NotNil(t, err)
+
+	//Check that the original Stacks has been untouched
+	assert.Len(t, sts, 3)
+
+}
+
 func mockRuntimeContextWithParameters(lC util.LaunchContext) *runtimeContext {
-	env := model.InitEnvironment()
-	return createRuntimeContext(lC, nil, nil, env, &model.TemplateContext{})
+	return createRuntimeContext(lC, nil, nil, model.Environment{}, &model.TemplateContext{})
 }

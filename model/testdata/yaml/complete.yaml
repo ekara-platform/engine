@@ -1,0 +1,230 @@
+name: testEnvironment
+qualifier: testQualifier
+
+description: This is my awesome Ekara environment.
+
+ekara:
+  base: someBase
+  parent:
+    repository: ekara-platform/distribution
+    ref: 1.2.3
+  components:
+    aws:
+      repository: ekara-platform/aws-provider
+      ref: 1.2.3
+    azure:
+      repository: ekara-platform/azure-provider
+      ref: 1.2.3
+    swarm:
+      repository: ekara-platform/swarm-orchestrator
+      ref: 1.2.3
+    stack1:
+      repository: some-org/stack1
+      ref: 1.2.3
+    stack2:
+      repository: some-org/stack2
+      ref: 1.2.3
+    task1:
+      repository: some-org/task1
+      ref: 1.2.3
+    task2:
+      repository: some-org/task2
+      ref: 1.2.3
+    task3:
+      repository: some-org/task21
+      ref: 1.2.3
+  templates:
+    - "environment/*/*.yaml"
+    - "environment/*.yml"
+  playbooks:
+    phase1: path/to/playbook1.yaml
+    phase2: path/to/playbook2.yaml
+
+vars:
+  global_var_key1: global_var_val1 
+  global_var_key2: global_var_val2 
+
+tasks:
+  task1:
+    component: task1 
+    playbook: task1_playbook
+    params:
+      tasks_task1_param_key1: tasks_task1_param_key1_value
+      tasks_task1_param_key2: tasks_task1_param_key2_value
+    env:
+      tasks_task1_env_key1: tasks_task1_env_key1_value
+      tasks_task1_env_key2: tasks_task1_env_key2_value
+
+  task2:
+    component: task2
+    playbook: task2_playbook
+    params:
+      tasks_task2_param_key1: tasks_task2_param_key1_value
+      tasks_task2_param_key2: tasks_task2_param_key2_value
+    env:
+      tasks_task2_env_key1: tasks_task2_env_key1_value
+      tasks_task2_env_key2: tasks_task2_env_key2_value
+
+  task3:
+    component: task3
+    playbook: task3_playbook
+    hooks:
+      execute:
+        before:
+          - task: task1  
+        after:
+          - task: task2  
+
+orchestrator:
+  component: swarm
+  params:
+    swarm_param_key1: swarm_param_key1_value
+    swarm_param_key2: swarm_param_key2_value
+  env:
+    swarm_env_key1: swarm_env_key1_value
+    swarm_env_key2: swarm_env_key2_value
+
+providers:
+  aws:
+    component: aws
+    params:
+      aws_param_key1: aws_param_key1_value
+      aws_param_key2: aws_param_key2_value
+    env:
+      aws_env_key1: aws_env_key1_value
+      aws_env_key2: aws_env_key2_value
+    proxy:
+      http_proxy: aws_http_proxy
+      https_proxy: aws_https_proxy
+      no_proxy: aws_no_proxy
+   
+  azure:
+    component: azure
+    params:
+      azure_param_key1: azure_param_key1_value
+      azure_param_key2: azure_param_key2_value
+    env:
+      azure_env_key1: azure_env_key1_value
+      azure_env_key2: azure_env_key2_value
+    proxy:
+      http_proxy: azure_http_proxy
+      https_proxy: azure_https_proxy
+      no_proxy: azure_no_proxy
+
+nodes:
+  node1:
+    instances: 10
+    provider:
+      name: aws
+      params:
+        provider_node1_param_key1: provider_node1_param_key1_value
+        provider_node1_param_key2: provider_node1_param_key2_value
+      env:
+        provider_node1_env_key1: provider_node1_env_key1_value
+        provider_node1_env_key2: provider_node1_env_key2_value
+    labels:
+      node1_label1: node1_label1_value
+      node1_label2: node1_label2_value
+    hooks:
+      create:
+        before:
+          - task: task1  
+        after:
+          - task: task2  
+            params:
+              tasks_task2_param_key1: tasks_task2_param_key1_value_overwritten
+              tasks_task2_param_key3: tasks_task2_param_key3_value
+            env:
+              tasks_task2_env_key1: tasks_task2_env_key1_value_overwritten
+              tasks_task2_env_key3: tasks_task2_env_key3_value
+  node2:
+    instances: 20
+    provider:
+      name: azure
+      params:
+        provider_node2_param_key1: provider_node2_param_key1_value
+        provider_node2_param_key2: provider_node2_param_key2_value
+      env:
+        provider_node2_env_key1: provider_node2_env_key1_value
+        provider_node2_env_key2: provider_node2_env_key2_value
+    labels:
+      node2_label1: node2_label1_value
+      node2_label2: node2_label2_value
+    hooks:
+      create:
+        before:
+          - task: task1  
+        after:
+          - task: task2  
+
+stacks:
+  stack1:
+    component: stack1
+    hooks:
+      deploy:
+        before:
+          - task: task1  
+        after:
+          - task: task2  
+
+  stack2:
+    component: stack2
+    dependencies:
+      - stack1
+    params:
+      stack2_param_key1: stack2_param_key1_value
+      stack2_param_key2: stack2_param_key2_value
+    env:
+      stack2_env_key1: stack2_env_key1_value
+      stack2_env_key2: stack2_env_key2_value
+     
+    copies:
+      cp1:
+        once: true
+        labels:
+          label1: t1_val1   
+          label2: t1_val2   
+        path: "some/target1/volume/path"
+        sources:
+          - "*target1_to_be_copied.yaml"
+          - "*target1_to_be_copied.yml"
+      cp2:
+        once: false
+        labels:
+          label1: t2_val1   
+          label2: t2_val2   
+        path: "some/target2/volume/path"
+        sources:
+          - "*target2_to_be_copied.yaml"
+          - "*target2_to_be_copied.yml"
+
+hooks:
+  init:
+    before:
+      - task: task1  
+        prefix: fistExecution
+      - task: task1  
+        prefix: secondExecution
+    after:
+      - task: task2  
+  create:
+    before:
+      - task: task1  
+    after:
+      - task: task2  
+  install:
+    before:
+      - task: task1  
+    after:
+      - task: task2  
+  deploy:
+    before:
+      - task: task1  
+    after:
+      - task: task2  
+  delete:
+    before:
+      - task: task1  
+    after:
+      - task: task2  
+    

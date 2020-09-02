@@ -1,0 +1,66 @@
+name: testEnvironment
+qualifier: testQualifier
+
+
+ekara:
+  components:
+    aws:
+      repository: ekara-platform/aws-provider
+      ref: 1.2.3
+    swarm:
+      repository: ekara-platform/swarm-orchestrator
+      ref: 1.2.3
+    monitoring:
+      repository: ekara-platform/monitoring-stack
+      ref: 1.2.3
+
+orchestrator:
+  component: swarm
+  params:
+    orchestrator1: "param_initial_orchestrator1"
+    orchestrator3: "param_initial_orchestrator3"
+  env:
+    orchestrator1: "env_initial_orchestrator1"
+    orchestrator3: "env_initial_orchestrator3"
+
+
+providers:
+  aws:
+    component: aws
+    params:
+      param1: "initial_param1"
+      param3: "initial_param3"
+    env:
+      env1: "initial_env1"
+      env3: "initial_env3"
+    proxy:
+      http_proxy: "aws_http_proxy"
+      no_proxy: "aws_no_proxy"
+
+
+nodes:
+  "*":
+    provider:
+      params:
+        generic_param1: "new_generic_param1"
+      env:
+        generic_env1: "new_generic_env1"
+      proxy:
+        https_proxy: "generic_https_proxy"
+
+  managers:
+    provider:
+      name: aws
+      params:
+        param1: "overwritten_param1"
+        param2: "new_param2"
+      env:
+        env1: "overwritten_env1"
+        env2: "new_env2"
+      proxy:
+        no_proxy: "overwritten_aws_no_proxy"
+    instances: 3
+
+stacks:
+  monitoring:
+    component: monitoring

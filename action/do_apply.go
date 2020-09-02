@@ -1,16 +1,12 @@
 package action
 
 import (
-	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"net/http"
-
+	"github.com/GroupePSA/componentizer"
 	"github.com/ekara-platform/engine/ansible"
-	"github.com/ekara-platform/engine/component"
+	"github.com/ekara-platform/engine/model"
 	"github.com/ekara-platform/engine/util"
-	"github.com/ekara-platform/model"
 )
 
 const (
@@ -76,7 +72,7 @@ var (
 			deployHookAfter,
 
 			ansibleInventory,
-			fillAPI,
+			//initApi,
 		},
 	}
 )
@@ -84,7 +80,7 @@ var (
 func providerSetup(rC *runtimeContext) StepResults {
 	sCs := InitStepResults()
 	for _, p := range rC.environment.Providers {
-		if !rC.cF.IsAvailable(p) {
+		if !rC.cM.IsAvailable(p) {
 			continue
 		}
 
@@ -105,7 +101,7 @@ func providerSetup(rC *runtimeContext) StepResults {
 
 		// Prepare parameters
 		bp := buildBaseParam(rC, "")
-		bp.AddNamedMap("params", p.Parameters)
+		bp.AddNamedMap("params", p.Parameters())
 		if ko := saveBaseParams(bp, setupProviderEfIn, &sc); ko {
 			sCs.Add(sc)
 			return *sCs
@@ -115,7 +111,7 @@ func providerSetup(rC *runtimeContext) StepResults {
 		exv := ansible.CreateExtraVars(setupProviderEfIn, setupProviderEfOut)
 
 		// We launch the playbook
-		usable, err := rC.cF.Use(p, rC.tplC)
+		usable, err := rC.cM.Use(p, rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 			sCs.Add(sc)
@@ -128,7 +124,7 @@ func providerSetup(rC *runtimeContext) StepResults {
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  setupPlaybook,
-				Component: p.ComponentName(),
+				Component: p.ComponentId(),
 				Code:      code,
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -159,7 +155,7 @@ func createHookBefore(rC *runtimeContext) StepResults {
 	rC.lC.Feedback().ProgressG("create.hook.before", 1, "Hook before creating node sets ")
 
 	// Prepare parameters
-	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+	bp := buildBaseParam(rC, "")
 
 	// Process hook : environment - create - before
 	runHookBefore(
@@ -186,7 +182,7 @@ func providerCreate(rC *runtimeContext) StepResults {
 		sc := InitPlaybookStepResult("Running the provider create phase", n, NoCleanUpRequired)
 
 		// Resolve provider
-		p, err := n.Provider.Resolve()
+		p, err := n.Provider.Resolve(rC.environment)
 		if err != nil {
 			FailsOnCode(&sc, err, fmt.Sprintf("An error occurred resolving the provider"), nil)
 			sCs.Add(sc)
@@ -200,8 +196,8 @@ func providerCreate(rC *runtimeContext) StepResults {
 		bp := buildBaseParam(rC, n.Name)
 		bp.AddInt("instances", n.Instances)
 		bp.AddInterface("labels", n.Labels)
-		bp.AddNamedMap("params", p.Parameters)
-		bp.AddInterface("proxy", p.Proxy)
+		bp.AddNamedMap("params", p.Parameters())
+		bp.AddInterface("proxy", p.Proxy())
 
 		// Process hook : nodeset - create - before
 		runHookBefore(
@@ -228,7 +224,7 @@ func providerCreate(rC *runtimeContext) StepResults {
 		exv := ansible.CreateExtraVars(nodeCreateEf.Input, nodeCreateEf.Output)
 
 		// Make the component usable
-		usable, err := rC.cF.Use(p, rC.tplC)
+		usable, err := rC.cM.Use(p, rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 			sCs.Add(sc)
@@ -242,7 +238,7 @@ func providerCreate(rC *runtimeContext) StepResults {
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  createPlaybook,
-				Component: p.ComponentName(),
+				Component: p.ComponentId(),
 				Code:      code,
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -282,7 +278,7 @@ func createHookAfter(rC *runtimeContext) StepResults {
 	rC.lC.Feedback().ProgressG("create.hook.after", 1, "Hook after creating node sets ")
 
 	// Prepare parameters
-	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+	bp := buildBaseParam(rC, "")
 
 	// Process hook : environment - create - after
 	runHookAfter(
@@ -320,7 +316,7 @@ func orchestratorSetup(rC *runtimeContext) StepResults {
 
 	// Prepare parameters
 	bp := buildBaseParam(rC, "")
-	bp.AddNamedMap("params", o.Parameters)
+	bp.AddNamedMap("params", o.Parameters())
 	if ko := saveBaseParams(bp, setupOrchestratorEf.Input, &sc); ko {
 		sCs.Add(sc)
 		return *sCs
@@ -330,7 +326,7 @@ func orchestratorSetup(rC *runtimeContext) StepResults {
 	exv := ansible.CreateExtraVars(setupOrchestratorEf.Input, setupOrchestratorEf.Output)
 
 	// Make the component usable
-	usable, err := rC.cF.Use(o, rC.tplC)
+	usable, err := rC.cM.Use(o, rC.tplC)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 		sCs.Add(sc)
@@ -343,7 +339,7 @@ func orchestratorSetup(rC *runtimeContext) StepResults {
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  setupPlaybook,
-			Component: o.ComponentName(),
+			Component: o.ComponentId(),
 			Code:      code,
 		}
 		FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -374,7 +370,7 @@ func installHookBefore(rC *runtimeContext) StepResults {
 	rC.lC.Feedback().ProgressG("install.hook.before", 1, "Hook before installing the orchestrator ")
 
 	// Prepare parameters
-	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+	bp := buildBaseParam(rC, "")
 
 	// Process hook : environment - install - before
 	runHookBefore(
@@ -412,7 +408,7 @@ func orchestratorInstall(rC *runtimeContext) StepResults {
 
 	// Prepare parameters
 	bp := buildBaseParam(rC, "")
-	bp.AddNamedMap("params", o.Parameters)
+	bp.AddNamedMap("params", o.Parameters())
 	if ko := saveBaseParams(bp, installOrchestratorEf.Input, &sc); ko {
 		sCs.Add(sc)
 		return *sCs
@@ -422,7 +418,7 @@ func orchestratorInstall(rC *runtimeContext) StepResults {
 	exv := ansible.CreateExtraVars(installOrchestratorEf.Input, installOrchestratorEf.Output)
 
 	// Make the component usable
-	usable, err := rC.cF.Use(o, rC.tplC)
+	usable, err := rC.cM.Use(o, rC.tplC)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 		sCs.Add(sc)
@@ -435,7 +431,7 @@ func orchestratorInstall(rC *runtimeContext) StepResults {
 	if err != nil {
 		pfd := playBookFailureDetail{
 			Playbook:  installPlaybook,
-			Component: o.ComponentName(),
+			Component: o.ComponentId(),
 			Code:      code,
 		}
 		FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -465,7 +461,7 @@ func installHookAfter(rC *runtimeContext) StepResults {
 	rC.lC.Feedback().ProgressG("install.hook.after", 1, "Hook after installing the orchestrator ")
 
 	// Prepare parameters
-	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+	bp := buildBaseParam(rC, "")
 
 	// Process hook : environment - install - after
 	runHookAfter(
@@ -496,7 +492,7 @@ func deployHookBefore(rC *runtimeContext) StepResults {
 	rC.lC.Feedback().ProgressG("deploy.hook.before", 1, "Hook before deploying the stacks ")
 
 	// Prepare parameters
-	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+	bp := buildBaseParam(rC, "")
 
 	// Process hook : environment - deploy - before
 	runHookBefore(
@@ -544,7 +540,7 @@ func stackCopy(rC *runtimeContext) StepResults {
 				}
 
 				// Make the stack usable
-				ust, err := rC.cF.Use(st, rC.tplC)
+				ust, err := rC.cM.Use(st, rC.tplC)
 				if err != nil {
 					FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
 					sCs.Add(sc)
@@ -553,9 +549,9 @@ func stackCopy(rC *runtimeContext) StepResults {
 				defer ust.Release()
 
 				// If the stack is not self copyable, use the orchestrator copy playbook
-				var target component.UsableComponent
+				var target componentizer.UsableComponent
 				if ok, _ := ust.ContainsFile(copyPlaybook); !ok {
-					o, err := rC.cF.Use(rC.environment.Orchestrator, rC.tplC)
+					o, err := rC.cM.Use(rC.environment.Orchestrator, rC.tplC)
 					if err != nil {
 						FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 						sCs.Add(sc)
@@ -576,8 +572,8 @@ func stackCopy(rC *runtimeContext) StepResults {
 				} else {
 					exv.Add("copy_once", "false")
 				}
-				if len(cp.Sources.Content) > 0 {
-					exv.AddArray("copy_sources", cp.Sources.Content)
+				if len(cp.Sources) > 0 {
+					exv.AddArray("copy_sources", cp.Sources)
 				}
 				if len(cp.Labels) > 0 {
 					exv.AddMap("copy_labels", cp.Labels)
@@ -588,7 +584,7 @@ func stackCopy(rC *runtimeContext) StepResults {
 				if err != nil {
 					pfd := playBookFailureDetail{
 						Playbook:  copyPlaybook,
-						Component: target.Name(),
+						Component: target.Id(),
 						Code:      code,
 					}
 					FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -623,7 +619,7 @@ func stackCheck(rC *runtimeContext) StepResults {
 		rC.lC.Feedback().ProgressG("stack.check", len(rC.environment.Stacks), "Checking stacks '%s'", st.Name)
 
 		// Make the stack usable
-		ust, err := rC.cF.Use(st, rC.tplC)
+		ust, err := rC.cM.Use(st, rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
 			sCs.Add(sc)
@@ -649,7 +645,7 @@ func stackCheck(rC *runtimeContext) StepResults {
 
 		// Prepare parameters
 		bp := buildBaseParam(rC, "")
-		bp.AddNamedMap("params", st.Parameters)
+		bp.AddNamedMap("params", st.Parameters())
 		if ko := saveBaseParams(bp, stackEf.Input, &sc); ko {
 			sCs.Add(sc)
 			return *sCs
@@ -662,7 +658,7 @@ func stackCheck(rC *runtimeContext) StepResults {
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  checklPlaybook,
-				Component: ust.Name(),
+				Component: ust.Id(),
 				Code:      code,
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -704,7 +700,7 @@ func stackDeploy(rC *runtimeContext) StepResults {
 
 		// Prepare parameters
 		bp := buildBaseParam(rC, "")
-		bp.AddNamedMap("params", st.Parameters)
+		bp.AddNamedMap("params", st.Parameters())
 		if ko := saveBaseParams(bp, stackEf.Input, &sc); ko {
 			sCs.Add(sc)
 			return *sCs
@@ -720,7 +716,7 @@ func stackDeploy(rC *runtimeContext) StepResults {
 		)
 
 		// Make the stack usable
-		ust, err := rC.cF.Use(st, rC.tplC)
+		ust, err := rC.cM.Use(st, rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable stack", nil)
 			sCs.Add(sc)
@@ -732,9 +728,9 @@ func stackDeploy(rC *runtimeContext) StepResults {
 		exv := ansible.CreateExtraVars(stackEf.Input, stackEf.Output)
 
 		// If the stack is not self deployable, use the orchestrator deploy playbook
-		var target component.UsableComponent
-		if ok, _ := ust.ContainsFile(deployPlaybook); st.Playbook == "" && !ok {
-			o, err := rC.cF.Use(rC.environment.Orchestrator, rC.tplC)
+		var target componentizer.UsableComponent
+		if ok, _ := ust.ContainsFile(deployPlaybook); /* TODO fixme st.Playbook == "" && */ !ok {
+			o, err := rC.cM.Use(rC.environment.Orchestrator, rC.tplC)
 			if err != nil {
 				FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 				sCs.Add(sc)
@@ -750,16 +746,16 @@ func stackDeploy(rC *runtimeContext) StepResults {
 
 		// Execute the playbook
 		var effectivePlaybook string
-		if st.Playbook != "" {
-			effectivePlaybook = st.Playbook
-		} else {
-			effectivePlaybook = deployPlaybook
-		}
+		// TODO fixme if st.Playbook != "" {
+		//effectivePlaybook = st.Playbook
+		//} else {
+		effectivePlaybook = deployPlaybook
+		//}
 		code, err := rC.aM.Play(target, rC.tplC, effectivePlaybook, exv)
 		if err != nil {
 			pfd := playBookFailureDetail{
 				Playbook:  effectivePlaybook,
-				Component: target.Name(),
+				Component: target.Id(),
 				Code:      code,
 			}
 			FailsOnPlaybook(&sc, err, "An error occurred executing the playbook", pfd)
@@ -800,7 +796,7 @@ func deployHookAfter(rC *runtimeContext) StepResults {
 	rC.lC.Feedback().ProgressG("deploy.hook.after", 1, "Hook after deploying the stacks ")
 
 	// Prepare parameters
-	bp := buildBaseParam(rC, rC.environment.QualifiedName().String())
+	bp := buildBaseParam(rC, "")
 
 	// Process hook : environment - deploy - after
 	runHookAfter(
@@ -837,121 +833,120 @@ func ansibleInventory(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func fillAPI(rC *runtimeContext) StepResults {
-	sCs := InitStepResults()
-	sc := InitPlaybookStepResult("Filling the Ekara API", nil, NoCleanUpRequired)
-	rC.lC.Feedback().ProgressG("api", 1, "Filling Ekara API ")
-
-	r, ok := rC.result.(ApplyResult)
-	if ok {
-		if !r.Success {
-			FailsOnCode(&sc, fmt.Errorf("The Ekara API cannot be filled because the previous result was not successful"), "", nil)
-			sCs.Add(sc)
-			return *sCs
-		}
-		inv := r.Inventory
-		for k := range inv.Hosts {
-
-			err := post(k, "desc_name", rC.lC.DescriptorName())
-			if err != nil {
-				FailsOnCode(&sc, err, "Error saving the descriptor name", nil)
-				sCs.Add(sc)
-				return *sCs
-			}
-
-			err = post(k, "desc_url", rC.lC.Location())
-			if err != nil {
-				FailsOnCode(&sc, err, "Error saving the descriptor location", nil)
-				sCs.Add(sc)
-				return *sCs
-			}
-
-			err = post(k, "user", rC.lC.User())
-			if err != nil {
-				FailsOnCode(&sc, err, "Error saving the ekara user", nil)
-				sCs.Add(sc)
-				return *sCs
-			}
-
-			err = post(k, "password", rC.lC.Password())
-			if err != nil {
-				FailsOnCode(&sc, err, "Error saving the ekara password", nil)
-				sCs.Add(sc)
-				return *sCs
-			}
-
-			f, err := util.FileRead(rC.lC.SSHPublicKey())
-			if err != nil {
-				FailsOnCode(&sc, err, "Error reading the ekara public SSH key", nil)
-				sCs.Add(sc)
-				return *sCs
-			}
-
-			err = post(k, "ssh_public", base64.StdEncoding.EncodeToString(f))
-			if err != nil {
-				FailsOnCode(&sc, err, "Error saving the ekara public SSH key", nil)
-				sCs.Add(sc)
-				return *sCs
-			}
-
-			f, err = util.FileRead(rC.lC.SSHPrivateKey())
-			if err != nil {
-				FailsOnCode(&sc, err, "Error reading the ekara private SSH key", nil)
-				sCs.Add(sc)
-				return *sCs
-			}
-
-			err = post(k, "ssh_private", base64.StdEncoding.EncodeToString(f))
-			if err != nil {
-				FailsOnCode(&sc, err, "Error saving the ekara private SSH key", nil)
-				sCs.Add(sc)
-				return *sCs
-			}
-
-			f, err = rC.lC.ExternalVars().ToYAML()
-			if err != nil {
-				FailsOnCode(&sc, err, "Error reading the ekara external vars", nil)
-				sCs.Add(sc)
-				return *sCs
-			}
-
-			err = post(k, "params", base64.StdEncoding.EncodeToString(f))
-			if err != nil {
-				FailsOnCode(&sc, err, "Error saving the ekara external parameters", nil)
-				sCs.Add(sc)
-				return *sCs
-			}
-			//We break because the first host is enough to reach the api
-			break
-		}
-	} else {
-		FailsOnCode(&sc, fmt.Errorf("Wrong result type, ApplyResult was expected"), "", nil)
-		sCs.Add(sc)
-		return *sCs
-	}
-	rC.lC.Feedback().Progress("api", "Ekara API Filled")
-	return *sCs
-}
-
-func post(url string, key string, value interface{}) error {
-	//find a way to put the port outside of the engine
-	u := fmt.Sprintf("http://%s:8090/storage/ekara/", url)
-	reqP := `{"key":"%s", "value":"%v"}`
-	jsonStr := []byte(fmt.Sprintf(reqP, key, value))
-
-	req, err := http.NewRequest("POST", u, bytes.NewBuffer(jsonStr))
-	req.Header.Set("Content-Type", "application/json")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
-	return nil
-}
+//func initApi(rC *runtimeContext) StepResults {
+//	sCs := InitStepResults()
+//	sc := InitPlaybookStepResult("Initializing the Ekara API", nil, NoCleanUpRequired)
+//	rC.lC.Feedback().ProgressG("api", 1, "Filling Ekara API ")
+//
+//	r, ok := rC.result.(ApplyResult)
+//	if ok {
+//		if !r.Success {
+//			FailsOnCode(&sc, fmt.Errorf("The Ekara API cannot be filled because the previous result was not successful"), "", nil)
+//			sCs.Add(sc)
+//			return *sCs
+//		}
+//		inv := r.Inventory
+//		for k := range inv.Hosts {
+//			err := post(k, "desc_name", rC.lC.DescriptorName())
+//			if err != nil {
+//				FailsOnCode(&sc, err, "Error saving the descriptor name", nil)
+//				sCs.Add(sc)
+//				return *sCs
+//			}
+//
+//			err = post(k, "desc_url", rC.lC.Location())
+//			if err != nil {
+//				FailsOnCode(&sc, err, "Error saving the descriptor location", nil)
+//				sCs.Add(sc)
+//				return *sCs
+//			}
+//
+//			err = post(k, "user", rC.lC.User())
+//			if err != nil {
+//				FailsOnCode(&sc, err, "Error saving the ekara user", nil)
+//				sCs.Add(sc)
+//				return *sCs
+//			}
+//
+//			err = post(k, "password", rC.lC.Password())
+//			if err != nil {
+//				FailsOnCode(&sc, err, "Error saving the ekara password", nil)
+//				sCs.Add(sc)
+//				return *sCs
+//			}
+//
+//			f, err := util.FileRead(rC.lC.SSHPublicKey())
+//			if err != nil {
+//				FailsOnCode(&sc, err, "Error reading the ekara public SSH key", nil)
+//				sCs.Add(sc)
+//				return *sCs
+//			}
+//
+//			err = post(k, "ssh_public", base64.StdEncoding.EncodeToString(f))
+//			if err != nil {
+//				FailsOnCode(&sc, err, "Error saving the ekara public SSH key", nil)
+//				sCs.Add(sc)
+//				return *sCs
+//			}
+//
+//			f, err = util.FileRead(rC.lC.SSHPrivateKey())
+//			if err != nil {
+//				FailsOnCode(&sc, err, "Error reading the ekara private SSH key", nil)
+//				sCs.Add(sc)
+//				return *sCs
+//			}
+//
+//			err = post(k, "ssh_private", base64.StdEncoding.EncodeToString(f))
+//			if err != nil {
+//				FailsOnCode(&sc, err, "Error saving the ekara private SSH key", nil)
+//				sCs.Add(sc)
+//				return *sCs
+//			}
+//
+//			f, err = rC.lC.ExternalVars().ToYAML()
+//			if err != nil {
+//				FailsOnCode(&sc, err, "Error reading the ekara external vars", nil)
+//				sCs.Add(sc)
+//				return *sCs
+//			}
+//
+//			err = post(k, "params", base64.StdEncoding.EncodeToString(f))
+//			if err != nil {
+//				FailsOnCode(&sc, err, "Error saving the ekara external parameters", nil)
+//				sCs.Add(sc)
+//				return *sCs
+//			}
+//			//We break because the first host is enough to reach the api
+//			break
+//		}
+//	} else {
+//		FailsOnCode(&sc, fmt.Errorf("Wrong result type, ApplyResult was expected"), "", nil)
+//		sCs.Add(sc)
+//		return *sCs
+//	}
+//	rC.lC.Feedback().Progress("api", "Ekara API Filled")
+//	return *sCs
+//}
+//
+//func post(url string, key string, value interface{}) error {
+//	//find a way to put the port outside of the engine
+//	u := fmt.Sprintf("http://%s:8090/storage/ekara/", url)
+//	reqP := `{"key":"%s", "value":"%v"}`
+//	jsonStr := []byte(fmt.Sprintf(reqP, key, value))
+//
+//	req, err := http.NewRequest("POST", u, bytes.NewBuffer(jsonStr))
+//	req.Header.Set("Content-Type", "application/json")
+//
+//	client := &http.Client{}
+//	resp, err := client.Do(req)
+//	if err != nil {
+//		return err
+//	}
+//	defer resp.Body.Close()
+//	fmt.Println("response Status:", resp.Status)
+//	fmt.Println("response Headers:", resp.Header)
+//	return nil
+//}
 
 func buildBaseParam(rC *runtimeContext, nodeSetName string) ansible.BaseParam {
 	return ansible.BuildBaseParam(rC.environment, rC.lC.SSHPublicKey(), rC.lC.SSHPrivateKey(), nodeSetName)
@@ -985,4 +980,32 @@ func saveBaseParams(bp ansible.BaseParam, dest util.FolderPath, sr *StepResult) 
 		return true
 	}
 	return false
+}
+
+//ResolveDependencies returns the stacks based on the order of the dependencies
+func sortStacks(stacks model.Stacks) ([]model.Stack, error) {
+	result := make([]model.Stack, 0, 0)
+	if len(stacks) == 0 {
+		return result, nil
+	}
+
+	g := newGraph(len(stacks))
+	for _, vs := range stacks {
+		g.addNode(vs.Name)
+	}
+	for _, vs := range stacks {
+		for _, vd := range vs.Dependencies {
+			g.addEdge(vd, vs.Name)
+		}
+	}
+	res, ok := g.sort()
+	if !ok {
+		return result, fmt.Errorf("A cyclic dependency has been detected")
+	}
+	for _, val := range res {
+		if stack, ok := stacks[val]; ok {
+			result = append(result, stack)
+		}
+	}
+	return result, nil
 }

@@ -1,0 +1,25 @@
+name: {{ .Vars.info.name }}
+description: {{ .Vars.info.desc }}
+
+ekara:
+  components:
+    aws:
+      repository: ekara-platform/aws-provider
+      ref: 1.2.3
+    swarm:
+      repository: ekara-platform/swarm-orchestrator
+      ref: 1.2.3
+
+orchestrator:
+  component: swarm
+
+providers:
+  aws:
+    component: aws
+
+
+nodes:
+  node1:
+    instances: 10
+    provider:
+      name: aws

@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	//ProgressPrefix represent the conent to look for in order to locate 
+	//ProgressPrefix represent the conent to look for in order to locate
 	// the progesse content into the logs.
 	ProgressPrefix = "PROGRESS: "
 )

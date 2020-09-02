@@ -3,6 +3,7 @@ package ansible
 import (
 	"bufio"
 	"fmt"
+	"github.com/GroupePSA/componentizer"
 	"io"
 	"log"
 	"os"
@@ -10,9 +11,6 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/ekara-platform/model"
-
-	"github.com/ekara-platform/engine/component"
 	"github.com/ekara-platform/engine/util"
 )
 
@@ -36,14 +34,14 @@ type (
 		//		envVars: the environment variables set before launching the playbook
 		//		fN: feedback notifier
 		//
-		Play(cr component.UsableComponent, ctx *model.TemplateContext, playbook string, extraVars ExtraVars) (int, error)
+		Play(cr componentizer.UsableComponent, ctx componentizer.TemplateContext, playbook string, extraVars ExtraVars) (int, error)
 		// Inventory returns the current inventory of environment nodes
-		Inventory(ctx *model.TemplateContext) (Inventory, error)
+		Inventory(ctx componentizer.TemplateContext) (Inventory, error)
 	}
 
 	manager struct {
 		lC util.LaunchContext
-		cF component.Finder
+		cM componentizer.ComponentManager
 	}
 
 	execChan struct {
@@ -55,19 +53,19 @@ type (
 
 //CreateAnsibleManager returns a new AnsibleManager, providing managed execution of
 //Ansible commands
-func CreateAnsibleManager(lC util.LaunchContext, cF component.Finder) Manager {
+func CreateAnsibleManager(lC util.LaunchContext, cM componentizer.ComponentManager) Manager {
 	return &manager{
 		lC: lC,
-		cF: cF,
+		cM: cM,
 	}
 }
 
-func (aM manager) Play(uc component.UsableComponent, ctx *model.TemplateContext, playbook string, extraVars ExtraVars) (int, error) {
+func (aM manager) Play(uc componentizer.UsableComponent, ctx componentizer.TemplateContext, playbook string, extraVars ExtraVars) (int, error) {
 	ok, playBookPath := uc.ContainsFile(playbook)
 	if !ok {
-		return 0, fmt.Errorf("component \"%s\" does not contain playbook: %s", uc.Name(), playbook)
+		return 0, fmt.Errorf("component \"%s\" does not contain playbook: %s", uc.Id(), playbook)
 	}
-	aM.lC.Log().Printf("Executing playbook %s from component %s", playBookPath.RelativePath(), playBookPath.UsableComponent().Name())
+	aM.lC.Log().Printf("Executing playbook %s from component %s", playBookPath.RelativePath(), playBookPath.Owner().Id())
 
 	var args = []string{playbook}
 
@@ -82,12 +80,12 @@ func (aM manager) Play(uc component.UsableComponent, ctx *model.TemplateContext,
 	args = append(args, aM.buildInventoryArgs(inventoryPaths)...)
 
 	// Component(s) env vars
-	allComps := []component.UsableComponent{uc}
+	allComps := []componentizer.UsableComponent{uc}
 	for _, mp := range modulePaths.Paths {
-		allComps = append(allComps, mp.UsableComponent())
+		allComps = append(allComps, mp.Owner())
 	}
 	for _, mp := range inventoryPaths.Paths {
-		allComps = append(allComps, mp.UsableComponent())
+		allComps = append(allComps, mp.Owner())
 	}
 	env := aM.buildEnvVars(allComps...)
 
@@ -158,7 +156,7 @@ func (aM manager) Play(uc component.UsableComponent, ctx *model.TemplateContext,
 	}
 }
 
-func (aM manager) Inventory(ctx *model.TemplateContext) (Inventory, error) {
+func (aM manager) Inventory(ctx componentizer.TemplateContext) (Inventory, error) {
 	res := Inventory{}
 	args := []string{"--list"}
 
@@ -168,9 +166,9 @@ func (aM manager) Inventory(ctx *model.TemplateContext) (Inventory, error) {
 	args = append(args, aM.buildInventoryArgs(inventoryPaths)...)
 
 	// Component(s) env vars
-	var allComps []component.UsableComponent
+	var allComps []componentizer.UsableComponent
 	for _, mp := range inventoryPaths.Paths {
-		allComps = append(allComps, mp.UsableComponent())
+		allComps = append(allComps, mp.Owner())
 	}
 	env := aM.buildEnvVars(allComps...)
 
@@ -210,7 +208,7 @@ func (aM manager) Inventory(ctx *model.TemplateContext) (Inventory, error) {
 	return res, nil
 }
 
-func (aM manager) buildModuleArgs(modulePaths component.MatchingPaths) []string {
+func (aM manager) buildModuleArgs(modulePaths componentizer.MatchingPaths) []string {
 	var args []string
 	if modulePaths.Count() > 0 {
 		pathsStrings := modulePaths.JoinAbsolutePaths(":")
@@ -222,30 +220,30 @@ func (aM manager) buildModuleArgs(modulePaths component.MatchingPaths) []string 
 	return args
 }
 
-func (aM manager) findModulePaths(ctx *model.TemplateContext) component.MatchingPaths {
-	return aM.cF.ContainsDirectory(util.ComponentModuleFolder, ctx)
+func (aM manager) findModulePaths(ctx componentizer.TemplateContext) componentizer.MatchingPaths {
+	return aM.cM.ContainsDirectory(util.ComponentModuleFolder, ctx)
 }
 
-func (aM manager) findInventoryPaths(ctx *model.TemplateContext) component.MatchingPaths {
-	return aM.cF.ContainsDirectory(util.InventoryModuleFolder, ctx)
+func (aM manager) findInventoryPaths(ctx componentizer.TemplateContext) componentizer.MatchingPaths {
+	return aM.cM.ContainsDirectory(util.InventoryModuleFolder, ctx)
 }
 
-func (aM manager) buildEnvVars(comps ...component.UsableComponent) envVars {
+func (aM manager) buildEnvVars(comps ...componentizer.UsableComponent) envVars {
 	env := createEnvVars()
 	env.addDefaultOsVars()
 	// TODO: currently only the default virtual env is supported, later add logic to obtain a specific virtual env from the executed component
 	env.prependToVar("PATH", fmt.Sprintf(virtualEnvBinaryPath, virtualEnvDefault))
 	env.addProxy(aM.lC.Proxy())
-	for _, c := range comps {
-		for envK, envV := range c.EnvVars() {
-			env.add(envK, envV)
-		}
-	}
+	// for _, c := range comps {
+	// TODO fixme for envK, envV := range c.EnvVars() {
+	//	env.add(envK, envV)
+	//}
+	// }
 	aM.lC.Log().Printf("Ansible environment variables: %s", env.String())
 	return env
 }
 
-func (aM manager) buildInventoryArgs(inventoryPaths component.MatchingPaths) []string {
+func (aM manager) buildInventoryArgs(inventoryPaths componentizer.MatchingPaths) []string {
 	var args []string
 	if inventoryPaths.Count() > 0 {
 		asArgs := inventoryPaths.PrefixPaths("-i")
