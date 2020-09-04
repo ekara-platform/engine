@@ -77,7 +77,7 @@ var (
 	}
 )
 
-func providerSetup(rC *runtimeContext) StepResults {
+func providerSetup(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 	for _, p := range rC.environment.Providers {
 		if !rC.cM.IsAvailable(p) {
@@ -139,7 +139,7 @@ func providerSetup(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func createHookBefore(rC *runtimeContext) StepResults {
+func createHookBefore(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if len(rC.environment.Hooks.Create.Before) == 0 {
@@ -170,7 +170,7 @@ func createHookBefore(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func providerCreate(rC *runtimeContext) StepResults {
+func providerCreate(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 0 {
@@ -262,7 +262,7 @@ func providerCreate(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func createHookAfter(rC *runtimeContext) StepResults {
+func createHookAfter(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if len(rC.environment.Hooks.Create.After) == 0 {
@@ -293,7 +293,7 @@ func createHookAfter(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func orchestratorSetup(rC *runtimeContext) StepResults {
+func orchestratorSetup(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 1 {
@@ -354,7 +354,7 @@ func orchestratorSetup(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func installHookBefore(rC *runtimeContext) StepResults {
+func installHookBefore(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if len(rC.environment.Hooks.Install.Before) == 0 {
@@ -385,7 +385,7 @@ func installHookBefore(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func orchestratorInstall(rC *runtimeContext) StepResults {
+func orchestratorInstall(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 1 {
@@ -445,7 +445,7 @@ func orchestratorInstall(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func installHookAfter(rC *runtimeContext) StepResults {
+func installHookAfter(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if len(rC.environment.Hooks.Install.After) == 0 {
@@ -476,7 +476,7 @@ func installHookAfter(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func deployHookBefore(rC *runtimeContext) StepResults {
+func deployHookBefore(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if len(rC.environment.Hooks.Deploy.Before) == 0 {
@@ -507,7 +507,7 @@ func deployHookBefore(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func stackCopy(rC *runtimeContext) StepResults {
+func stackCopy(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 2 {
@@ -604,7 +604,7 @@ func stackCopy(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func stackCheck(rC *runtimeContext) StepResults {
+func stackCheck(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 2 {
@@ -674,7 +674,7 @@ func stackCheck(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func stackDeploy(rC *runtimeContext) StepResults {
+func stackDeploy(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if rC.lC.Skipping() > 2 {
@@ -780,7 +780,7 @@ func stackDeploy(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func deployHookAfter(rC *runtimeContext) StepResults {
+func deployHookAfter(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if len(rC.environment.Hooks.Deploy.After) == 0 {
@@ -811,7 +811,7 @@ func deployHookAfter(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func ansibleInventory(rC *runtimeContext) StepResults {
+func ansibleInventory(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 	sc := InitPlaybookStepResult("Building inventory", nil, NoCleanUpRequired)
 
@@ -833,7 +833,7 @@ func ansibleInventory(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-//func initApi(rC *runtimeContext) StepResults {
+//func initApi(rC *RuntimeContext) StepResults {
 //	sCs := InitStepResults()
 //	sc := InitPlaybookStepResult("Initializing the Ekara API", nil, NoCleanUpRequired)
 //	rC.lC.Feedback().ProgressG("api", 1, "Filling Ekara API ")
@@ -948,7 +948,7 @@ func ansibleInventory(rC *runtimeContext) StepResults {
 //	return nil
 //}
 
-func buildBaseParam(rC *runtimeContext, nodeSetName string) ansible.BaseParam {
+func buildBaseParam(rC *RuntimeContext, nodeSetName string) ansible.BaseParam {
 	return ansible.BuildBaseParam(rC.environment, rC.lC.SSHPublicKey(), rC.lC.SSHPrivateKey(), nodeSetName)
 }
 

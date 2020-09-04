@@ -10,7 +10,7 @@ func TestOverwrittenProviderParam(t *testing.T) {
 	yamlEnv := yamlEnvironment{}
 	e := parseYaml("./testdata/yaml/overwritten/ekara.yaml", &TemplateContext{}, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	aws := env.Providers["aws"]
 	assert.NotNil(t, aws)
@@ -36,7 +36,7 @@ func TestOverwrittenProviderEnv(t *testing.T) {
 	yamlEnv := yamlEnvironment{}
 	e := parseYaml("./testdata/yaml/overwritten/ekara.yaml", &TemplateContext{}, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	aws := env.Providers["aws"]
 	assert.NotNil(t, aws)
@@ -61,7 +61,7 @@ func TestOverwrittenProviderProxy(t *testing.T) {
 	yamlEnv := yamlEnvironment{}
 	e := parseYaml("./testdata/yaml/overwritten/ekara.yaml", &TemplateContext{}, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	aws := env.Providers["aws"]
 	assert.NotNil(t, aws)

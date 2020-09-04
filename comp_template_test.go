@@ -68,14 +68,14 @@ nodes:
 	tester.AssertComponentAvailable(model.MainComponentId, model.MainComponentId+model.ParentComponentSuffix, "comp1", "comp2")
 	oComp, err := env.Orchestrator.Component(env)
 	assert.Nil(t, err)
-	ok, patterns := oComp.Templated()
+	ok, patterns := oComp.GetTemplates()
 	if assert.True(t, ok) {
 		assert.Contains(t, patterns, "*.yml")
 	}
 
 	pComp, err := env.Providers["p1"].Component(env)
 	assert.Nil(t, err)
-	ok, patterns = pComp.Templated()
+	ok, patterns = pComp.GetTemplates()
 	if assert.False(t, ok) {
 		assert.Equal(t, 0, len(patterns))
 	}

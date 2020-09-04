@@ -9,48 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestManagerInitialGrossContent(t *testing.T) {
-	am := CreateActionManager(util.CreateMockLaunchContext(false), nil, nil).(*manager)
-
-	assert.NotNil(t, am.actions)
-
-	// Check actions preloaded into the manager
-	assert.False(t, am.empty())
-	if assert.Len(t, am.actions, 5) {
-		v, err := am.get(CheckActionID)
-		assert.Nil(t, err)
-		check(t, v, CheckActionID, NilActionID, "Check")
-
-		v, err = am.get(ApplyActionID)
-		assert.Nil(t, err)
-		check(t, v, ApplyActionID, CheckActionID, "Apply")
-
-		v, err = am.get(DestroyActionID)
-		assert.Nil(t, err)
-		check(t, v, DestroyActionID, CheckActionID, "Destroy")
-
-		v, err = am.get(ValidateActionID)
-		assert.Nil(t, err)
-		check(t, v, ValidateActionID, NilActionID, "Validate")
-
-		v, err = am.get(DumpActionID)
-		assert.Nil(t, err)
-		check(t, v, DumpActionID, NilActionID, "Dump")
-
-		// The nil action shouldn't be strored into the manager
-		_, err = am.get(NilActionID)
-		assert.NotNil(t, err)
-	}
-}
-
-func check(t *testing.T, a Action, id ActionID, depends ActionID, name string) {
-	assert.Equal(t, a.id, id)
-	assert.Equal(t, a.dependsOn, depends)
-	assert.Equal(t, a.name, name)
-}
-
 func TestApplyTo(t *testing.T) {
-
 	p := model.Provider{Name: "toName"}
 
 	sc := InitCodeStepResult("stepName", p, NoCleanUpRequired)
@@ -152,7 +111,7 @@ func TestLaunchSteps(t *testing.T) {
 			fStepMock2,
 			fStepMock3,
 		}}
-	rep, _ := action.launch(mockRuntimeContext())
+	rep, _ := action.Execute(mockRuntimeContext())
 	assert.NotNil(t, rep)
 	assert.Nil(t, rep.Error)
 	srs := rep.Steps.Status
@@ -172,7 +131,7 @@ func TestLaunchStepsError(t *testing.T) {
 			fStepMock3,
 			fStepMockError,
 		}}
-	rep, _ := action.launch(mockRuntimeContext())
+	rep, _ := action.Execute(mockRuntimeContext())
 	assert.NotNil(t, rep)
 	assert.NotNil(t, rep.Error)
 	srs := rep.Steps.Status
@@ -194,7 +153,7 @@ func TestLaunchStepsError2(t *testing.T) {
 			fStepMockError,
 			fStepMock3,
 		}}
-	rep, _ := action.launch(mockRuntimeContext())
+	rep, _ := action.Execute(mockRuntimeContext())
 	assert.NotNil(t, rep)
 	assert.NotNil(t, rep.Error)
 	// Because fStepMockError throws an error fStepMock3 is not invoked and
@@ -217,7 +176,7 @@ func TestLaunchStepsMultiples(t *testing.T) {
 			fStepMock3,
 			fStepMockMultipleContext,
 		}}
-	rep, _ := action.launch(mockRuntimeContext())
+	rep, _ := action.Execute(mockRuntimeContext())
 	assert.NotNil(t, rep)
 	assert.Nil(t, rep.Error)
 	scs := rep.Steps.Status
@@ -231,28 +190,28 @@ func TestLaunchStepsMultiples(t *testing.T) {
 	assert.Equal(t, scs[5].StepName, "Dummy step, multiple 3")
 }
 
-func fStepMock1(rC *runtimeContext) StepResults {
+func fStepMock1(rC *RuntimeContext) StepResults {
 	sc := InitCodeStepResult("Dummy step 1", nil, NoCleanUpRequired)
 	return sc.Build()
 }
 
-func fStepMock2(rC *runtimeContext) StepResults {
+func fStepMock2(rC *RuntimeContext) StepResults {
 	sc := InitCodeStepResult("Dummy step 2", nil, NoCleanUpRequired)
 	return sc.Build()
 }
 
-func fStepMock3(rC *runtimeContext) StepResults {
+func fStepMock3(rC *RuntimeContext) StepResults {
 	sc := InitCodeStepResult("Dummy step 3", nil, NoCleanUpRequired)
 	return sc.Build()
 }
 
-func fStepMockError(rC *runtimeContext) StepResults {
+func fStepMockError(rC *RuntimeContext) StepResults {
 	sc := InitCodeStepResult("Dummy step on error", nil, NoCleanUpRequired)
 	sc.error = fmt.Errorf("Dummy error")
 	return sc.Build()
 }
 
-func fStepMockMultipleContext(rC *runtimeContext) StepResults {
+func fStepMockMultipleContext(rC *RuntimeContext) StepResults {
 	srs := InitStepResults()
 	srs.Add(InitCodeStepResult("Dummy step, multiple 1", nil, NoCleanUpRequired))
 	srs.Add(InitCodeStepResult("Dummy step, multiple 2", nil, NoCleanUpRequired))
@@ -260,6 +219,6 @@ func fStepMockMultipleContext(rC *runtimeContext) StepResults {
 	return *srs
 }
 
-func mockRuntimeContext() *runtimeContext {
-	return createRuntimeContext(util.CreateMockLaunchContext(false), nil, nil, model.Environment{}, &model.TemplateContext{})
+func mockRuntimeContext() *RuntimeContext {
+	return CreateRuntimeContext(util.CreateMockLaunchContext(false), nil, nil, model.Environment{}, &model.TemplateContext{})
 }

@@ -46,7 +46,7 @@ var (
 	}
 )
 
-func destroyHookBefore(rC *runtimeContext) StepResults {
+func destroyHookBefore(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if len(rC.environment.Hooks.Destroy.Before) == 0 {
@@ -72,7 +72,7 @@ func destroyHookBefore(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func providerDestroy(rC *runtimeContext) StepResults {
+func providerDestroy(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	for _, n := range rC.environment.NodeSets {
@@ -158,7 +158,7 @@ func providerDestroy(rC *runtimeContext) StepResults {
 	return *sCs
 }
 
-func destroyHookAfter(rC *runtimeContext) StepResults {
+func destroyHookAfter(rC *RuntimeContext) StepResults {
 	sCs := InitStepResults()
 
 	if len(rC.environment.Hooks.Destroy.After) == 0 {

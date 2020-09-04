@@ -34,6 +34,4 @@ const (
 	LogProcessingStackPlaybook string = "Processing playbook for stack: %s on node: %s"
 	//LogProcessingStackCompose  indicates that a stack is being deploy using a docker compose file
 	LogProcessingStackCompose string = "Processing Docker Compose for stack: %s on node: %s"
-	//LogReportWritten   indicates where the execution report file has been written
-	LogReportWritten string = "The execution report file has been written in %s\n"
 )

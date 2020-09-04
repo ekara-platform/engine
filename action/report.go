@@ -32,13 +32,13 @@ type (
 	}
 )
 
-func writeReport(rep ExecutionReport, path util.FolderPath) (string, error) {
-	loc, e := rep.generate(path)
+func (er ExecutionReport) Write(path util.FolderPath) (string, error) {
+	loc, e := er.generate(path)
 	if e != nil {
 		return "", e
 	}
-	if rep.Error != nil {
-		return "", rep.Error
+	if er.Error != nil {
+		return "", er.Error
 	}
 	return loc, nil
 }
@@ -49,7 +49,7 @@ func (er ExecutionReport) Content() (b []byte, e error) {
 	return
 }
 
-func (er *ExecutionReport) aggregate(r ExecutionReport) {
+func (er *ExecutionReport) Aggregate(r ExecutionReport) {
 	if r.Error != nil {
 		er.Error = r.Error
 	}

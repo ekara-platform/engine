@@ -8,22 +8,21 @@ import (
 )
 
 type (
-	runtimeContext struct {
+	RuntimeContext struct {
 		lC util.LaunchContext
 		cM componentizer.ComponentManager
 		aM ansible.Manager
 
 		tplC        componentizer.TemplateContext
 		environment model.Environment
-		report      ReportFileContent
 		result      Result
 	}
 )
 
 //createRuntimeContext creates a new context for the runtime
-func createRuntimeContext(lC util.LaunchContext, cM componentizer.ComponentManager, aM ansible.Manager, env model.Environment, tplC componentizer.TemplateContext) *runtimeContext {
+func CreateRuntimeContext(lC util.LaunchContext, cM componentizer.ComponentManager, aM ansible.Manager, env model.Environment, tplC componentizer.TemplateContext) *RuntimeContext {
 	// Initialization of the runtime context
-	rC := &runtimeContext{
+	rC := &RuntimeContext{
 		lC:          lC,
 		cM:          cM,
 		aM:          aM,

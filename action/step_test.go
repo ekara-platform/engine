@@ -44,7 +44,7 @@ func TestStepAddedExecutionTime(t *testing.T) {
 
 	report2 := ExecutionReport{}
 
-	report2.aggregate(report1)
+	report2.Aggregate(report1)
 
 	// Merging to report should update the total of the execution time for the whole report
 	assert.NotEqual(t, report2.Steps.TotalExecutionTime, time.Duration(0))
@@ -73,7 +73,7 @@ func TestStepArrayExecutionTime(t *testing.T) {
 
 	report2 := ExecutionReport{}
 
-	report2.aggregate(report1)
+	report2.Aggregate(report1)
 
 	// Merging to report should update the total of the execution time for the whole report
 	assert.NotEqual(t, report2.Steps.TotalExecutionTime, time.Duration(0))

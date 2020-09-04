@@ -10,7 +10,7 @@ func TestGenericNode(t *testing.T) {
 	yamlEnv := yamlEnvironment{}
 	e := parseYaml("./testdata/yaml/overwritten/ekara.yaml", &TemplateContext{}, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	assert.Nil(t, e)
 	if assert.Equal(t, len(env.NodeSets), 1) {

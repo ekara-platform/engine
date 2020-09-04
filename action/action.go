@@ -11,13 +11,20 @@ type (
 	//Action represents an action available on an environment
 	Action struct {
 		// The action id
-		id ActionID
+		Id ActionID
 		// The action id  on which this action depends
-		dependsOn ActionID
+		DependsOn ActionID
 		// The name of the action
-		name string
+		Name string
 		// The action steps
 		steps []step
+	}
+
+	Result interface {
+		//IsSuccess returns true id the action execution was successful
+		IsSuccess() bool
+		//AsJson returns the action returned content as JSON
+		AsJson() (string, error)
 	}
 )
 
@@ -41,7 +48,7 @@ func (a ActionID) String() string {
 	return string(a)
 }
 
-func allActions() []Action {
+func All() []Action {
 	r := make([]Action, 0)
 	r = append(r, applyAction)
 	r = append(r, destroyAction)
@@ -51,40 +58,8 @@ func allActions() []Action {
 	return r
 }
 
-// run runs an action for the given action manager and contexts
-func (a Action) run(am *manager, rC *runtimeContext) (*ExecutionReport, Result, error) {
-	r := &ExecutionReport{}
-
-	if a.dependsOn != NilActionID {
-		// Obtain the dependent action
-		d, e := am.get(a.dependsOn)
-		if e != nil {
-			return r, nil, e
-		}
-
-		// Run the dependent action and aggregate its report (dropping the intermediate result)
-		rep, _, e := d.run(am, rC)
-		if e != nil {
-			return r, nil, e
-		}
-		r.aggregate(*rep)
-
-		// If the report contains an error return it
-		if rep.Error != nil {
-			return r, nil, rep.Error
-		}
-	}
-
-	rC.lC.Log().Printf(LogRunningAction, a.name)
-
-	// Run the final action and return its result
-	rep, res := a.launch(rC)
-	r.aggregate(rep)
-	return r, res, nil
-}
-
 // launch runs the action on the given context
-func (a Action) launch(rC *runtimeContext) (ExecutionReport, Result) {
+func (a Action) Execute(rC *RuntimeContext) (ExecutionReport, Result) {
 	r := ExecutionReport{}
 
 	cleanups := []Cleanup{}

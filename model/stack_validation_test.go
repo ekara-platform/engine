@@ -29,7 +29,7 @@ func TestValidationUnknownStack(t *testing.T) {
 	yamlEnv := yamlEnvironment{}
 	e := parseYaml("./testdata/yaml/grammar/unknown_stack.yaml", &TemplateContext{}, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	vErrs := env.Validate()
 	assert.True(t, vErrs.HasErrors())
@@ -49,7 +49,7 @@ func TestValidationUnknownDependencies(t *testing.T) {
 	yamlEnv := yamlEnvironment{}
 	e := parseYaml("./testdata/yaml/grammar/stack_unknown_depends_on.yaml", &TemplateContext{}, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	vErrs := env.Validate()
 	assert.True(t, vErrs.HasErrors())

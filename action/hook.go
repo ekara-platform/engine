@@ -24,16 +24,16 @@ type (
 )
 
 //RunHookBefore Runs the hooks defined to be executed before a task.
-func runHookBefore(rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
+func runHookBefore(rC *RuntimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
 	runHooks(h.Before, rC, r, ctx, cl, "before")
 }
 
 //RunHookAfter Runs the hooks defined to be executed after a task.
-func runHookAfter(rC *runtimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
+func runHookAfter(rC *RuntimeContext, r *StepResults, h model.Hook, ctx hookContext, cl Cleanup) {
 	runHooks(h.After, rC, r, ctx, cl, "after")
 }
 
-func runHooks(hooks []model.TaskRef, rC *runtimeContext, r *StepResults, ctx hookContext, cl Cleanup, phase string) {
+func runHooks(hooks []model.TaskRef, rC *RuntimeContext, r *StepResults, ctx hookContext, cl Cleanup, phase string) {
 	for i, hook := range hooks {
 
 		repName := fmt.Sprintf("%s_%s_hook_%s_%s_%s_%d", ctx.action, ctx.target.DescName(), ctx.hookOwner, ctx.hookName, phase, i)
@@ -65,7 +65,7 @@ func runHooks(hooks []model.TaskRef, rC *runtimeContext, r *StepResults, ctx hoo
 	}
 }
 
-func fconsumeHookResult(rC *runtimeContext, target model.Describable, ctx hookContext, ef util.ExchangeFolder, prefix string) StepResult {
+func fconsumeHookResult(rC *RuntimeContext, target model.Describable, ctx hookContext, ef util.ExchangeFolder, prefix string) StepResult {
 	sc := InitCodeStepResult("Consuming the hook result", target, NoCleanUpRequired)
 
 	if ef.Output.Contains(util.OutputYamlFileName) {
@@ -84,9 +84,9 @@ func fconsumeHookResult(rC *runtimeContext, target model.Describable, ctx hookCo
 		}
 
 		if prefix != "" {
-			rC.tplC.(model.TemplateContext).Runtime[prefix] = content
+			rC.tplC.(*model.TemplateContext).Runtime[prefix] = content
 		} else {
-			if val, ok := rC.tplC.(model.TemplateContext).Runtime[ctx.action]; ok {
+			if val, ok := rC.tplC.(*model.TemplateContext).Runtime[ctx.action]; ok {
 				vv := reflect.ValueOf(val)
 				if vv.Kind() == reflect.Map {
 					ma := val.(map[string]interface{})
@@ -95,14 +95,14 @@ func fconsumeHookResult(rC *runtimeContext, target model.Describable, ctx hookCo
 			} else {
 				m := make(map[string]interface{})
 				m[ctx.target.DescName()] = content
-				rC.tplC.(model.TemplateContext).Runtime[ctx.action] = m
+				rC.tplC.(*model.TemplateContext).Runtime[ctx.action] = m
 			}
 		}
 	}
 	return sc
 }
 
-func runTask(rC *runtimeContext, task model.Task, sc StepResult, r *StepResults, exv ansible.ExtraVars) {
+func runTask(rC *RuntimeContext, task model.Task, sc StepResult, r *StepResults, exv ansible.ExtraVars) {
 	usable, err := rC.cM.Use(task, rC.tplC)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable task", nil)

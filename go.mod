@@ -3,7 +3,7 @@ module github.com/ekara-platform/engine
 go 1.13
 
 require (
-	github.com/GroupePSA/componentizer v0.0.0-20200904074711-6001dbb137ca
+	github.com/GroupePSA/componentizer v0.0.0-20200904130629-ff73bcafc2a0
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/stretchr/testify v1.6.1

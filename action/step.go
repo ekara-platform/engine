@@ -40,7 +40,7 @@ type (
 	}
 
 	// step represents a sinlge step used to compose a process executed by the installer
-	step func(rC *runtimeContext) StepResults
+	step func(rC *RuntimeContext) StepResults
 )
 
 const (

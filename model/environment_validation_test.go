@@ -28,7 +28,7 @@ func TestValidateNoValidName(t *testing.T) {
 	yamlEnv := yamlEnvironment{}
 	e := parseYaml("./testdata/yaml/grammar/no_valid_name.yaml", &TemplateContext{}, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	vErrs := env.Validate()
 	assert.True(t, vErrs.HasErrors())
@@ -46,7 +46,7 @@ func TestValidateNoValidQualifier(t *testing.T) {
 	yamlEnv := yamlEnvironment{}
 	e := parseYaml("./testdata/yaml/grammar/no_valid_qualifier.yaml", &TemplateContext{}, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	vErrs := env.Validate()
 	assert.True(t, vErrs.HasErrors())

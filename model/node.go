@@ -15,7 +15,7 @@ type (
 	// NodeSet contains the whole specification of a nodeset to create on a specific
 	// cloud provider
 	NodeSet struct {
-		// The name of the machines
+		// The name of the nodes
 		Name string
 		// The number of machines to create
 		Instances int
@@ -47,6 +47,7 @@ func (r NodeSet) DescName() string {
 }
 
 func (r *NodeSet) merge(with NodeSet) {
+	r.Name = with.Name
 	r.Instances = with.Instances
 	r.Labels = r.Labels.override(with.Labels)
 	r.Provider.merge(with.Provider)
@@ -76,8 +77,7 @@ func createNodeSets(yamlEnv yamlEnvironment) NodeSets {
 	}
 
 	if gNs.Name == GenericNodeSetName {
-		// The generic node set will be merged into all others
-		// in order to propagate the common stuff.
+		// Merge each nodeset into a different copy of the generic nodeset
 		for name, ns := range res {
 			mNs := gNs // duplicate generic node set
 			mNs.merge(ns)

@@ -72,7 +72,7 @@ func (s Stack) DescName() string {
 }
 
 func (s Stack) ComponentId() string {
-	if s.cRef.ref == "" || s.cRef.ref == "_" {
+	if s.isSelfComponent() {
 		return s.selfRef.ComponentId()
 	} else {
 		return s.cRef.ComponentId()
@@ -80,11 +80,15 @@ func (s Stack) ComponentId() string {
 }
 
 func (s Stack) Component(model interface{}) (componentizer.Component, error) {
-	if s.cRef.ref == "" || s.cRef.ref == "_" {
+	if s.isSelfComponent() {
 		return s.selfRef.Component(model)
 	} else {
 		return s.cRef.Component(model)
 	}
+}
+
+func (s Stack) isSelfComponent() bool {
+	return s.cRef.ref == "" || s.cRef.ref == "_"
 }
 
 func (r *Stacks) merge(with Stacks) {
@@ -103,7 +107,7 @@ func createStacks(from component, yamlEnv yamlEnvironment) Stacks {
 	for name, yamlStack := range yamlEnv.Stacks {
 		s := Stack{
 			cRef:         componentRef{ref: yamlStack.Component},
-			selfRef:      componentRef{ref: from.id},
+			selfRef:      componentRef{ref: from.Id},
 			Name:         name,
 			Dependencies: yamlStack.Dependencies,
 			params:       CreateParameters(yamlStack.Params),
@@ -193,7 +197,11 @@ func (r Stacks) validate(e Environment, loc DescriptorLocation) ValidationErrors
 
 func (s Stack) validate(e Environment, loc DescriptorLocation) ValidationErrors {
 	vErrs := ValidationErrors{}
-	vErrs.merge(validate(e, loc, s.cRef))
+	if s.isSelfComponent() {
+		vErrs.merge(validate(e, loc, s.selfRef))
+	} else {
+		vErrs.merge(validate(e, loc, s.cRef))
+	}
 	vErrs.merge(validate(e, loc.appendPath("copies"), s.Copies))
 	vErrs.merge(validate(e, loc.appendPath("hooks"), s.Hooks))
 	if len(s.Dependencies) > 0 {

@@ -44,7 +44,7 @@ func (r DumpResult) AsYaml() (string, error) {
 	return string(envYaml), nil
 }
 
-func doDump(rC *runtimeContext) StepResults {
+func doDump(rC *RuntimeContext) StepResults {
 	sc := InitCodeStepResult("Retrieving aggregated environment model", nil, NoCleanUpRequired)
 	rC.result = DumpResult{Env: rC.environment}
 	return sc.Build()

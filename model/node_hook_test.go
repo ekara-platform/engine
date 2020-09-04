@@ -16,7 +16,7 @@ func TestValidationNodesUnknownHook(t *testing.T) {
 	yamlEnv := yamlEnvironment{}
 	e := parseYaml("./testdata/yaml/grammar/nodes_unknown_hook.yaml", &TemplateContext{}, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	vErrs := env.Validate()
 	assert.True(t, vErrs.HasErrors())
@@ -32,7 +32,7 @@ func TestValidationNodesKnownHook(t *testing.T) {
 	yamlEnv := yamlEnvironment{}
 	e := parseYaml("./testdata/yaml/grammar/nodes_known_hook.yaml", &TemplateContext{}, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	vErrs := env.Validate()
 	assert.NotNil(t, vErrs)

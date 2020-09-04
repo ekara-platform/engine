@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"github.com/GroupePSA/componentizer"
 )
 
@@ -50,7 +49,7 @@ func CreateEnvironment(from component, yamlEnv yamlEnvironment) (Environment, er
 	}
 
 	// Create all other items
-	env.loc = DescriptorLocation{Descriptor: "from.Repository.Url.String()"} // TODO fixme
+	env.loc = DescriptorLocation{Descriptor: from.Repository.String()}
 	env.Providers = createProviders(yamlEnv)
 	env.Orchestrator = createOrchestrator(yamlEnv)
 	env.Tasks = createTasks(yamlEnv)
@@ -63,8 +62,6 @@ func CreateEnvironment(from component, yamlEnv yamlEnvironment) (Environment, er
 
 func (r Environment) Merge(with componentizer.Model) (componentizer.Model, error) {
 	env := with.(Environment)
-
-	fmt.Printf("%s <---- %s\n", r.Platform.Self.id, env.Platform.Self.id)
 
 	r.QName.merge(env.QName)
 	r.Description = env.Description

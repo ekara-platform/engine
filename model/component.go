@@ -14,8 +14,8 @@ import (
 type (
 	//Component represents an element composing an ekara environment
 	component struct {
-		id   string
-		repo componentizer.Repository
+		Id         string
+		Repository componentizer.Repository
 		// Templates defines the content to template for the component
 		Templates []string
 		// Playbooks define the playbooks paths for the component
@@ -29,16 +29,16 @@ type (
 
 func CreateComponent(id string, repo componentizer.Repository) componentizer.Component {
 	return component{
-		id:        id,
-		repo:      repo,
-		Templates: make([]string, 0, 0),
-		Playbooks: make(map[string]string, 0),
+		Id:         id,
+		Repository: repo,
+		Templates:  make([]string, 0, 0),
+		Playbooks:  make(map[string]string, 0),
 	}
 }
 
 func (c *component) merge(with component) {
-	c.id = with.id
-	c.repo.Merge(with.repo)
+	c.Id = with.Id
+	c.Repository.Merge(with.Repository)
 	c.Templates = union(c.Templates, with.Templates)
 	for k, v := range with.Playbooks {
 		c.Playbooks[k] = v
@@ -46,21 +46,21 @@ func (c *component) merge(with component) {
 }
 
 func (c component) String() string {
-	return c.id
+	return c.Id
 }
 
-func (c component) Repository() componentizer.Repository {
-	return c.repo
+func (c component) GetRepository() componentizer.Repository {
+	return c.Repository
 }
 
 func (c component) ComponentId() string {
-	return c.id
+	return c.Id
 }
 
 func (c component) Component(model interface{}) (componentizer.Component, error) {
-	resolved, ok := model.(Environment).Platform.Components[c.id]
+	resolved, ok := model.(Environment).Platform.Components[c.Id]
 	if !ok {
-		return nil, fmt.Errorf("component %s cannot be found", c.id)
+		return nil, fmt.Errorf("component %s cannot be found", c.Id)
 	}
 	return resolved, nil
 }
@@ -82,7 +82,7 @@ func (c component) ParseComponents(path string, tplC componentizer.TemplateConte
 
 	// Find parent
 	if yamlRefs.Ekara.Parent.Repository != "" {
-		parent, err = c.buildComponent(yamlRefs.Ekara.Base, c.id+ParentComponentSuffix, yamlRefs.Ekara.Parent)
+		parent, err = c.buildComponent(yamlRefs.Ekara.Base, c.Id+ParentComponentSuffix, yamlRefs.Ekara.Parent)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -119,7 +119,7 @@ func (c component) ParseModel(path string, tplC componentizer.TemplateContext) (
 	return CreateEnvironment(c, yamlEnv)
 }
 
-func (c component) Templated() (bool, []string) {
+func (c component) GetTemplates() (bool, []string) {
 	return len(c.Templates) > 0, c.Templates
 }
 
@@ -154,7 +154,7 @@ func (c component) buildComponent(base string, id string, yC yamlComponent) (com
 		}
 		u = b.ResolveReference(u)
 	}
-	repository, err := c.repo.CreateChildRepository(u, yC.Ref, yC.Auth)
+	repository, err := c.Repository.CreateChildRepository(u, yC.Ref, yC.Auth)
 	if err != nil {
 		return component{}, err
 	}

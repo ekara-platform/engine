@@ -237,6 +237,6 @@ func TestStacksCyclicDependencies(t *testing.T) {
 
 }
 
-func mockRuntimeContextWithParameters(lC util.LaunchContext) *runtimeContext {
-	return createRuntimeContext(lC, nil, nil, model.Environment{}, &model.TemplateContext{})
+func mockRuntimeContextWithParameters(lC util.LaunchContext) *RuntimeContext {
+	return CreateRuntimeContext(lC, nil, nil, model.Environment{}, &model.TemplateContext{})
 }

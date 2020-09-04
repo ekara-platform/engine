@@ -65,7 +65,7 @@ func TestUsableTemplateOneMatch(t *testing.T) {
 	env, cm := checkUsableCommon(tester, repo, cptComp)
 	oComp, err := env.Orchestrator.Component(tester.Model())
 	assert.Nil(t, err)
-	ok, _ := oComp.Templated()
+	ok, _ := oComp.GetTemplates()
 	if assert.True(t, ok) {
 		usableComp, err := cm.Use(env.Orchestrator, tester.TemplateContext())
 		assert.Nil(t, err)
@@ -105,7 +105,7 @@ func TestUsableTemplateMatch2Usable(t *testing.T) {
 
 	oComp, err := env.Orchestrator.Component(tester.Model())
 	assert.Nil(t, err)
-	ok, _ := oComp.Templated()
+	ok, _ := oComp.GetTemplates()
 	if assert.True(t, ok) {
 		usableComp1, err := cm.Use(env.Orchestrator, tester.TemplateContext())
 		assert.Nil(t, err)
@@ -153,7 +153,7 @@ func TestUsableTemplateDoubleMatch(t *testing.T) {
 
 	oComp, err := env.Orchestrator.Component(tester.Model())
 	assert.Nil(t, err)
-	ok, _ := oComp.Templated()
+	ok, _ := oComp.GetTemplates()
 	if assert.True(t, ok) {
 		usableComp, err := cm.Use(env.Orchestrator, tester.TemplateContext())
 		assert.Nil(t, err)
@@ -191,7 +191,7 @@ func TestUsableTemplateNoMatch(t *testing.T) {
 
 	oComp, err := env.Orchestrator.Component(tester.Model())
 	assert.Nil(t, err)
-	ok, _ := oComp.Templated()
+	ok, _ := oComp.GetTemplates()
 	if assert.True(t, ok) {
 		usableComp, err := cm.Use(env.Orchestrator, tester.TemplateContext())
 		assert.Nil(t, err)

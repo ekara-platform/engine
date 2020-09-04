@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 )
 
 //Platform the platform used to build an environment
@@ -49,12 +50,12 @@ func createPlatform(from component, yamlEkara yamlEkara) (Platform, error) {
 }
 
 func (p *Platform) registerComponent(c component) error {
-	if _, ok := p.Components[c.id]; ok {
-		existing := p.Components[c.id]
+	if _, ok := p.Components[c.Id]; ok {
+		existing := p.Components[c.Id]
 		existing.merge(c)
-		p.Components[c.id] = existing
+		p.Components[c.Id] = existing
 	} else {
-		p.Components[c.id] = c
+		p.Components[c.Id] = c
 	}
 	return nil
 }
@@ -65,16 +66,18 @@ func (p *Platform) merge(with Platform) {
 		p.Components = make(map[string]component)
 	}
 
-	// Old self is added to parents before its identity is updated
-	p.Parents = append([]component{p.Self}, p.Parents...)
+	// Build the parent chain
+	if strings.HasSuffix(p.Self.Id, ParentComponentSuffix) {
+		p.Parents = append([]component{p.Self}, p.Parents...)
+	}
 	p.Self = with.Self
 
 	// Merge components
 	if with.Components != nil {
 		for _, c := range with.Components {
-			existing := p.Components[c.id]
+			existing := p.Components[c.Id]
 			existing.merge(c)
-			p.Components[c.id] = existing
+			p.Components[c.Id] = existing
 		}
 	}
 }

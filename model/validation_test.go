@@ -33,7 +33,7 @@ func testEmptyContent(t *testing.T, name string, onlyWarning bool) (ValidationEr
 	yamlEnv := yamlEnvironment{}
 	e := parseYaml(fmt.Sprintf("./testdata/yaml/grammar/no_%s.yaml", name), &TemplateContext{}, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	vErrs := testValidate(t, env, onlyWarning)
 	return vErrs, env

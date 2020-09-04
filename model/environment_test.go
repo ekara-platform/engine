@@ -12,7 +12,7 @@ func TestCreateEngineComplete(t *testing.T) {
 	tplC := CreateTemplateContext(CreateEmptyParameters())
 	e := parseYaml("./testdata/yaml/complete.yaml", tplC, &yamlEnv)
 	assert.Nil(t, e)
-	env, e := CreateEnvironment(component{id: MainComponentId}, yamlEnv)
+	env, e := CreateEnvironment(component{Id: MainComponentId}, yamlEnv)
 	assert.Nil(t, e)
 	assertEnv(t, env, tplC)
 }
@@ -89,8 +89,8 @@ func assertEnv(t *testing.T, env Environment, tplC *TemplateContext) {
 	awsComponent, err := providers["aws"].cRef.Component(env)
 	assert.Nil(t, err)
 
-	assert.True(t, strings.HasSuffix(awsComponent.Repository().Loc.String(), "/someBase/ekara-platform/aws-provider"))
-	assert.Equal(t, "1.2.3", awsComponent.Repository().Ref)
+	assert.True(t, strings.HasSuffix(awsComponent.GetRepository().Loc.String(), "/someBase/ekara-platform/aws-provider"))
+	assert.Equal(t, "1.2.3", awsComponent.GetRepository().Ref)
 	assert.NotNil(t, providers["aws"].Parameters())
 	c = providers["aws"].Parameters()
 	v, ok = c["aws_param_key1"]
@@ -122,8 +122,8 @@ func assertEnv(t *testing.T, env Environment, tplC *TemplateContext) {
 	assert.Equal(t, "azure", providers["azure"].Name)
 	azureComponent, err := providers["azure"].cRef.Component(env)
 	assert.Nil(t, err)
-	assert.True(t, strings.HasSuffix(azureComponent.Repository().Loc.String(), "/someBase/ekara-platform/azure-provider"))
-	assert.Equal(t, "1.2.3", azureComponent.Repository().Ref)
+	assert.True(t, strings.HasSuffix(azureComponent.GetRepository().Loc.String(), "/someBase/ekara-platform/azure-provider"))
+	assert.Equal(t, "1.2.3", azureComponent.GetRepository().Ref)
 	assert.NotNil(t, providers["azure"].Parameters())
 
 	c = providers["azure"].Parameters()
@@ -294,13 +294,13 @@ func assertEnv(t *testing.T, env Environment, tplC *TemplateContext) {
 
 	st1Component, err := stack1.cRef.Component(env)
 	assert.Nil(t, err)
-	assert.True(t, strings.HasSuffix(st1Component.Repository().Loc.String(), "/someBase/some-org/stack1"))
-	assert.Equal(t, "1.2.3", st1Component.Repository().Ref)
+	assert.True(t, strings.HasSuffix(st1Component.GetRepository().Loc.String(), "/someBase/some-org/stack1"))
+	assert.Equal(t, "1.2.3", st1Component.GetRepository().Ref)
 
 	st2Component, err := stack2.cRef.Component(env)
 	assert.Nil(t, err)
-	assert.True(t, strings.HasSuffix(st2Component.Repository().Loc.String(), "/someBase/some-org/stack2"))
-	assert.Equal(t, "1.2.3", st2Component.Repository().Ref)
+	assert.True(t, strings.HasSuffix(st2Component.GetRepository().Loc.String(), "/someBase/some-org/stack2"))
+	assert.Equal(t, "1.2.3", st2Component.GetRepository().Ref)
 
 	//------------------------------------------------------------
 	//Stack copies

@@ -12,8 +12,8 @@ type (
 	TemplateContext struct {
 		// Vars represents accessible descriptor variables,
 		Vars Parameters
-		// Model represents the environment meta-model (read-only)
-		// Model TEnvironment TODO fixme
+		// Model is a copy of the environment model
+		Model Environment
 		// Component represents information about the current component
 		Component struct {
 			// Type of the component
@@ -34,17 +34,16 @@ type (
 // CreateTemplateContext Returns a template context
 func CreateTemplateContext(params Parameters) *TemplateContext {
 	return &TemplateContext{
-		Vars: params,
-		// TODO fixme Model:   CreateTEnvironmentForEnvironment(Environment{}),
+		Vars:    params,
 		Runtime: make(map[string]interface{}),
 	}
 }
 
-func (tplC TemplateContext) Clone(ref componentizer.ComponentRef) componentizer.TemplateContext {
+func (tplC *TemplateContext) Clone(ref componentizer.ComponentRef) componentizer.TemplateContext {
 	newTplC := TemplateContext{
-		Vars: CloneParameters(tplC.Vars),
-		// TODO fixme Model:   CreateTEnvironmentForEnvironment(Environment{}),
+		Vars:    CloneParameters(tplC.Vars),
 		Runtime: CloneParameters(tplC.Runtime),
+		Model:   tplC.Model,
 	}
 	if o, ok := ref.(Describable); ok {
 		newTplC.Component.Type = o.DescType()
@@ -59,7 +58,7 @@ func (tplC TemplateContext) Clone(ref componentizer.ComponentRef) componentizer.
 	if o, ok := ref.(EnvVarsAware); ok {
 		newTplC.Component.EnvVars = o.EnvVars()
 	}
-	return newTplC
+	return &newTplC
 }
 
 func (tplC TemplateContext) Execute(content string) (string, error) {
