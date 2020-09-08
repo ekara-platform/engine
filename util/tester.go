@@ -27,6 +27,7 @@ func (t EkaraComponentTester) Init(repo componentizer.Repository) {
 	if err != nil {
 		assert.Nil(t.T(), err, "Init error: %s", err.Error())
 	}
+	t.ComponentTester.TemplateContext().(*model.TemplateContext).Model = t.ComponentTester.Model().(model.Environment)
 }
 
 func (t EkaraComponentTester) Env() model.Environment {

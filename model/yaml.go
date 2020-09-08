@@ -1,12 +1,9 @@
 package model
 
 import (
-	"bytes"
 	"fmt"
-	"github.com/GroupePSA/componentizer"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"text/template"
 )
 
 type (
@@ -295,13 +292,13 @@ func parseYaml(path string, tplC *TemplateContext, out interface{}) error {
 	}
 
 	// Template the content of the environment descriptor with the updated template context
-	templated, err := applyTemplate(path, content, tplC)
+	templated, err := tplC.Execute(string(content))
 	if err != nil {
 		return err
 	}
 
 	// Unmarshal the resulting YAML into output structure
-	err = yaml.Unmarshal(templated, out)
+	err = yaml.Unmarshal([]byte(templated), out)
 	if err != nil {
 		err = fmt.Errorf("yaml error in %s : %s", path, err.Error())
 		return err
@@ -334,13 +331,13 @@ func parseVars(content []byte, tplC *TemplateContext) error {
 	}
 
 	// Apply template
-	templatedVars, err := applyTemplate("TODO", onlyVars, tplC)
+	templatedVars, err := tplC.Execute(string(onlyVars))
 	if err != nil {
 		return err
 	}
 
 	// Read templated vars the templated vars again to merge them into the template context
-	vars, err = readVars(templatedVars)
+	vars, err = readVars([]byte(templatedVars))
 	if err != nil {
 		return err
 	}
@@ -350,21 +347,4 @@ func parseVars(content []byte, tplC *TemplateContext) error {
 	}
 
 	return nil
-}
-
-//applyTemplate apply the parameters on the template represented by the descriptor content
-func applyTemplate(name string, content []byte, tplC componentizer.TemplateContext) ([]byte, error) {
-	buffer := bytes.Buffer{}
-
-	tpl, err := template.New(name).Parse(string(content))
-	if err != nil {
-		return []byte{}, err
-	}
-
-	err = tpl.Execute(&buffer, tplC)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	return buffer.Bytes(), nil
 }

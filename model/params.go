@@ -1,9 +1,7 @@
 package model
 
 import (
-	"encoding/json"
 	"fmt"
-	"html/template"
 	"io/ioutil"
 	"reflect"
 
@@ -111,104 +109,4 @@ func merge(dst map[interface{}]interface{}, src map[interface{}]interface{}) {
 // ToYAML returns the Parameters content as yaml
 func (r Parameters) ToYAML() ([]byte, error) {
 	return yaml.Marshal(r)
-}
-
-//IdentYamlMap convert parameters into yaml with content based on the given identation
-func (r Parameters) IdentYamlMap(ident int) string {
-	ret := ""
-
-	cKv := make(chan string)
-	exit := make(chan bool)
-
-	go readMap(cKv, exit, ident, ident, r)
-
-	for {
-		select {
-		case <-exit:
-			return ret
-		case s := <-cKv:
-			ret = ret + s
-		}
-	}
-}
-
-//IndentYaml convert a content into yaml based on the given identation
-func IndentYaml(ident int, v interface{}) string {
-	r := ""
-
-	cKv := make(chan string)
-	exit := make(chan bool)
-
-	vv := reflect.ValueOf(v)
-	if vv.Kind() == reflect.Map {
-		go readMap(cKv, exit, ident, ident, v.(map[string]interface{}))
-	} else if vv.Kind() == reflect.Slice {
-		go readSlice(cKv, exit, ident, ident, v.([]interface{}))
-	} else {
-		sp := ""
-		for i := 0; i < ident; i++ {
-			sp = sp + " "
-		}
-		r = r + sp + fmt.Sprintf("%v", v)
-		return r
-	}
-
-	for {
-		select {
-		case <-exit:
-			return r
-		case s := <-cKv:
-			r = r + s
-		}
-	}
-}
-
-func readMap(cKv chan string, exit chan bool, i int, ident int, src map[string]interface{}) {
-	sp := ""
-	for i := 0; i < ident; i++ {
-		sp = sp + " "
-	}
-	for k, v := range src {
-		vv := reflect.ValueOf(v)
-		if vv.Kind() == reflect.Map {
-			cKv <- sp + fmt.Sprintf("%v:\n", k)
-			readMap(cKv, exit, i, ident+2, v.(map[string]interface{}))
-		} else if vv.Kind() == reflect.Slice {
-			cKv <- sp + fmt.Sprintf("%v:\n", k)
-			readSlice(cKv, exit, i, ident+2, v.([]interface{}))
-		} else {
-			cKv <- sp + fmt.Sprintf("%v: %v\n", k, v)
-		}
-	}
-	if ident == i {
-		exit <- true
-	}
-}
-
-func readSlice(cKv chan string, exit chan bool, i int, ident int, src []interface{}) {
-	sp := ""
-	for i := 0; i < ident; i++ {
-		sp = sp + " "
-	}
-	for _, v := range src {
-		vv := reflect.ValueOf(v)
-		if vv.Kind() == reflect.Map {
-			readMap(cKv, exit, i, ident+2, v.(map[string]interface{}))
-		} else if vv.Kind() == reflect.Slice {
-			readSlice(cKv, exit, i, ident+2, v.([]interface{}))
-		} else {
-			cKv <- sp + fmt.Sprintf("- %v\n", v)
-		}
-	}
-	if ident == i {
-		exit <- true
-	}
-}
-
-func Json(v interface{}) template.HTML {
-	strB, err := json.Marshal(v)
-	if err != nil {
-		return template.HTML(err.Error())
-	}
-	return template.HTML(strB)
 }

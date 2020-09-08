@@ -2,8 +2,11 @@ package model
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/GroupePSA/componentizer"
+	"gopkg.in/yaml.v2"
+	"strings"
 	"text/template"
 )
 
@@ -62,18 +65,52 @@ func (tplC *TemplateContext) Clone(ref componentizer.ComponentRef) componentizer
 }
 
 func (tplC TemplateContext) Execute(content string) (string, error) {
-	t, err := template.New(fmt.Sprintf("%s:%s", tplC.Component.Type, tplC.Component.Name)).Parse(content)
+	t, err := template.New(fmt.Sprintf("%s:%s", tplC.Component.Type, tplC.Component.Name)).Funcs(template.FuncMap{
+		"yaml":   toYaml,
+		"json":   toJson,
+		"indent": indent,
+	}).Parse(content)
 	if err != nil {
 		return "", err
 	}
 	var result bytes.Buffer
 	err = t.Execute(&result, tplC)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("templating error: %s", err.Error())
 	}
 	return result.String(), nil
 }
 
 func (tplC *TemplateContext) addVars(vars Parameters) {
 	tplC.Vars = tplC.Vars.Override(vars)
+}
+
+func toJson(v interface{}) string {
+	strB, err := json.Marshal(v)
+	if err != nil {
+		return err.Error()
+	}
+	return string(strB)
+}
+
+func toYaml(v interface{}) string {
+	strB, err := yaml.Marshal(v)
+	if err != nil {
+		return err.Error()
+	}
+	return string(strB)
+}
+
+func indent(spaceCount int, v string) string {
+	builder := strings.Builder{}
+	spaces := ""
+	for i := 0; i < spaceCount; i++ {
+		spaces = spaces + " "
+	}
+	for _, line := range strings.Split(v, "\n") {
+		builder.WriteString(spaces)
+		builder.WriteString(line)
+		builder.WriteString("\n")
+	}
+	return builder.String()
 }
