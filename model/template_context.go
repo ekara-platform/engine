@@ -2,9 +2,9 @@ package model
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/GroupePSA/componentizer"
+	json "github.com/json-iterator/go"
 	"gopkg.in/yaml.v2"
 	"strings"
 	"text/template"
@@ -107,10 +107,15 @@ func indent(spaceCount int, v string) string {
 	for i := 0; i < spaceCount; i++ {
 		spaces = spaces + " "
 	}
-	for _, line := range strings.Split(v, "\n") {
-		builder.WriteString(spaces)
+	lines := strings.Split(strings.Trim(v, "\n"), "\n")
+	for i, line := range lines {
+		if i > 0 {
+			builder.WriteString(spaces)
+		}
 		builder.WriteString(line)
-		builder.WriteString("\n")
+		if i < len(lines)-1 {
+			builder.WriteString("\n")
+		}
 	}
 	return builder.String()
 }

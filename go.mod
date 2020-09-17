@@ -5,6 +5,7 @@ go 1.13
 require (
 	github.com/GroupePSA/componentizer v0.0.0-20200904133353-8a957401d69d
 	github.com/google/uuid v1.1.2 // indirect
+	github.com/json-iterator/go v1.1.10
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20200820211705-5c72a883971a
