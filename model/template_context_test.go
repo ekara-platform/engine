@@ -83,13 +83,12 @@ func TestIndentedYaml(t *testing.T) {
 func TestJson(t *testing.T) {
 	p := CreateParameters(map[string]interface{}{
 		"key1": "value1",
-		"key2": "value2",
 	})
 
 	tplC := CreateTemplateContext(p)
 	res, err := tplC.Execute(`{{ .Vars | json }}`)
 	assert.Nil(t, err)
-	assert.Equal(t, "{\"key1\":\"value1\",\"key2\":\"value2\"}", res)
+	assert.Contains(t, res, "{\"key1\":\"value1\"}", res)
 }
 
 func TestFullTemplating(t *testing.T) {
@@ -97,7 +96,6 @@ func TestFullTemplating(t *testing.T) {
 		"key1": map[string]interface{}{
 			"key11": "value1",
 		},
-		"key2": "value2",
 	})
 
 	tplC := CreateTemplateContext(p)
@@ -112,6 +110,5 @@ func TestFullTemplating(t *testing.T) {
   yaml:
     key1:
       key11: value1
-    key2: value2
 `, res)
 }
