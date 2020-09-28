@@ -1,10 +1,10 @@
 package model
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"github.com/GroupePSA/componentizer"
+	"strings"
 )
 
 type (
@@ -12,6 +12,8 @@ type (
 	Task struct {
 		// The component containing the task
 		cRef componentRef
+		// The component the stack was created from
+		selfRef componentRef
 		// Name of the task
 		Name string
 		// The playbook to execute
@@ -53,11 +55,23 @@ func (r Task) EnvVars() EnvVars {
 }
 
 func (r Task) ComponentId() string {
-	return r.cRef.ComponentId()
+	if r.isSelfComponent() {
+		return r.selfRef.ComponentId()
+	} else {
+		return r.cRef.ComponentId()
+	}
 }
 
 func (r Task) Component(model interface{}) (componentizer.Component, error) {
-	return r.cRef.Component(model)
+	if r.isSelfComponent() {
+		return r.selfRef.Component(model)
+	} else {
+		return r.cRef.Component(model)
+	}
+}
+
+func (r Task) isSelfComponent() bool {
+	return r.cRef.ref == "" || r.cRef.ref == "_"
 }
 
 func (r *Task) merge(with Task) {
@@ -72,13 +86,14 @@ func (r *Task) merge(with Task) {
 	r.envVars = r.envVars.Override(with.envVars)
 }
 
-func createTasks(yamlEnv yamlEnvironment) Tasks {
+func createTasks(from component, yamlEnv yamlEnvironment) Tasks {
 	res := Tasks{}
 	for name, yamlTask := range yamlEnv.Tasks {
 		res[name] = Task{
 			Name:     name,
 			Playbook: yamlTask.Playbook,
 			cRef:     componentRef{ref: yamlTask.Component},
+			selfRef:  componentRef{ref: from.Id},
 			params:   CreateParameters(yamlTask.Params),
 			envVars:  CreateEnvVars(yamlTask.Env),
 			Hooks: TaskHooks{
@@ -101,11 +116,11 @@ func (r *Tasks) merge(with Tasks) {
 }
 
 func (r circularRefTracking) String() string {
-	b := new(bytes.Buffer)
+	builder := strings.Builder{}
 	for key := range r {
-		fmt.Fprintf(b, "%s -> ", key)
+		builder.WriteString(fmt.Sprintf("%s -> ", key))
 	}
-	return b.String()
+	return builder.String()
 }
 
 //HasTasks returns true if the hook contains at least one task reference
@@ -119,6 +134,11 @@ func (r *TaskHooks) merge(with TaskHooks) {
 
 func (r Task) validate(e Environment, loc DescriptorLocation) ValidationErrors {
 	vErrs := ValidationErrors{}
+	if r.isSelfComponent() {
+		vErrs.merge(validate(e, loc, r.selfRef))
+	} else {
+		vErrs.merge(validate(e, loc, r.cRef))
+	}
 	if len(r.Playbook) == 0 {
 		vErrs.addError(errors.New("no playbook specified"), loc.appendPath("playbook"))
 	}

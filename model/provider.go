@@ -21,7 +21,7 @@ type (
 		proxy Proxy
 	}
 
-	//Providers lists all the providers required to build the environemt
+	//Providers lists all the providers required to build the environment
 	Providers map[string]Provider
 )
 

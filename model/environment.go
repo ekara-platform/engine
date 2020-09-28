@@ -52,7 +52,7 @@ func CreateEnvironment(from component, yamlEnv yamlEnvironment) (Environment, er
 	env.loc = DescriptorLocation{Descriptor: from.Repository.String()}
 	env.Providers = createProviders(yamlEnv)
 	env.Orchestrator = createOrchestrator(yamlEnv)
-	env.Tasks = createTasks(yamlEnv)
+	env.Tasks = createTasks(from, yamlEnv)
 	env.NodeSets = createNodeSets(yamlEnv)
 	env.Stacks = createStacks(from, yamlEnv)
 	env.Hooks = createEnvHooks(yamlEnv)
