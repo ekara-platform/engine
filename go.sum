@@ -1,7 +1,5 @@
-github.com/GroupePSA/componentizer v0.0.0-20200904133353-8a957401d69d h1:DVBDIIZCwSI1pBBt38epclds9vkM7oQinuqycckaUOg=
-github.com/GroupePSA/componentizer v0.0.0-20200904133353-8a957401d69d/go.mod h1:U2805794XXgTdMvVYHDonsdNnrni/sh/NsPwz3jojP8=
-github.com/GroupePSA/componentizer v0.0.0-20200924074551-e9f497f0774b h1:DX2M3nAdi58IIdt+9aM9B7UntvPjvgzrzXOhromV6fQ=
-github.com/GroupePSA/componentizer v0.0.0-20200924074551-e9f497f0774b/go.mod h1:U2805794XXgTdMvVYHDonsdNnrni/sh/NsPwz3jojP8=
+github.com/GroupePSA/componentizer v0.0.0-20200928085853-dd944290e104 h1:R8itvMg/0Xw5Q8FwgX8L8DFERZYvP9d+pzbNH0q3jfI=
+github.com/GroupePSA/componentizer v0.0.0-20200928085853-dd944290e104/go.mod h1:U2805794XXgTdMvVYHDonsdNnrni/sh/NsPwz3jojP8=
 github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7 h1:uSoVVbwJiQipAclBbw+8quDsfcvFjOpI5iCf4p/cqCs=
 github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7/go.mod h1:6zEj6s6u/ghQa61ZWa/C2Aw3RkjiTBOix7dkqa1VLIs=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239 h1:kFOfPq6dUM1hTo4JG6LR5AXSUEsOjtdm0kw0FtQtMJA=
@@ -82,10 +80,6 @@ golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3/go.mod h1:t9HGtf8HONx5eT2rtn
 golang.org/x/net v0.0.0-20190620200207-3b0461eec859/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
 golang.org/x/net v0.0.0-20190724013045-ca1201d0de80 h1:Ao/3l156eZf2AW5wK8a7/smtodRU+gha3+BeqJ69lRk=
 golang.org/x/net v0.0.0-20190724013045-ca1201d0de80/go.mod h1:z5CRVTTTmAJ677TzLLGU+0bjPO0LkuOLi4/5GtJWs/s=
-golang.org/x/net v0.0.0-20200822124328-c89045814202 h1:VvcQYSHwXgi7W+TpUR6A9g6Up98WAHf3f/ulnJ62IyA=
-golang.org/x/net v0.0.0-20200822124328-c89045814202/go.mod h1:/O7V0waA8r7cgGh81Ro3o1hOxt32SMVPicZroKQ2sZA=
-golang.org/x/net v0.0.0-20200923182212-328152dc79b1 h1:Iu68XRPd67wN4aRGGWwwq6bZo/25jR6uu52l/j2KkUE=
-golang.org/x/net v0.0.0-20200923182212-328152dc79b1/go.mod h1:/O7V0waA8r7cgGh81Ro3o1hOxt32SMVPicZroKQ2sZA=
 golang.org/x/net v0.0.0-20200927032502-5d4f70055728 h1:5wtQIAulKU5AbLQOkjxl32UufnIOqgBX72pS0AV14H0=
 golang.org/x/net v0.0.0-20200927032502-5d4f70055728/go.mod h1:/O7V0waA8r7cgGh81Ro3o1hOxt32SMVPicZroKQ2sZA=
 golang.org/x/sync v0.0.0-20190423024810-112230192c58/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
@@ -94,10 +88,6 @@ golang.org/x/sys v0.0.0-20190221075227-b4e8571b14e0/go.mod h1:STP8DvDyc/dI5b8T5h
 golang.org/x/sys v0.0.0-20190412213103-97732733099d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20190726091711-fc99dfbffb4e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20200831180312-196b9ba8737a h1:i47hUS795cOydZI4AwJQCKXOr4BvxzvikwDoDtHhP2Y=
-golang.org/x/sys v0.0.0-20200831180312-196b9ba8737a/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
-golang.org/x/sys v0.0.0-20200923182605-d9f96fdee20d h1:L/IKR6COd7ubZrs2oTnTi73IhgqJ71c9s80WsQnh0Es=
-golang.org/x/sys v0.0.0-20200923182605-d9f96fdee20d/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200926100807-9d91bd62050c h1:38q6VNPWR010vN82/SB121GujZNIfAUb4YttE2rhGuc=
 golang.org/x/sys v0.0.0-20200926100807-9d91bd62050c/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
