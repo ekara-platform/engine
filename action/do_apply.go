@@ -275,7 +275,7 @@ func createHookAfter(rC *RuntimeContext) StepResults {
 	}
 
 	// Notify creation progress
-	rC.lC.Feedback().ProgressG("create.hook.after", 1, "Hook after creating node sets ")
+	rC.lC.Feedback().ProgressG("create.hook.after", 1, "Hook after creating node sets")
 
 	// Prepare parameters
 	bp := buildBaseParam(rC, "")
@@ -517,7 +517,7 @@ func stackCopy(rC *RuntimeContext) StepResults {
 
 	stackWithCopies := make([]model.Stack, 0, 0)
 	for _, st := range rC.environment.Stacks {
-		if len(st.Copies.Content) > 0 {
+		if len(st.Copies) > 0 {
 			stackWithCopies = append(stackWithCopies, st)
 		}
 	}
@@ -528,7 +528,7 @@ func stackCopy(rC *RuntimeContext) StepResults {
 		// Notify stack copy
 		rC.lC.Feedback().ProgressG("stack.copy", len(stackWithCopies), "Copying files for stack '%s'", st.Name)
 
-		for cpName, cp := range st.Copies.Content {
+		for cpName, cp := range st.Copies {
 			if cp.Path != "" {
 				rC.lC.Feedback().Detail("Copying '%s' files to '%s'", cpName, cp.Path)
 

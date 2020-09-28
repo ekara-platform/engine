@@ -37,10 +37,7 @@ type (
 	// Copies represents a list of content to be copied
 	// The key of the map is the path where the content should be copied
 	// The map content is an array of path patterns to locate the content to be copied
-	Copies struct {
-		//Content lists all the content to be copies
-		Content map[string]Copy
-	}
+	Copies map[string]Copy
 
 	// Copy represents a content to be copied
 	Copy struct {
@@ -143,8 +140,7 @@ func (s StackHooks) HasTasks() bool {
 }
 
 func createCopies(copies map[string]yamlCopy) Copies {
-	res := Copies{}
-	res.Content = make(map[string]Copy)
+	res := make(map[string]Copy)
 	for cpName, yCop := range copies {
 		theCopy := Copy{
 			Once:   yCop.Once,
@@ -152,25 +148,24 @@ func createCopies(copies map[string]yamlCopy) Copies {
 		}
 		theCopy.Sources = yCop.Sources
 		theCopy.Path = yCop.Path
-		res.Content[cpName] = theCopy
+		res[cpName] = theCopy
 	}
 	return res
 }
 
 func (r Copies) override(parent Copies) Copies {
-	dst := Copies{}
-	dst.Content = make(map[string]Copy)
-	for k, v := range r.Content {
+	dst := make(map[string]Copy)
+	for k, v := range r {
 		// We copy all the original content
-		dst.Content[k] = v
+		dst[k] = v
 	}
-	for k, v := range parent.Content {
+	for k, v := range parent {
 		// if the parent content is new then we add it
-		if _, ok := dst.Content[k]; !ok {
-			dst.Content[k] = v
+		if _, ok := dst[k]; !ok {
+			dst[k] = v
 		} else {
 			// if it's not new we will merge the patterns/labels from the original content and the parent
-			work := dst.Content[k]
+			work := dst[k]
 			work.Sources = union(work.Sources, v.Sources)
 			work.Labels = work.Labels.override(v.Labels)
 			if work.Path == "" {
@@ -181,7 +176,7 @@ func (r Copies) override(parent Copies) Copies {
 				// only override once if true (meaning if it's true, it's forever true in children)
 				work.Once = true
 			}
-			dst.Content[k] = work
+			dst[k] = work
 		}
 	}
 	return dst

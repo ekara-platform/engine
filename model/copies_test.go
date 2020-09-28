@@ -27,9 +27,9 @@ func TestCreateCopies(t *testing.T) {
 	}
 	c := createCopies(copies)
 	assert.NotNil(t, c)
-	assert.Equal(t, len(copies), len(c.Content))
+	assert.Equal(t, len(copies), len(c))
 
-	val, ok := c.Content["cp1"]
+	val, ok := c["cp1"]
 	if assert.True(t, ok) {
 		assert.Equal(t, val.Path, "path1")
 		assert.Contains(t, val.Sources, "path1_pattern1")
@@ -41,7 +41,7 @@ func TestCreateCopies(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, lab, "path1_lab2")
 	}
-	val, ok = c.Content["cp2"]
+	val, ok = c["cp2"]
 	if assert.True(t, ok) {
 		assert.Equal(t, val.Path, "path2")
 		assert.Contains(t, val.Sources, "path2_pattern1")

@@ -59,8 +59,7 @@ func TestEngineLocalWithBranchRef(t *testing.T) {
 	tester.Init(repDesc.AsRepository("newBranch"))
 	env := tester.Env()
 	assert.NotNil(t, env)
-	//TODO Fix this
-	//assert.Equal(t, "newBranch", env.Qualifier)
+	assert.Equal(t, "newBranch", env.QName.Qualifier)
 }
 
 func TestEngineLocalWithTagRef(t *testing.T) {
@@ -85,9 +84,9 @@ func TestEngineLocalWithTagRef(t *testing.T) {
 	repDesc.Tag("newTag1")
 	// Content has change after the tag creation
 	repDesc.WriteCommit("ekara.yaml", refTag2+refDescContent)
+	repDesc.Tag("newTag2")
 	tester.Init(repDesc.AsRepository("newTag1"))
 	env := tester.Env()
 	assert.NotNil(t, env)
-	//TODO Fix this
-	//assert.Equal(t, "newTag1", env.Qualifier)
+	assert.Equal(t, "newTag1", env.QName.Qualifier)
 }

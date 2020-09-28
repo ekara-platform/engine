@@ -36,10 +36,8 @@ func getStackOrigin() Stack {
 	s1.Hooks.Deploy.Before = append(s1.Hooks.Deploy.Before, stackOriginT1)
 	s1.Hooks.Deploy.After = append(s1.Hooks.Deploy.After, stackOriginT2)
 
-	s1.Copies = Copies{
-		Content: make(map[string]Copy),
-	}
-	s1.Copies.Content["path1"] = Copy{
+	s1.Copies = make(map[string]Copy)
+	s1.Copies["path1"] = Copy{
 		Labels: map[string]string{
 			"label_key1": "label_value1",
 			"label_key2": "label_value2",
@@ -66,10 +64,8 @@ func getStackOther(name string) Stack {
 	other.Hooks.Deploy.Before = append(other.Hooks.Deploy.Before, stackOtherT1)
 	other.Hooks.Deploy.After = append(other.Hooks.Deploy.After, stackOtherT2)
 
-	other.Copies = Copies{
-		Content: make(map[string]Copy),
-	}
-	other.Copies.Content["path2"] = Copy{
+	other.Copies = make(map[string]Copy)
+	other.Copies["path2"] = Copy{
 		Labels: map[string]string{
 			"label_key3": "label_value3",
 			"label_key4": "label_value4",
@@ -109,7 +105,7 @@ func checkStackMerge(t *testing.T, s Stack) {
 		assert.Equal(t, s.Hooks.Deploy.After[1], stackOtherT2)
 	}
 
-	assert.Len(t, s.Copies.Content, 2)
+	assert.Len(t, s.Copies, 2)
 }
 
 func TestStackMerge(t *testing.T) {

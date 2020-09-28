@@ -35,11 +35,11 @@ func runHookAfter(rC *RuntimeContext, r *StepResults, h model.Hook, ctx hookCont
 
 func runHooks(hooks []model.TaskRef, rC *RuntimeContext, r *StepResults, ctx hookContext, cl Cleanup, phase string) {
 	for i, hook := range hooks {
-
 		repName := fmt.Sprintf("%s_%s_hook_%s_%s_%s_%d", ctx.action, ctx.target.DescName(), ctx.hookOwner, ctx.hookName, phase, i)
 		sc := InitHookStepResult(folderAsMessage(repName), ctx.target, cl)
 		ef, ko := createChildExchangeFolder(rC.lC.Ef().Input, repName, &sc)
 		if ko {
+			FailsOnCode(&sc, nil, fmt.Sprintf("Unable to create the hook folder: %s", rC.lC.Ef().Input), nil)
 			r.Add(sc)
 			continue
 		}
@@ -55,17 +55,18 @@ func runHooks(hooks []model.TaskRef, rC *RuntimeContext, r *StepResults, ctx hoo
 		bp.AddNamedMap("params", t.Parameters())
 
 		if ko := saveBaseParams(bp, ef.Input, &sc); ko {
+			FailsOnCode(&sc, nil, "Unable to save Ansible base parameters", nil)
 			r.Add(sc)
 			continue
 		}
 
 		exv := ansible.CreateExtraVars(ef.Input, ef.Output)
 		runTask(rC, t, sc, r, exv)
-		r.Add(fconsumeHookResult(rC, ctx.target, ctx, ef, hook.Prefix))
+		r.Add(fConsumeHookResult(rC, ctx.target, ctx, ef, hook.Prefix))
 	}
 }
 
-func fconsumeHookResult(rC *RuntimeContext, target model.Describable, ctx hookContext, ef util.ExchangeFolder, prefix string) StepResult {
+func fConsumeHookResult(rC *RuntimeContext, target model.Describable, ctx hookContext, ef util.ExchangeFolder, prefix string) StepResult {
 	sc := InitCodeStepResult("Consuming the hook result", target, NoCleanUpRequired)
 
 	if ef.Output.Contains(util.OutputYamlFileName) {
@@ -106,6 +107,8 @@ func runTask(rC *RuntimeContext, task model.Task, sc StepResult, r *StepResults,
 	usable, err := rC.cM.Use(task, rC.tplC)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable task", nil)
+		r.Add(sc)
+		return
 	}
 	defer usable.Release()
 
