@@ -15,7 +15,7 @@ const (
 	installPlaybook = "install.yaml"
 	deployPlaybook  = "deploy.yaml"
 	copyPlaybook    = "copy.yaml"
-	checklPlaybook  = "check.yaml"
+	checkPlaybook   = "check.yaml"
 )
 
 type (
@@ -66,7 +66,7 @@ var (
 			installHookAfter,
 
 			deployHookBefore,
-			stackCopy,
+			stackCopy, // TODO merge into one deploy step with sub-function calls (so we can sort stacks only once)
 			stackCheck,
 			stackDeploy,
 			deployHookAfter,
@@ -110,16 +110,16 @@ func providerSetup(rC *RuntimeContext) StepResults {
 		// Prepare extra vars
 		exv := ansible.CreateExtraVars(setupProviderEfIn, setupProviderEfOut)
 
-		// We launch the playbook
+		// We make the provider usable
 		usable, err := rC.cM.Use(p, rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
 			sCs.Add(sc)
 			return *sCs
 		}
-
 		defer usable.Release()
 
+		// We launch the playbook
 		code, err := rC.aM.Play(usable, rC.tplC, setupPlaybook, exv)
 		if err != nil {
 			pfd := playBookFailureDetail{
@@ -223,7 +223,7 @@ func providerCreate(rC *RuntimeContext) StepResults {
 		// Prepare extra vars
 		exv := ansible.CreateExtraVars(nodeCreateEf.Input, nodeCreateEf.Output)
 
-		// Make the component usable
+		// Make the provider usable
 		usable, err := rC.cM.Use(p, rC.tplC)
 		if err != nil {
 			FailsOnCode(&sc, err, "An error occurred getting the usable provider", nil)
@@ -325,14 +325,14 @@ func orchestratorSetup(rC *RuntimeContext) StepResults {
 	// Prepare extra vars
 	exv := ansible.CreateExtraVars(setupOrchestratorEf.Input, setupOrchestratorEf.Output)
 
-	// Make the component usable
+	// Make the orchestrator usable
 	usable, err := rC.cM.Use(o, rC.tplC)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
 		sCs.Add(sc)
 		return *sCs
 	}
-	//defer usable.Release()
+	defer usable.Release()
 
 	// We launch the playbook
 	code, err := rC.aM.Play(usable, rC.tplC, setupPlaybook, exv)
@@ -417,7 +417,7 @@ func orchestratorInstall(rC *RuntimeContext) StepResults {
 	// Prepare extra vars
 	exv := ansible.CreateExtraVars(installOrchestratorEf.Input, installOrchestratorEf.Output)
 
-	// Make the component usable
+	// Make the orchestrator usable
 	usable, err := rC.cM.Use(o, rC.tplC)
 	if err != nil {
 		FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
@@ -516,7 +516,7 @@ func stackCopy(rC *RuntimeContext) StepResults {
 	}
 
 	stackWithCopies := make([]model.Stack, 0, 0)
-	for _, st := range rC.environment.Stacks {
+	for _, st := range rC.environment.Stacks.Sorted() {
 		if len(st.Copies) > 0 {
 			stackWithCopies = append(stackWithCopies, st)
 		}
@@ -612,7 +612,7 @@ func stackCheck(rC *RuntimeContext) StepResults {
 		return *sCs
 	}
 
-	for _, st := range rC.environment.Stacks {
+	for _, st := range rC.environment.Stacks.Sorted() {
 		sc := InitPlaybookStepResult("Checking stacks", st, NoCleanUpRequired)
 
 		// Notify stack check
@@ -628,7 +628,7 @@ func stackCheck(rC *RuntimeContext) StepResults {
 		defer ust.Release()
 
 		//Verify that the stack contains the check playbook
-		if ok, _ := ust.ContainsFile(checklPlaybook); !ok {
+		if ok, _ := ust.ContainsFile(checkPlaybook); !ok {
 			// Notify stack deploy finish
 			rC.lC.Feedback().Progress("stack.deploy", "No check playbook available for the stack")
 			continue
@@ -654,10 +654,10 @@ func stackCheck(rC *RuntimeContext) StepResults {
 		// Prepare the extra vars
 		exv := ansible.CreateExtraVars(stackEf.Input, stackEf.Output)
 
-		code, err := rC.aM.Play(ust, rC.tplC, checklPlaybook, exv)
+		code, err := rC.aM.Play(ust, rC.tplC, checkPlaybook, exv)
 		if err != nil {
 			pfd := playBookFailureDetail{
-				Playbook:  checklPlaybook,
+				Playbook:  checkPlaybook,
 				Component: ust.Id(),
 				Code:      code,
 			}
@@ -683,7 +683,7 @@ func stackDeploy(rC *RuntimeContext) StepResults {
 		return *sCs
 	}
 
-	for _, st := range rC.environment.Stacks {
+	for _, st := range rC.environment.Stacks.Sorted() {
 		sc := InitPlaybookStepResult("Deploying stack", st, NoCleanUpRequired)
 
 		// Notify stack deploy
@@ -729,7 +729,7 @@ func stackDeploy(rC *RuntimeContext) StepResults {
 
 		// If the stack is not self deployable, use the orchestrator deploy playbook
 		var target componentizer.UsableComponent
-		if ok, _ := ust.ContainsFile(deployPlaybook); /* TODO fixme st.Playbook == "" && */ !ok {
+		if ok, _ := ust.ContainsFile(deployPlaybook); !ok {
 			o, err := rC.cM.Use(rC.environment.Orchestrator, rC.tplC)
 			if err != nil {
 				FailsOnCode(&sc, err, "An error occurred getting the usable orchestrator", nil)
@@ -745,16 +745,10 @@ func stackDeploy(rC *RuntimeContext) StepResults {
 		}
 
 		// Execute the playbook
-		var effectivePlaybook string
-		// TODO fixme if st.Playbook != "" {
-		//effectivePlaybook = st.Playbook
-		//} else {
-		effectivePlaybook = deployPlaybook
-		//}
-		code, err := rC.aM.Play(target, rC.tplC, effectivePlaybook, exv)
+		code, err := rC.aM.Play(target, rC.tplC, deployPlaybook, exv)
 		if err != nil {
 			pfd := playBookFailureDetail{
-				Playbook:  effectivePlaybook,
+				Playbook:  deployPlaybook,
 				Component: target.Id(),
 				Code:      code,
 			}
@@ -980,32 +974,4 @@ func saveBaseParams(bp ansible.BaseParam, dest util.FolderPath, sr *StepResult) 
 		return true
 	}
 	return false
-}
-
-//ResolveDependencies returns the stacks based on the order of the dependencies
-func sortStacks(stacks model.Stacks) ([]model.Stack, error) {
-	result := make([]model.Stack, 0, 0)
-	if len(stacks) == 0 {
-		return result, nil
-	}
-
-	g := newGraph(len(stacks))
-	for _, vs := range stacks {
-		g.addNode(vs.Name)
-	}
-	for _, vs := range stacks {
-		for _, vd := range vs.Dependencies {
-			g.addEdge(vd, vs.Name)
-		}
-	}
-	res, ok := g.sort()
-	if !ok {
-		return result, fmt.Errorf("A cyclic dependency has been detected")
-	}
-	for _, val := range res {
-		if stack, ok := stacks[val]; ok {
-			result = append(result, stack)
-		}
-	}
-	return result, nil
 }

@@ -1,4 +1,4 @@
-package action
+package model
 
 type graph struct {
 	nodes   []string

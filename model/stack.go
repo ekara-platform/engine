@@ -2,6 +2,7 @@ package model
 
 import (
 	"errors"
+	"fmt"
 	"github.com/GroupePSA/componentizer"
 )
 
@@ -88,15 +89,61 @@ func (s Stack) isSelfComponent() bool {
 	return s.cRef.ref == "" || s.cRef.ref == "_"
 }
 
-func (r *Stacks) merge(with Stacks) {
+func (stacks *Stacks) merge(with Stacks) {
 	for id, s := range with {
-		if stack, ok := (*r)[id]; ok {
+		if stack, ok := (*stacks)[id]; ok {
 			stack.merge(s)
-			(*r)[id] = stack
+			(*stacks)[id] = stack
 		} else {
-			(*r)[id] = s
+			(*stacks)[id] = s
 		}
 	}
+}
+
+func (stacks Stacks) validate(e Environment, loc DescriptorLocation) ValidationErrors {
+	vErrs := ValidationErrors{}
+	if len(stacks) == 0 {
+		vErrs.addWarning("no stack specified", loc)
+	}
+	_, err := stacks.sorted()
+	if err != nil {
+		vErrs.addError(err, loc)
+	}
+	return vErrs
+}
+
+//Sorted returns the stacks based on the order of the dependencies
+func (stacks Stacks) Sorted() []Stack {
+	sorted, _ := stacks.sorted()
+	// Cyclic dependencies should have been catch at validation
+	return sorted
+}
+
+func (stacks Stacks) sorted() ([]Stack, error) {
+	result := make([]Stack, 0, 0)
+	if len(stacks) == 0 {
+		return result, nil
+	}
+
+	g := newGraph(len(stacks))
+	for _, vs := range stacks {
+		g.addNode(vs.Name)
+	}
+	for _, vs := range stacks {
+		for _, vd := range vs.Dependencies {
+			g.addEdge(vd, vs.Name)
+		}
+	}
+	res, ok := g.sort()
+	if !ok {
+		return result, fmt.Errorf("A cyclic dependency in stacks has been detected")
+	}
+	for _, val := range res {
+		if stack, ok := stacks[val]; ok {
+			result = append(result, stack)
+		}
+	}
+	return result, nil
 }
 
 func createStacks(from component, yamlEnv yamlEnvironment) Stacks {
@@ -180,14 +227,6 @@ func (r Copies) override(parent Copies) Copies {
 		}
 	}
 	return dst
-}
-
-func (r Stacks) validate(e Environment, loc DescriptorLocation) ValidationErrors {
-	vErrs := ValidationErrors{}
-	if len(r) == 0 {
-		vErrs.addWarning("no stack specified", loc)
-	}
-	return vErrs
 }
 
 func (s Stack) validate(e Environment, loc DescriptorLocation) ValidationErrors {
